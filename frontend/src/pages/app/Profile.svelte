@@ -1,10 +1,9 @@
 <script lang="ts">
     import { router } from "@inertiajs/svelte";
     import { fly } from "svelte/transition";
-    import Header from "../../components/Header.svelte";
     import DarkModeToggle from "../../components/DarkModeToggle.svelte";
     import { Toast } from "../../lib/utils/helpers";
-    import { Upload, Lock, User, Mail } from "lucide-svelte";
+    import { Upload, Lock, User as UserIcon, Mail } from "lucide-svelte";
 
     interface User {
         id: number;
@@ -132,7 +131,7 @@
     }
 </script>
 
-<Header group="profile" />
+<!-- <Header group="profile" /> archived \u2014 now using AppLayout via routes -->
 
 <!-- Main Content -->
 <div class="relative min-h-screen bg-white dark:bg-slate-950">
@@ -395,7 +394,7 @@
                     <div
                         class="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center"
                     >
-                        <User class="w-5 h-5 text-blue-400" />
+                        <UserIcon class="w-5 h-5 text-blue-400" />
                     </div>
                     <div>
                         <h3
@@ -420,7 +419,7 @@
                         >Full Name</label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                <User class="w-5 h-5 text-slate-500" />
+                                <UserIcon class="w-5 h-5 text-slate-500" />
                             </div>
                             <input
                                 bind:value={profileForm.name}

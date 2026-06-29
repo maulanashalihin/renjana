@@ -63,6 +63,12 @@
 >
     <h3 class="text-base font-bold text-slate-900 dark:text-white mb-4">Jenis Kegiatan</h3>
 
+    {#if activities.length === 0}
+        <div class="py-8 text-center text-sm text-slate-500 dark:text-slate-400">
+            Belum ada data jenis kegiatan.
+        </div>
+    {:else}
+
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
         <!-- Donut -->
         <div class="flex items-center justify-center">
@@ -120,4 +126,5 @@
             {/each}
         </div>
     </div>
+    {/if}
 </div>

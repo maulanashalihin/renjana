@@ -102,6 +102,19 @@ func setupAppRoutes(app *fiber.App, appHandler *handlers.AppHandler, uploadHandl
 
 	// Profile
 	protected.Get("/profile", appHandler.Profile)
+
+	// 11 stub menu pages (Coming Soon — Iterasi 2 stub)
+	protected.Get("/profil", appHandler.Menu)
+	protected.Get("/kegiatan", appHandler.Menu)
+	protected.Get("/relawan", appHandler.Menu)
+	protected.Get("/peta", appHandler.Menu)
+	protected.Get("/edukasi", appHandler.Menu)
+	protected.Get("/galeri", appHandler.Menu)
+	protected.Get("/berita", appHandler.Menu)
+	protected.Get("/dokumen", appHandler.Menu)
+	protected.Get("/inovasi", appHandler.Menu)
+	protected.Get("/daftar", appHandler.Menu)
+	protected.Get("/kontak", appHandler.Menu)
 	protected.Put("/profile", appHandler.UpdateProfile)
 	protected.Put("/profile/password", appHandler.UpdatePassword)
 

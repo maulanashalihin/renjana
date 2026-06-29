@@ -1,6 +1,5 @@
 <script lang="ts">
-    import RenjanaSidebar from "../../components/dashboard/RenjanaSidebar.svelte";
-    import TopBar from "../../components/dashboard/TopBar.svelte";
+    import AppLayout from "../../components/AppLayout.svelte";
     import HeroBanner from "../../components/dashboard/HeroBanner.svelte";
     import StatCard from "../../components/dashboard/StatCard.svelte";
     import VolunteerDistribution from "../../components/dashboard/VolunteerDistribution.svelte";
@@ -11,6 +10,9 @@
     import UpcomingActivity from "../../components/dashboard/UpcomingActivity.svelte";
     import { Users, GraduationCap, Activity, MapPin } from "lucide-svelte";
 
+    // -----------------------------------------------------------------
+    // Types — match backend DTOs (app/services/dashboard.go)
+    // -----------------------------------------------------------------
     interface User {
         id: number;
         name: string;
@@ -19,174 +21,281 @@
         role: string;
     }
 
+    interface Stats {
+        total_relawan: number;
+        delta_relawan: number;
+        sekolah_binaan: number;
+        delta_sekolah: number;
+        total_kegiatan: number;
+        delta_kegiatan: number;
+        kecamatan_terlibat: number;
+    }
+
+    interface DistrictVolunteerCount {
+        id: number;
+        district_name: string;
+        volunteer_count: number;
+    }
+
+    interface ActivityTypeCount {
+        type_id: number;
+        type_name: string;
+        color: string;
+        icon: string;
+        activity_count: number;
+        percentage: number;
+    }
+
+    interface VolunteerSummary {
+        id: number;
+        name: string;
+        school: string;
+        district_id: number;
+        district_name: string;
+        status: string;
+        avatar_url: string;
+        joined_at: string;
+    }
+
+    interface Achievement {
+        id: number;
+        year: number;
+        metric_key: string;
+        metric_name: string;
+        value: number;
+        unit: string;
+        target: number;
+        type: "percentage" | "count";
+        icon: string;
+        icon_color: string;
+        display_order: number;
+    }
+
+    interface Announcement {
+        id: number;
+        title: string;
+        content: string;
+        published_at: string;
+    }
+
+    interface UpcomingActivityItem {
+        id: number;
+        title: string;
+        type_name: string;
+        type_color: string;
+        type_icon: string;
+        district_id: number;
+        district_name: string;
+        location: string;
+        date: string;
+        time: string;
+    }
+
     interface Props {
         user?: User;
+        stats?: Stats;
+        district_distribution?: DistrictVolunteerCount[];
+        activity_breakdown?: ActivityTypeCount[];
+        active_volunteers?: VolunteerSummary[];
+        achievements?: Achievement[];
+        latest_announcement?: Announcement | null;
+        upcoming_activities?: UpcomingActivityItem[];
         success?: string;
         error?: string;
     }
 
-    let { user }: Props = $props();
+    let {
+        user,
+        stats,
+        district_distribution = [],
+        activity_breakdown = [],
+        active_volunteers = [],
+        achievements = [],
+        latest_announcement,
+        upcoming_activities = [],
+    }: Props = $props();
 
-    // Mobile sidebar state
-    let isMobileMenuOpen = $state(false);
+    // Safe values for non-required props
+    let safeStats = $derived(stats ?? {
+        total_relawan: 0,
+        delta_relawan: 0,
+        sekolah_binaan: 0,
+        delta_sekolah: 0,
+        total_kegiatan: 0,
+        delta_kegiatan: 0,
+        kecamatan_terlibat: 0,
+    });
 
-    // Mock data — replace with backend data later
-    const stats = {
-        volunteers: { value: 1248, delta: 12 },
-        schools: { value: 45, delta: 8 },
-        activities: { value: 128, delta: 15 },
-        districts: { value: 12, delta: undefined as number | undefined },
-    };
+    // Format date to Indonesian "DD MonthName" e.g. "25 Mei"
+    function formatDayMonth(dateStr: string): { day: string; month: string } {
+        if (!dateStr) return { day: "—", month: "—" };
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return { day: "—", month: "—" };
+        const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+        return {
+            day: String(d.getDate()).padStart(2, "0"),
+            month: months[d.getMonth()],
+        };
+    }
 
-    const districts = [
-        { name: "Simpang Empat", count: 312 },
-        { name: "Batulicin", count: 198 },
-        { name: "Kusan Hilir", count: 145 },
-        { name: "Kusan Hulu", count: 120 },
-        { name: "Angsana", count: 98 },
-        { name: "Satui", count: 95 },
-        { name: "Karang Bintang", count: 85 },
-        { name: "Mantewe", count: 65 },
-        { name: "Teluk Kepayang", count: 60 },
-        { name: "Kuranji", count: 50 },
-        { name: "Sungai Loban", count: 20 },
-    ];
+    // Map achievement icon name (string from backend) -> component
+    import {
+        Target as IconTarget,
+        Users as IconUsers,
+        ShieldCheck as IconShield,
+        Trophy as IconTrophy,
+        Activity as IconActivity,
+        Award as IconAward,
+        BookOpen as IconBook,
+        GraduationCap as IconGrad,
+        BarChart as IconBar,
+    } from "lucide-svelte";
 
-    const activityTypes = [
-        { name: "Pelatihan", percentage: 35, color: "#f97316" },
-        { name: "Simulasi", percentage: 25, color: "#0ea5e9" },
-        { name: "Edukasi", percentage: 20, color: "#22c55e" },
-        { name: "Sosialisasi", percentage: 10, color: "#a855f7" },
-        { name: "Aksi Kemanusiaan", percentage: 10, color: "#ef4444" },
-    ];
+    function achievementIcon(name: string) {
+        const map: Record<string, any> = {
+            target: IconTarget,
+            users: IconUsers,
+            shield: IconShield,
+            shieldcheck: IconShield,
+            trophy: IconTrophy,
+            activity: IconActivity,
+            award: IconAward,
+            book: IconBook,
+            grad: IconGrad,
+            chart: IconBar,
+        };
+        return map[name?.toLowerCase()] ?? IconTarget;
+    }
 
-    const activeVolunteers = [
-        { name: "Ahmad Fauzan", school: "SMPN 1 Simpang Empat" },
-        { name: "Siti Aisyah", school: "SMAN 1 Simpang Empat" },
-        { name: "Muhammad Rizky", school: "SMPN 2 Batulicin" },
-        { name: "Putri Nabila", school: "SMKN 1 Kusan Hilir" },
-    ];
+    // Build typed arrays for sub-components
+    let districtRows = $derived(
+        district_distribution.map(d => ({ name: d.district_name, count: d.volunteer_count }))
+    );
 
-    const achievements = [
-        { label: "Capaian Program", value: 85, unit: "%", iconName: "target" as const },
-        { label: "Siswa Teredukasi", value: 12500, iconName: "users" as const },
-        { label: "Sekolah Aman Bencana", value: 98, iconName: "shield" as const },
-        { label: "Penghargaan", value: 7, iconName: "trophy" as const },
-        { label: "Indeks Kesiapsiagaan", value: 90, unit: "%", iconName: "chart" as const },
-    ];
+    let activitySegments = $derived(
+        activity_breakdown.map(a => ({
+            name: a.type_name,
+            percentage: a.percentage,
+            color: a.color,
+        }))
+    );
 
-    const announcement = {
-        title: "Jadwal Pelatihan Dasar Relawan",
-        date: "12 Mei 2024",
-        content: "Pendaftaran dibuka sampai 20 Mei 2024. Segera daftarkan diri Anda untuk menjadi bagian dari program.",
-    };
+    let volunteerRows = $derived(
+        active_volunteers.map(v => ({
+            name: v.name,
+            school: v.school,
+        }))
+    );
 
-    const upcomingActivities = [
-        { day: "25", month: "Mei", title: "Pelatihan Siaga Bencana", location: "Aula BPBD Kab. Tanah Bumbu", time: "08.00 - Selesai" },
-        { day: "02", month: "Jun", title: "Simulasi Evakuasi Gempa", location: "SMPN 1 Simpang Empat", time: "08.00 - Selesai" },
-        { day: "10", month: "Jun", title: "Edukasi Bencana di Sekolah", location: "SMAN 1 Simpang Empat", time: "08.00 - Selesai" },
-    ];
+    let achievementRows = $derived(
+        achievements.map(a => ({
+            label: a.metric_name,
+            value: a.value,
+            unit: a.unit,
+            iconName: achievementIcon(a.icon),
+            type: a.type,
+            target: a.target,
+            color: a.icon_color || "#f97316",
+        }))
+    );
+
+    let announcementView = $derived(
+        latest_announcement
+            ? {
+                  title: latest_announcement.title,
+                  date: new Date(latest_announcement.published_at).toLocaleDateString("id-ID", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                  }),
+                  content: latest_announcement.content,
+              }
+            : null
+    );
+
+    let upcomingRows = $derived(
+        upcoming_activities.map(a => {
+            const { day, month } = formatDayMonth(a.date);
+            return {
+                day,
+                month,
+                title: a.title,
+                location: a.location,
+                time: a.time,
+            };
+        })
+    );
 </script>
 
-<svelte:head>
-    <title>Dashboard - RENJANA</title>
-</svelte:head>
-
-<div class="min-h-screen bg-slate-50 dark:bg-slate-950 flex">
-    <!-- Desktop Sidebar -->
-    <div class="hidden lg:block">
-        <RenjanaSidebar active="Dashboard" />
-    </div>
-
-    <!-- Mobile Sidebar Drawer -->
-    {#if isMobileMenuOpen}
-        <div class="lg:hidden fixed inset-0 z-50 flex">
-            <button
-                class="absolute inset-0 bg-black/50 backdrop-blur-sm"
-                onclick={() => (isMobileMenuOpen = false)}
-                aria-label="Tutup menu"
-            ></button>
-            <div class="relative w-72 max-w-[85vw]">
-                <RenjanaSidebar active="Dashboard" />
+<AppLayout
+    user={user}
+    pageTitle="Dashboard"
+    pageSubtitle="Dashboard Relawan Remaja Aman Bencana"
+    activeMenu="Dashboard"
+>
+    <div class="space-y-6">
+        <!-- Hero + Upcoming -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2">
+                <HeroBanner userName={user?.name} />
+            </div>
+            <div>
+                <UpcomingActivity activities={upcomingRows} />
             </div>
         </div>
-    {/if}
 
-    <!-- Main content -->
-    <div class="flex-1 min-w-0 flex flex-col">
-        <TopBar
-            user={user ?? { id: 0, name: "Admin RENJANA", email: "admin@renjana.id", avatar: "/public/images/avatar-1.svg", role: "Super Admin" }}
-            onMenuClick={() => (isMobileMenuOpen = true)}
-        />
+        <!-- Stat cards -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatCard
+                label="Total Relawan"
+                value={safeStats.total_relawan}
+                delta={safeStats.delta_relawan}
+                icon={Users}
+                color="#3b82f6"
+            />
+            <StatCard
+                label="Sekolah Binaan"
+                value={safeStats.sekolah_binaan}
+                delta={safeStats.delta_sekolah}
+                icon={GraduationCap}
+                color="#22c55e"
+            />
+            <StatCard
+                label="Total Kegiatan"
+                value={safeStats.total_kegiatan}
+                delta={safeStats.delta_kegiatan}
+                icon={Activity}
+                color="#f97316"
+            />
+            <StatCard
+                label="Kecamatan Terlibat"
+                value={safeStats.kecamatan_terlibat}
+                icon={MapPin}
+                color="#a855f7"
+            />
+        </div>
 
-        <!-- Page content -->
-        <main class="flex-1 p-4 sm:p-6 lg:p-8">
-            <div class="max-w-7xl mx-auto space-y-6">
-                <!-- Hero + Upcoming -->
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="lg:col-span-2">
-                        <HeroBanner userName={user?.name} />
-                    </div>
-                    <div>
-                        <UpcomingActivity activities={upcomingActivities} />
-                    </div>
-                </div>
-
-                <!-- Stat cards -->
-                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                    <StatCard
-                        label="Total Relawan"
-                        value={stats.volunteers.value}
-                        delta={stats.volunteers.delta}
-                        icon={Users}
-                        color="#3b82f6"
-                    />
-                    <StatCard
-                        label="Sekolah Binaan"
-                        value={stats.schools.value}
-                        delta={stats.schools.delta}
-                        icon={GraduationCap}
-                        color="#22c55e"
-                    />
-                    <StatCard
-                        label="Total Kegiatan"
-                        value={stats.activities.value}
-                        delta={stats.activities.delta}
-                        icon={Activity}
-                        color="#f97316"
-                    />
-                    <StatCard
-                        label="Kecamatan Terlibat"
-                        value={stats.districts.value}
-                        delta={stats.districts.delta}
-                        icon={MapPin}
-                        color="#a855f7"
-                    />
-                </div>
-
-                <!-- Sebaran + Donut -->
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="lg:col-span-2">
-                        <VolunteerDistribution {districts} />
-                    </div>
-                    <div>
-                        <ActivityDonutChart activities={activityTypes} total={stats.activities.value} />
-                    </div>
-                </div>
-
-                <!-- Relawan Aktif + Pengumuman -->
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="lg:col-span-2">
-                        <ActiveVolunteers volunteers={activeVolunteers} />
-                    </div>
-                    <div>
-                        <AnnouncementCard {announcement} />
-                    </div>
-                </div>
-
-                <!-- Capaian -->
-                <AchievementBar {achievements} year={2024} />
+        <!-- Sebaran + Donut -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2">
+                <VolunteerDistribution districts={districtRows} />
             </div>
-        </main>
+            <div>
+                <ActivityDonutChart activities={activitySegments} total={safeStats.total_kegiatan} />
+            </div>
+        </div>
+
+        <!-- Relawan Aktif + Pengumuman -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2">
+                <ActiveVolunteers volunteers={volunteerRows} />
+            </div>
+            <div>
+                <AnnouncementCard announcement={announcementView} />
+            </div>
+        </div>
+
+        <!-- Capaian -->
+        <AchievementBar achievements={achievementRows} year={achievements[0]?.year ?? 2024} />
     </div>
-</div>
+</AppLayout>

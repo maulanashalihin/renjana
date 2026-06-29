@@ -10,16 +10,23 @@ import (
 )
 
 type AppHandler struct {
-	userService    *services.UserService
-	store          *session.Store
-	inertiaService *services.InertiaService
+	userService      *services.UserService
+	store            *session.Store
+	inertiaService   *services.InertiaService
+	dashboardService *services.DashboardService
 }
 
-func NewAppHandler(userService *services.UserService, store *session.Store, inertiaService *services.InertiaService) *AppHandler {
+func NewAppHandler(
+	userService *services.UserService,
+	store *session.Store,
+	inertiaService *services.InertiaService,
+	dashboardService *services.DashboardService,
+) *AppHandler {
 	return &AppHandler{
-		userService:    userService,
-		store:          store,
-		inertiaService: inertiaService,
+		userService:      userService,
+		store:            store,
+		inertiaService:   inertiaService,
+		dashboardService: dashboardService,
 	}
 }
 
@@ -34,7 +41,7 @@ func (h *AppHandler) Dashboard(c *fiber.Ctx) error {
 	}
 
 	slog.Info("loading dashboard", "handler", "Dashboard", "user_id", userID)
-	
+
 	user, err := h.userService.GetProfile(userID.(int64))
 	if err != nil {
 		slog.Error("dashboard get profile error", "handler", "Dashboard", "error", err)
@@ -43,9 +50,87 @@ func (h *AppHandler) Dashboard(c *fiber.Ctx) error {
 		})
 	}
 
+	// Aggregate dashboard data via service. Errors are non-fatal — the
+	// service returns partial data and pages with empty sections gracefully.
+	data, err := h.dashboardService.GetDashboardData(c.Context())
+	if err != nil {
+		slog.Error("dashboard aggregate error", "handler", "Dashboard", "error", err)
+		// still render — empty sections will be shown
+	}
+
 	return h.inertiaService.Render(c, "app/Dashboard", fiber.Map{
+		"user":                  user,
+		"stats":                 data.Stats,
+		"district_distribution": data.DistrictDistribution,
+		"activity_breakdown":    data.ActivityBreakdown,
+		"active_volunteers":     data.ActiveVolunteers,
+		"achievements":          data.Achievements,
+		"latest_announcement":   data.LatestAnnouncement,
+		"upcoming_activities":   data.UpcomingActivities,
+	})
+}
+
+// Menu is a dispatcher for the 11 stub menu pages.
+// It parses the menu name from the request path itself (e.g. /app/profil -> "profil")
+// and renders the appropriate Inertia page.
+func (h *AppHandler) Menu(c *fiber.Ctx) error {
+	userID := c.Locals("user_id")
+	if userID == nil {
+		return c.Redirect("/login")
+	}
+
+	user, err := h.userService.GetProfile(userID.(int64))
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to load profile: " + err.Error(),
+		})
+	}
+
+	// Parse the menu from the URL path: /app/{menu}
+	path := c.Path()
+	menu := ""
+	if idx := lastIndex(path, "/"); idx >= 0 {
+		menu = path[idx+1:]
+	}
+
+	// Map URL segment to Inertia component name
+	componentMap := map[string]string{
+		"profil":   "app/Profil",
+		"kegiatan": "app/Kegiatan",
+		"relawan":  "app/Relawan",
+		"peta":     "app/Peta",
+		"edukasi":  "app/Edukasi",
+		"galeri":   "app/Galeri",
+		"berita":   "app/Berita",
+		"dokumen":  "app/Dokumen",
+		"inovasi":  "app/Inovasi",
+		"daftar":   "app/Pendaftaran",
+		"kontak":   "app/Kontak",
+	}
+
+	component, ok := componentMap[menu]
+	if !ok {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error": "Menu not found: " + menu,
+		})
+	}
+
+	return h.inertiaService.Render(c, component, fiber.Map{
 		"user": user,
 	})
+}
+
+func lastIndex(s, substr string) int {
+	// Simple "last index of character" — for single-char substrings
+	if len(substr) != 1 {
+		return -1
+	}
+	for i := len(s) - 1; i >= 0; i-- {
+		if s[i] == substr[0] {
+			return i
+		}
+	}
+	return -1
 }
 
 // Profile returns user profile (Inertia)

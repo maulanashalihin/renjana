@@ -9,6 +9,72 @@ import (
 	"time"
 )
 
+type RenjanaAchievement struct {
+	ID           int64
+	Year         int64
+	MetricKey    string
+	MetricName   string
+	Value        float64
+	Unit         string
+	Target       sql.NullFloat64
+	DisplayOrder int64
+	Icon         sql.NullString
+	IconColor    sql.NullString
+	CreatedAt    time.Time
+}
+
+type RenjanaActivity struct {
+	ID          int64
+	Title       string
+	TypeID      int64
+	DistrictID  int64
+	Description sql.NullString
+	Location    string
+	Date        time.Time
+	Time        string
+	Status      string
+	CreatedAt   time.Time
+}
+
+type RenjanaActivityType struct {
+	ID           int64
+	Name         string
+	Color        string
+	Icon         string
+	DisplayOrder int64
+	IsActive     bool
+	CreatedAt    time.Time
+}
+
+type RenjanaAnnouncement struct {
+	ID          int64
+	Title       string
+	Content     string
+	PublishedAt time.Time
+	IsPublished bool
+	CreatedAt   time.Time
+}
+
+type RenjanaDistrict struct {
+	ID        int64
+	Name      string
+	IsActive  bool
+	CreatedAt time.Time
+}
+
+type RenjanaVolunteer struct {
+	ID         int64
+	Name       string
+	School     string
+	DistrictID int64
+	Phone      sql.NullString
+	Status     string
+	AvatarUrl  sql.NullString
+	JoinedAt   time.Time
+	IsActive   bool
+	CreatedAt  time.Time
+}
+
 type Session struct {
 	ID        string
 	UserID    int64

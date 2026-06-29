@@ -18,7 +18,6 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
-	"github.com/pressly/goose/v3"
 	"github.com/maulanashalihin/laju-go/app/cache"
 	"github.com/maulanashalihin/laju-go/app/config"
 	"github.com/maulanashalihin/laju-go/app/handlers"
@@ -26,6 +25,7 @@ import (
 	"github.com/maulanashalihin/laju-go/app/services"
 	"github.com/maulanashalihin/laju-go/app/session"
 	"github.com/maulanashalihin/laju-go/routes"
+	"github.com/pressly/goose/v3"
 
 	_ "modernc.org/sqlite"
 )
@@ -96,6 +96,7 @@ func main() {
 		BcryptCost:         cfg.BcryptCost,
 	})
 	userService := services.NewUserService(querier, userCache)
+	dashboardService := services.NewDashboardService(querier)
 
 	// Initialize Asset service (for production builds with hashed filenames)
 	assetService := services.NewAssetService("./dist/.vite/manifest.json", ".vite-port", cfg.IsDevelopment())
@@ -107,7 +108,7 @@ func main() {
 	routeHandlers := routes.Handlers{
 		Public: handlers.NewPublicHandler(authService, userService, inertiaService, assetService),
 		Auth:   handlers.NewAuthHandler(authService, userService, sessionStore, inertiaService),
-		App:    handlers.NewAppHandler(userService, sessionStore, inertiaService),
+		App:    handlers.NewAppHandler(userService, sessionStore, inertiaService, dashboardService),
 		Upload: handlers.NewUploadHandler(sessionStore, userService),
 	}
 
@@ -163,7 +164,7 @@ func main() {
 
 	app.Get("/health", func(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{
-			"status": "ok",
+			"status":  "ok",
 			"version": Version,
 		})
 	})
@@ -346,4 +347,3 @@ func customErrorHandler(c *fiber.Ctx, err error) error {
 		"error": err.Error(),
 	})
 }
-

@@ -24,6 +24,11 @@
             Lihat Semua
         </a>
     </div>
+    {#if volunteers.length === 0}
+        <div class="py-8 text-center text-sm text-slate-500 dark:text-slate-400">
+            Belum ada data relawan aktif.
+        </div>
+    {:else}
     <div class="space-y-3">
         {#each volunteers as v, i}
             <div class="flex items-center gap-3">
@@ -48,4 +53,5 @@
             </div>
         {/each}
     </div>
+    {/if}
 </div>

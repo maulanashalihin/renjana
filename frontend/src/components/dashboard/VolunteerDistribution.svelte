@@ -21,6 +21,11 @@
     <h3 class="text-base font-bold text-slate-900 dark:text-white mb-4">
         Sebaran Relawan per Kecamatan
     </h3>
+    {#if sorted.length === 0}
+        <div class="py-8 text-center text-sm text-slate-500 dark:text-slate-400">
+            Belum ada data sebaran relawan.
+        </div>
+    {:else}
     <div class="space-y-2.5">
         {#each sorted as district, i}
             {@const pct = (district.count / maxCount) * 100}
@@ -48,4 +53,5 @@
             </div>
         {/each}
     </div>
+    {/if}
 </div>
