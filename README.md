@@ -14,7 +14,13 @@ Dashboard ini menyediakan layar komando (*command center*) bagi pengelola progra
 
 ## 📸 Preview Dashboard
 
-![RENJANA Dashboard](design.jpeg)
+### Implementasi Aktual
+
+![RENJANA Dashboard - Live Preview](public/images/dashboard-preview.png)
+
+### Design Reference
+
+![RENJANA Dashboard - Design](design.jpeg)
 
 ---
 
