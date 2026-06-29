@@ -40,7 +40,7 @@
         id: user?.id ?? 0,
         name: user?.name ?? "Admin RENJANA",
         email: user?.email ?? "admin@renjana.id",
-        avatar: user?.avatar ?? "/public/images/avatar-1.svg",
+        avatar: user?.avatar ?? "https://i.pravatar.cc/100?u=admin-renjana",
         role: user?.role ?? "Admin",
     });
 </script>

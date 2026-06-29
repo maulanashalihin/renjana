@@ -128,9 +128,9 @@
 
     // Format date to Indonesian "DD MonthName" e.g. "25 Mei"
     function formatDayMonth(dateStr: string): { day: string; month: string } {
-        if (!dateStr) return { day: "—", month: "—" };
+        if (!dateStr) return { day: "?", month: "?" };
         const d = new Date(dateStr);
-        if (isNaN(d.getTime())) return { day: "—", month: "—" };
+        if (isNaN(d.getTime())) return { day: "?", month: "?" };
         const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
         return {
             day: String(d.getDate()).padStart(2, "0"),

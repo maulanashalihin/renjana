@@ -112,7 +112,7 @@
                     <!-- Land outline (simplified) -->
                     <path d="M 30 100 Q 100 60 200 80 Q 300 50 400 90 Q 500 70 600 110 Q 700 100 770 150 L 770 400 Q 700 430 600 410 Q 500 440 400 420 Q 300 450 200 430 Q 100 440 30 410 Z" fill="currentColor" class="text-emerald-200/40 dark:text-emerald-800/30" stroke="currentColor" stroke-width="2" />
                     <text x="400" y="50" text-anchor="middle" class="text-xs fill-current text-neutral-400 dark:text-neutral-600 font-semibold">Laut Jawa</text>
-                    <text x="400" y="500" text-anchor="middle" class="text-xs fill-current text-neutral-400 dark:text-neutral-600 font-semibold">Kabupaten Tanah Bumbu — Kalimantan Selatan</text>
+                    <text x="400" y="500" text-anchor="middle" class="text-xs fill-current text-neutral-400 dark:text-neutral-600 font-semibold">Kabupaten Tanah Bumbu, Kalimantan Selatan</text>
 
                     <!-- District markers -->
                     {#if showDistricts}
@@ -153,7 +153,7 @@
                 <!-- Map caption -->
                 <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-400 bg-white/80 dark:bg-neutral-900/80 backdrop-blur rounded-lg px-3 py-2">
                     <span>📍 {petaHotspots.length} hotspot dipetakan</span>
-                    <span>🗺️ Sketsa sederhana — Peta interaktif penuh segera hadir</span>
+                    <span>🗺️ Sketsa sederhana. Peta interaktif penuh segera hadir.</span>
                 </div>
             </div>
 

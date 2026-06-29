@@ -61,10 +61,7 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             {#each featured as b}
                 <article class="group rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 overflow-hidden hover:shadow-xl hover:-translate-y-0.5 transition">
-                    <div class="relative aspect-[16/10] bg-gradient-to-br from-renjana-200 to-amber-200 dark:from-renjana-900/40 dark:to-amber-900/40 overflow-hidden">
-                        <div class="absolute inset-0 flex items-center justify-center opacity-30">
-                            <Newspaper class="w-24 h-24 text-renjana-600" />
-                        </div>
+                    <div class="relative aspect-[16/10] bg-cover bg-center overflow-hidden" style="background-image: linear-gradient(180deg, rgba(0,0,0,0.0) 50%, rgba(0,0,0,0.4) 100%), url('{b.image}');">
                         <div class="absolute top-3 left-3 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500 text-white">
                             <Sparkles class="w-3 h-3" />
                             Utama
@@ -102,8 +99,8 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {#each regular as b}
                 <article class="group rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 overflow-hidden hover:shadow-lg hover:-translate-y-0.5 transition flex flex-col">
-                    <div class="relative aspect-video bg-gradient-to-br from-blue-100 to-cyan-100 dark:from-blue-950/30 dark:to-cyan-950/30 flex items-center justify-center">
-                        <Newspaper class="w-12 h-12 text-blue-500 opacity-30" />
+                    <div class="relative aspect-video bg-cover bg-center" style="background-image: url('{b.image}');">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
                         <div class="absolute top-3 left-3">
                             <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold {categoryColor[b.category]}">
                                 {b.category}

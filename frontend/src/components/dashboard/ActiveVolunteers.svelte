@@ -33,7 +33,7 @@
         {#each volunteers as v, i}
             <div class="flex items-center gap-3">
                 <img
-                    src={v.avatar || `/public/images/avatar-${(i % 4) + 1}.svg`}
+                    src={v.avatar || `https://i.pravatar.cc/100?img=${(i % 70) + 1}`}
                     alt={v.name}
                     class="w-10 h-10 rounded-full object-cover ring-2 ring-slate-100 dark:ring-slate-800 shrink-0"
                 />

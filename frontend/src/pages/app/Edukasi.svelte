@@ -4,6 +4,8 @@
     import EmptyState from "../../lib/components/EmptyState.svelte";
     import { edukasi, dateLong } from "../../lib/data/dummy";
     import { BookOpen, Clock, Eye, User, Search, Sparkles, ArrowRight } from "lucide-svelte";
+    // BookOpen kept for fallback when image fails to load
+    void BookOpen;
 
     let { user }: { user?: any } = $props();
 
@@ -12,20 +14,7 @@
     let activeCategory = $state<string | null>(null);
     let search = $state("");
 
-    const categoryColor: Record<string, string> = {
-        Mitigasi: "bg-renjana-100 dark:bg-renjana-900/30 text-renjana-700 dark:text-renjana-300",
-        Kesiapsiagaan: "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300",
-        "Tanggap Darurat": "bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-300",
-        Pemulihan: "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300",
-    };
 
-    const coverGradients: Record<string, string> = {
-        renjana: "from-renjana-500 to-amber-500",
-        blue: "from-blue-500 to-cyan-500",
-        emerald: "from-emerald-500 to-teal-500",
-        rose: "from-rose-500 to-pink-500",
-        amber: "from-amber-500 to-orange-500",
-    };
 
     const filtered = $derived.by(() => {
         const s = search.toLowerCase().trim();
@@ -67,16 +56,13 @@
         {@const e = featured}
         <div class="mb-8 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 overflow-hidden hover:shadow-xl transition">
             <div class="grid grid-cols-1 lg:grid-cols-2">
-                <div class="relative aspect-video lg:aspect-auto bg-gradient-to-br {coverGradients[e.color]} p-8 lg:p-12 flex flex-col justify-between min-h-[280px]">
+                <div class="relative aspect-video lg:aspect-auto p-8 lg:p-12 flex flex-col justify-between min-h-[280px] bg-cover bg-center" style="background-image: linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.55) 100%), url('{e.cover}');">
                     <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/20 backdrop-blur text-xs font-semibold text-white w-fit">
                         <Sparkles class="w-3 h-3" />
                         Artikel Unggulan
                     </div>
-                    <div class="absolute inset-0 flex items-center justify-center opacity-20">
-                        <BookOpen class="w-32 h-32 text-white" />
-                    </div>
                     <div class="relative">
-                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold {categoryColor[e.category]}">
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-white/95 text-neutral-900">
                             {e.category}
                         </span>
                     </div>
@@ -113,13 +99,11 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {#each rest as e}
                 <article class="group rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 overflow-hidden hover:shadow-lg hover:-translate-y-0.5 transition flex flex-col">
-                    <div class="relative aspect-video bg-gradient-to-br {coverGradients[e.color]} p-6 flex items-end">
-                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/90 dark:bg-neutral-900/90 backdrop-blur text-xs font-semibold {categoryColor[e.category]}">
+                    <div class="relative aspect-video bg-cover bg-center" style="background-image: url('{e.cover}');">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-transparent"></div>
+                        <span class="absolute top-3 left-3 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-white/95 text-neutral-900">
                             {e.category}
                         </span>
-                        <div class="absolute inset-0 flex items-center justify-center opacity-20 group-hover:opacity-30 transition">
-                            <BookOpen class="w-16 h-16 text-white" />
-                        </div>
                     </div>
                     <div class="p-5 flex-1 flex flex-col">
                         <h3 class="text-base font-bold text-neutral-900 dark:text-white mb-2 line-clamp-2 group-hover:text-renjana-600 dark:group-hover:text-renjana-400 transition">{e.title}</h3>

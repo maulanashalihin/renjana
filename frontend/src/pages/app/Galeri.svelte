@@ -11,7 +11,7 @@
 
     let activeCollection = $state<string | null>(null);
     let search = $state("");
-    let lightbox = $state<{ id: number; title: string; collection: string; district: string; date: string } | null>(null);
+    let lightbox = $state<{ id: number; title: string; collection: string; district: string; date: string; cover: string } | null>(null);
 
     const collectionColor: Record<string, string> = {
         Pelatihan: "bg-renjana-500",
@@ -22,7 +22,7 @@
         Rapat: "bg-purple-500",
     };
 
-    const coverGradients = ["from-renjana-400 to-amber-400", "from-blue-400 to-cyan-400", "from-rose-400 to-pink-400", "from-emerald-400 to-teal-400", "from-amber-400 to-orange-400", "from-purple-400 to-indigo-400"];
+    // Real images via g.cover (Picsum)
 
     const filtered = $derived.by(() => {
         const s = search.toLowerCase().trim();
@@ -63,12 +63,8 @@
     {#if filtered.length > 0}
         <div class="columns-2 sm:columns-3 lg:columns-4 gap-3 space-y-3">
             {#each filtered as g, i}
-                {@const gradient = coverGradients[i % coverGradients.length]}
                 <button onclick={() => (lightbox = g)} class="group block w-full break-inside-avoid mb-3 relative overflow-hidden rounded-2xl hover:shadow-xl transition text-left">
-                    <div class="relative {i % 4 === 0 ? 'aspect-[3/4]' : i % 3 === 0 ? 'aspect-square' : 'aspect-[4/3]'} bg-gradient-to-br {gradient}">
-                        <div class="absolute inset-0 flex items-center justify-center opacity-30 group-hover:opacity-50 transition">
-                            <ImageIcon class="w-12 h-12 text-white" />
-                        </div>
+                    <div class="relative {i % 4 === 0 ? 'aspect-[3/4]' : i % 3 === 0 ? 'aspect-square' : 'aspect-[4/3]'} bg-cover bg-center bg-neutral-200 dark:bg-neutral-800 group-hover:scale-105 transition duration-500" style="background-image: linear-gradient(180deg, rgba(0,0,0,0.05), rgba(0,0,0,0.25)), url('{g.cover}');">
                         <div class="absolute top-2 left-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white/90 dark:bg-neutral-900/90 text-neutral-700 dark:text-neutral-300">
                             <span class="w-1.5 h-1.5 rounded-full {collectionColor[g.collection]}"></span>
                             {g.collection}
@@ -92,8 +88,7 @@
     {#if lightbox}
         <div onclick={() => (lightbox = null)} class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 cursor-pointer">
             <div onclick={(e) => e.stopPropagation()} class="max-w-3xl w-full bg-white dark:bg-neutral-900 rounded-2xl overflow-hidden cursor-default">
-                <div class="relative aspect-video bg-gradient-to-br {coverGradients[lightbox.id % coverGradients.length]} flex items-center justify-center">
-                    <ImageIcon class="w-24 h-24 text-white opacity-30" />
+                <div class="relative aspect-video bg-cover bg-center" style="background-image: url('{lightbox.cover}');">
                     <button onclick={() => (lightbox = null)} class="absolute top-3 right-3 p-2 rounded-full bg-black/40 hover:bg-black/60 text-white transition">
                         <X class="w-5 h-5" />
                     </button>

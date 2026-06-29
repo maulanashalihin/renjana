@@ -87,8 +87,8 @@
                 {@const stat = statusMeta[item.status]}
                 <article class="group rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 overflow-hidden hover:shadow-xl hover:-translate-y-0.5 transition flex flex-col">
                     <!-- Cover gradient -->
-                    <div class="relative aspect-[16/9] bg-gradient-to-br from-renjana-100 via-amber-50 to-blue-100 dark:from-renjana-900/30 dark:via-amber-900/20 dark:to-blue-900/30 flex items-center justify-center">
-                        <Lightbulb class="w-16 h-16 text-renjana-500 opacity-40" />
+                    <div class="relative aspect-[16/9] bg-cover bg-center" style="background-image: url('{item.cover}');">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent"></div>
                         <div class="absolute top-3 left-3">
                             <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold {cat.bg} {cat.text}">
                                 {#if item.category === "Teknologi"}<Code class="w-3 h-3" />{:else if item.category === "Edukasi"}<BookOpen class="w-3 h-3" />{:else}<Wrench class="w-3 h-3" />{/if}

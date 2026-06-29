@@ -82,7 +82,7 @@
                     class="flex items-center gap-2 sm:gap-3 pl-1 pr-2 sm:pr-3 py-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                 >
                     <img
-                        src={user.avatar || "/public/images/avatar-1.svg"}
+                        src={user.avatar || "https://i.pravatar.cc/100?u=admin-renjana"}
                         alt={user.name}
                         class="w-8 h-8 rounded-full object-cover ring-2 ring-white dark:ring-slate-800"
                     />

@@ -189,7 +189,7 @@
                     <div class="relative">
                         <MapPin class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400 pointer-events-none" />
                         <select bind:value={form.kecamatan} class="w-full pl-10 pr-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none appearance-none cursor-pointer">
-                            <option value={0}>— Pilih kecamatan —</option>
+                            <option value={0}>Pilih kecamatan</option>
                             {#each districts as d}<option value={d.id}>{d.name}</option>{/each}
                         </select>
                     </div>
@@ -235,28 +235,28 @@
                         <User class="w-4 h-4 text-renjana-500 flex-shrink-0 mt-0.5" />
                         <div class="flex-1">
                             <p class="text-xs text-neutral-500 dark:text-neutral-400">Nama</p>
-                            <p class="font-semibold text-neutral-900 dark:text-white">{form.nama || "—"}</p>
+                            <p class="font-semibold text-neutral-900 dark:text-white">{form.nama || "Belum diisi"}</p>
                         </div>
                     </div>
                     <div class="flex items-start gap-3 pb-3 border-b border-neutral-200 dark:border-neutral-700">
                         <Phone class="w-4 h-4 text-renjana-500 flex-shrink-0 mt-0.5" />
                         <div class="flex-1">
                             <p class="text-xs text-neutral-500 dark:text-neutral-400">WhatsApp</p>
-                            <p class="font-semibold text-neutral-900 dark:text-white">{form.phone || "—"}</p>
+                            <p class="font-semibold text-neutral-900 dark:text-white">{form.phone || "Belum diisi"}</p>
                         </div>
                     </div>
                     <div class="flex items-start gap-3 pb-3 border-b border-neutral-200 dark:border-neutral-700">
                         <GraduationCap class="w-4 h-4 text-renjana-500 flex-shrink-0 mt-0.5" />
                         <div class="flex-1">
                             <p class="text-xs text-neutral-500 dark:text-neutral-400">Sekolah</p>
-                            <p class="font-semibold text-neutral-900 dark:text-white">{form.sekolah || "—"}</p>
+                            <p class="font-semibold text-neutral-900 dark:text-white">{form.sekolah || "Belum diisi"}</p>
                         </div>
                     </div>
                     <div class="flex items-start gap-3">
                         <MapPin class="w-4 h-4 text-renjana-500 flex-shrink-0 mt-0.5" />
                         <div class="flex-1">
                             <p class="text-xs text-neutral-500 dark:text-neutral-400">Kecamatan</p>
-                            <p class="font-semibold text-neutral-900 dark:text-white">{districts.find((d) => d.id === form.kecamatan)?.name || "—"}</p>
+                            <p class="font-semibold text-neutral-900 dark:text-white">{districts.find((d) => d.id === form.kecamatan)?.name || "Belum dipilih"}</p>
                         </div>
                     </div>
                 </div>
