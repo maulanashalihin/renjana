@@ -1,71 +1,117 @@
-# Laju Go
+# RENJANA — Relawan Remaja Aman Bencana
 
-High-performance SaaS boilerplate built with **Go Fiber** + **Inertia.js 3** + **SQLite**.
+[![Go Version](https://img.shields.io/badge/Go-1.26+-00ADD8?style=flat&logo=go)](https://go.dev/)
+[![Svelte](https://img.shields.io/badge/Svelte-5-FF3E00?style=flat&logo=svelte)](https://svelte.dev/)
+[![Built with Inertia](https://img.shields.io/badge/Inertia.js-3-9553E9?style=flat&logo=inertia)](https://inertiajs.com/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-06B6D4?style=flat&logo=tailwindcss)](https://tailwindcss.com/)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Build production-ready web applications faster with a clean, layered architecture that combines the speed of Go with the developer experience of modern frontend frameworks. Ships with **Svelte 5** by default, but Inertia.js makes it trivial to swap to **React** or **Vue 3** without changing any Go code.
+**RENJANA** (Relawan Remaja Aman Bencana) adalah sistem informasi dashboard dan manajemen untuk program kebencanaan berbasis remaja di **Kabupaten Tanah Bumbu**. Dibangun di atas platform [Laju Go](https://github.com/maulanashalihin/laju-go) — arsitektur modern Go Fiber + Svelte 5 + Inertia.js 3 + SQLite yang telah teruji performanya.
+
+Dashboard ini menyediakan layar komando (*command center*) bagi pengelola program untuk memantau relawan, kegiatan, sebaran per kecamatan, capaian tahunan, dan pengumuman — dalam satu halaman yang informatif dan responsif.
+
+---
+
+## 📸 Preview Dashboard
+
+![RENJANA Dashboard](design.jpeg)
+
+---
 
 ## 🚀 Quick Start
 
 ```bash
-git clone https://github.com/maulanashalihin/laju-go.git
-cd laju-go
+git clone https://github.com/maulanashalihin/renjana.git
+cd renjana
 cp .env.example .env
 go mod download && npm install
 npm run dev:all
 ```
 
-Visit `http://localhost:8080` to see your application running.
+Visit `http://localhost:8080` to see the dashboard running.
 
-> 👶 **Never set up Go before?** See [Option 1: AI Setup](#-option-1-ai-setup-recommended-for-first-timers) below — copy a prompt, paste to your AI assistant, done.
+> 👶 **Baru pertama pakai Go?** Lihat [Panduan AI Setup](#-option-1-ai-setup-recommended-for-first-timers) — copas prompt ke AI assistant kesayangan Anda, selesai.
 
-## ✨ Features
+---
 
-### Authentication & Security
-- **Email/Password Authentication** - Secure login with bcrypt password hashing
-- **Google OAuth 2.0** - One-click social login integration
-- **Password Reset** - Email-based password recovery with secure tokens
-- **Session Management** - Database-backed persistent sessions
-- **CSRF Protection** - Built-in cross-site request forgery prevention
-- **Rate Limiting** - Configurable request throttling for sensitive endpoints
+## ✨ Fitur RENJANA
 
-### User Management
-- **Role-Based Access Control** - Admin/User roles with middleware guards
-- **Profile Management** - Update profile, change password, avatar upload
-- **File Upload** - Avatar upload with validation and secure storage
+### 📊 Dashboard Komprehensif
 
-### Development Experience
-- **Hot Module Replacement** - Vite HMR for instant frontend updates
-- **Go Hot Reload** - Air automatically rebuilds on Go file changes
-- **Clean Architecture** - Separated layers (handlers, services, queries)
-- **TypeScript Ready** - Full type safety in frontend code
-- **Framework Agnostic** - Swap Svelte, React, or Vue without touching Go
+- **Statistik Ringkas** — Total Relawan, Sekolah Binaan, Total Kegiatan, Kecamatan Terlibat (lengkap dengan delta persentase)
+- **Sebaran Relawan per Kecamatan** — 12 kecamatan dengan bar chart horizontal
+- **Jenis Kegiatan** — Donut chart 5 segmen (Pelatihan, Simulasi, Edukasi, Sosialisasi, Aksi Kemanusiaan)
+- **Relawan Aktif** — Daftar relawan dengan foto, nama, sekolah, dan status
+- **Capaian Tahun 2024** — Progress bar persentase + metrik absolut
+- **Kegiatan Terdekat** — Card upcoming activity
+- **Pengumuman** — Informasi terkini program
 
-### Production Ready
-- **SQLite Optimized** - WAL mode, connection pooling, production-tuned
-- **Database Migrations** - Goose-based schema version control
-- **Docker Support** - Multi-stage builds for efficient containerization
-- **Systemd Ready** - Production deployment with process management
-- **Litestream DR** - Continuous SQLite replication to S3 for disaster recovery
+### 🧭 Navigasi Lengkap (12 Modul)
 
-## 📚 Documentation
+1. **Dashboard** — Pusat komando
+2. Profil RENJANA — Informasi organisasi
+3. Kegiatan — Manajemen kegiatan
+4. Data Relawan — Database relawan
+5. Peta Sebaran — Visualisasi sebaran
+6. Edukasi Bencana — Materi edukasi
+7. Galeri — Dokumentasi foto/video
+8. Berita — Publikasi berita
+9. Dokumen — Arsip dokumen
+10. Data Dukung Inovasi — Data pendukung
+11. Pendaftaran — Registrasi relawan baru
+12. Kontak — Informasi kontak
+
+### 🛡️ Keamanan & Manajemen Pengguna
+
+- **Autentikasi Email/Password** — Login aman dengan bcrypt
+- **Google OAuth 2.0** — Login satu klik
+- **Reset Password** — Pemulihan via email
+- **Role-Based Access Control** — Admin/User roles
+- **CSRF Protection** — Perlindungan built-in
+- **Rate Limiting** — Throttle endpoint sensitif
+- **Session Management** — Sesi berbasis database
+
+### ⚡ Performa & Developer Experience
+
+- **Hot Module Replacement (HMR)** — Update frontend instan via Vite
+- **Go Hot Reload** — Air rebuild otomatis saat file Go berubah
+- **Clean Architecture** — Handler → Service → Query (sqlc) → SQLite
+- **TypeScript Ready** — Type safety penuh di frontend
+- **Dark Mode** — Toggle light/dark siap pakai
+
+### 🚢 Production Ready
+
+- **SQLite Optimized** — WAL mode, connection pooling
+- **Database Migrations** — Version control via Goose
+- **Docker Support** — Multi-stage build
+- **Systemd Ready** — Service management produksi
+- **Litestream DR** — Replikasi SQLite ke S3
+
+---
+
+## 📚 Dokumentasi
 
 | Section | Description |
 |---------|-------------|
+| [Product Requirements Document](PRD.md) | PRD lengkap untuk dashboard RENJANA |
+| [Implementation Plan](PLAN.md) | Rencana implementasi teknis |
+| [Second Opinion](SECOND_OPINION.md) | Critical review implementation plan |
 | [Getting Started](docs/getting-started/introduction.md) | Introduction, installation, and configuration |
-| [Architecture Guide](docs/guide/architecture.md) | Layered architecture, design patterns, and best practices |
+| [Architecture Guide](docs/guide/architecture.md) | Layered architecture, design patterns |
 | [Routing & Handlers](docs/guide/routing.md) | Route definitions, middleware, and request handling |
 | [Database](docs/guide/database.md) | SQLite setup, migrations, and query building |
 | [Authentication](docs/guide/authentication.md) | Auth flows, OAuth, sessions, and password reset |
-| [Frontend](docs/guide/frontend.md) | Svelte 5 (default), React & Vue support via Inertia.js |
+| [Frontend](docs/guide/frontend.md) | Svelte 5, React & Vue support via Inertia.js |
 | [Deployment](docs/deployment/development.md) | Development workflow, production deployment, Docker, Litestream DR |
-| **[Benchmark](docs/benchmark/)** | **SQLite driver performance across Vultr servers** |
 | [API Reference](docs/reference/api-reference.md) | Complete endpoint documentation |
 | [Troubleshooting](docs/reference/troubleshooting.md) | Common issues and solutions |
+
+---
 
 ## 📁 Project Structure
 
 ```
-laju-go/
+renjana/
 ├── cmd/laju-go/main.go        # Application entry point
 ├── app/                       # Backend Go code
 │   ├── handlers/              # HTTP request handlers
@@ -73,19 +119,25 @@ laju-go/
 │   ├── queries/               # Generated SQL query code (sqlc)
 │   ├── middlewares/           # Request middleware
 │   └── models/                # Data structures
-├── frontend/                  # Svelte 5 frontend (swappable to React/Vue)
+├── frontend/                  # Svelte 5 frontend
 │   └── src/
 │       ├── components/        # Reusable UI components
-│       ├── pages/             # Page components
+│       ├── pages/             # Page components (Dashboard, Profile, Auth)
 │       └── lib/               # Utilities and helpers
-├── queries/                   # SQL query source files (write queries here)
+├── queries/                   # SQL source files (write queries here)
 ├── routes/                    # Route definitions
 ├── migrations/                # Database migrations
 ├── templates/                 # Templ templates (HTML + Go typed components)
-└── docs/                      # Documentation
+├── docs/                      # Documentation
+├── PRD.md                     # Product Requirements Document
+├── PLAN.md                    # Implementation plan
+├── SECOND_OPINION.md          # Critical review
+└── design.jpeg                # Dashboard design reference
 ```
 
 > 📖 See [Project Structure](docs/reference/project-structure.md) for a complete directory reference.
+
+---
 
 ## 🛠️ Tech Stack
 
@@ -96,58 +148,28 @@ laju-go/
 | **Database** | SQLite3 | Embedded SQL database |
 | **Query Builder** | sqlc | Compile-time type-safe SQL code generation |
 | **Migrations** | Goose | Database schema management |
-| **Frontend** | Svelte 5 (default) | Reactive UI framework — swap to React or Vue via Inertia.js |
-| **Build Tool** | Vite 5 | Fast build tooling and dev server |
+| **Frontend** | Svelte 5 | Reactive UI framework |
+| **Build Tool** | Vite 8 | Fast build tooling and dev server |
 | **Styling** | Tailwind CSS 4 | Utility-first CSS framework |
 | **Templating** | templ | Type-safe HTML components for Go |
 | **SPA Bridge** | Inertia.js 3 | Server-driven single-page apps |
 | **Icons** | Lucide Svelte | Beautiful, consistent icons |
 
-### Why SQLite (`modernc.org/sqlite`)?
+### Why SQLite?
 
-We intentionally chose `modernc.org/sqlite` (pure Go) over `mattn/go-sqlite3` (CGO). Here's why — backed by [real benchmarks](https://github.com/maulanashalihin/go-sqlite-benchmark-mattn-vs-modernc).
+Kami menggunakan `modernc.org/sqlite` (pure Go) untuk kemudahan deployment:
 
-| Factor | `modernc.org/sqlite` ✅ | `mattn/go-sqlite3` ❌ |
-|--------|------------------------|----------------------|
-| **Cross-compile** | `GOOS=linux GOARCH=amd64 go build` — just works | Needs Docker, musl-cross, or server-side GCC |
-| **Static binary** | Single self-contained binary | Links to `libsqlite3`, dynamic dependency hell |
-| **Docker/CI** | `FROM golang:alpine` works | Must install `gcc`, `libsqlite3-dev`, image bloat |
-| **Debug production** | Full Go stack traces | CGO stack traces are opaque and painful |
-| **Restart safety** | No stale CGO state — clean restarts every time | Stale C threads can cause crashes after restart |
+- ✅ **Cross-compile** — `GOOS=linux GOARCH=amd64 go build` langsung jalan
+- ✅ **Static binary** — Satu binary tanpa dependency eksternal
+- ✅ **Docker/CI** — `FROM golang:alpine` works out of the box
+- ✅ **Stack trace** — Full Go stack traces, no CGO opacity
+- ✅ **Restart safety** — No stale CGO threads
 
-### Benchmark Reality (Vultr Servers + Go Fiber + wrk)
+Untuk kebutuhan >50K RPS, dapat beralih ke `mattn/go-sqlite3` (CGO).
 
-Comprehensive benchmark across 3 Vultr server types (shared & dedicated CPU):
+> 📋 [Full Benchmark Report →](docs/benchmark/)
 
-| Server | Type | mattn RPS | modernc RPS | Gap |
-|--------|------|-----------|-------------|:---:|
-| 1 vCPU Shared | Budget | 16,414 | 12,175 | 1.35x |
-| 4 vCPU Dedicated | Mid-tier | 84,946 | 63,991 | 1.33x |
-| 6 vCPU Shared | High-end | 101,555 | 53,009 | **1.92x** |
-
-**Key findings**:
-- **Dedicated CPU** gives 25-81% better per-vCPU performance than shared CPU
-- **mattn gap grows on shared CPU** (1.92x) vs dedicated (1.33x) due to Go scheduler contention
-- **Server A (6v Shared $96/mo)** offers best RPS/$ for production (100K RPS)
-- **modernc scales linearly** up to 4 cores, then drops on shared 6+ cores
-
-### The Real Trade-off
-
-For most SaaS apps, both drivers handle **100K+ RPS** — far beyond what a typical app needs. The practical difference is deployment:
-
-- **modernc**: Single static binary, CI just works, `FROM alpine` or even `scratch`
-- **mattn**: Must install `gcc`, configure `CC` env, bloated Docker images, fragile CGO stack traces
-
-> **Bottom line**: Use modernc for development (simpler), switch to mattn for production if you need >50K RPS (2x throughput).
-
-**📋 [Full Benchmark Report →](docs/benchmark/)**
-
-| Document | Description |
-|----------|-------------|
-| [Strategic Insights](docs/benchmark/sqlite-driver-benchmark-insights-2026-05-08.md) | 10 key findings, decision matrix, cost analysis |
-| [All Servers Comparison](docs/benchmark/sqlite-driver-benchmark-all-servers-2026-05-08.md) | Complete data across 3 Vultr servers |
-| [Server A Results](docs/benchmark/sqlite-driver-benchmark-2026-05-08.md) | 6v Shared detailed benchmark |
-| [Server B vs C](docs/benchmark/sqlite-driver-benchmark-comparison-2026-05-08.md) | 1v Shared vs 4v Dedicated comparison |
+---
 
 ## 📦 Installation
 
@@ -160,10 +182,10 @@ For most SaaS apps, both drivers handle **100K+ RPS** — far beyond what a typi
 
 ### ⭐ Option 1: AI Setup (Recommended for first-timers)
 
-No Go installed? No problem. Copy this prompt and paste it to your AI coding assistant (Claude, ChatGPT, Gemini). It will install everything and get the project running.
+Tidak punya Go? Copas prompt ini ke AI coding assistant (Claude, ChatGPT, Gemini):
 
 ```text
-Set up and run the Laju Go project (https://github.com/maulanashalihin/laju-go) on this machine.
+Set up and run the RENJANA project (https://github.com/maulanashalihin/renjana) on this machine.
 
 1. Check what OS I'm on (macOS/Linux/Windows) and install prerequisites if missing:
    - Go 1.26+ — install from https://go.dev/dl/ if not found
@@ -172,8 +194,8 @@ Set up and run the Laju Go project (https://github.com/maulanashalihin/laju-go) 
    - SQLite3 — macOS/Linux usually have it pre-installed
 
 2. Clone the repo and install dependencies:
-   git clone https://github.com/maulanashalihin/laju-go.git
-   cd laju-go
+   git clone https://github.com/maulanashalihin/renjana.git
+   cd renjana
    go mod download
    npm install
 
@@ -194,88 +216,42 @@ Set up and run the Laju Go project (https://github.com/maulanashalihin/laju-go) 
 Pause after each step if there are errors. Don't skip steps.
 ```
 
-### Option 2: Using create-laju-go CLI
+### Option 2: Manual Installation
 
 ```bash
-npx create-laju-go my-app
-cd my-app
-npm run dev:all
+# Clone
+git clone https://github.com/maulanashalihin/renjana.git
+cd renjana
+
+# Install dependencies
+go mod download
+npm install
+
+# Configure environment
+cp .env.example .env
+# Edit .env — set SESSION_SECRET minimal 32 karakter
 ```
 
-The CLI will check for Go/Git, choose package manager, clone the template, install dependencies, and set up environment.
-
-### Option 3: Manual Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/maulanashalihin/laju-go.git
-   cd laju-go
-   ```
-
-2. **Install Go dependencies**
-   ```bash
-   go mod download
-   ```
-
-3. **Install Node.js dependencies**
-   ```bash
-   npm install
-   ```
-
-4. **Configure environment**
-   ```bash
-   cp .env.example .env
-   ```
-   
-   Edit `.env` with your settings. At minimum, set:
-   ```bash
-   APP_ENV=development
-   SESSION_SECRET=your-32-character-secret-key
-   ```
-
-5. **Set up Google OAuth (Optional)**
-   - Go to [Google Cloud Console](https://console.cloud.google.com/)
-   - Create a new project and enable Google+ API
-   - Create OAuth 2.0 credentials
-   - Add `http://localhost:8080/auth/google/callback` to authorized redirect URIs
-   - Copy Client ID and Secret to `.env`
-
-6. **Set up Email/SMTP (Optional - for password reset)**
-   - Configure SMTP settings in `.env`
-   - For Gmail, use an [App Password](https://support.google.com/accounts/answer/185833)
+---
 
 ## 🏃 Development
 
-### Option 1: Run Everything Together (Recommended)
-
-Start both Vite and Go servers with hot reload:
+### Run Everything Together (Recommended)
 
 ```bash
 npm run dev:all
 ```
 
-### Option 2: Run Servers Separately
+### Run Servers Separately
 
-**Terminal 1** - Vite dev server (frontend HMR):
 ```bash
+# Terminal 1 — Vite dev server (frontend HMR)
 npm run dev
-```
 
-**Terminal 2** - Go server with hot reload:
-```bash
+# Terminal 2 — Go server with hot reload
 air
-# Or via npm
+# or
 npm run dev:go
-```
-
-### Option 3: Manual Run
-
-```bash
-# Go server (manual restart after changes)
-go run ./cmd/laju-go
-
-# Vite dev server
-npm run dev
 ```
 
 ### Available Scripts
@@ -286,7 +262,7 @@ npm run dev          # Start Vite dev server
 npm run dev:go       # Start Go server with Air hot reload
 npm run dev:all      # Run both Vite and Air concurrently
 
-# Production
+# Production Build
 npm run build        # Build frontend only (vite build)
 npm run build:all    # Full production build: vite + go build
 npm run build:linux  # Cross-compile binary for Linux (pure Go, no CGO)
@@ -294,21 +270,21 @@ npm run serve        # Run production binary (./laju-go)
 
 # Testing
 npm run test:run     # Run frontend tests
+go test ./...        # Run all Go tests
 ```
 
 ### Development Workflow
 
 | You Edit | What Happens |
 |----------|--------------|
-| `.svelte` / `.tsx` / `.vue` files | Vite HMR updates instantly |
+| `.svelte` files | Vite HMR updates instantly |
 | `.go` files | Air rebuilds and restarts (~1-2 sec) |
 | `.css` files | Hot reload (instant) |
 | `migrations/` | Auto-run on server start |
 
-## 🚀 Production Deployment
+---
 
-> **Important**: Build everything locally, then upload only the runtime artifacts to your server.
-> No build tools (Go, Node, npm) are needed on the server — just the binary and assets.
+## 🚀 Production Deployment
 
 ### 1. Build Locally
 
@@ -320,13 +296,12 @@ npm run build:all
 npm run build:linux
 ```
 
-This produces two things:
+This produces:
+
 - **`laju-go`** — Static Go binary (pure Go SQLite, no CGO)
 - **`dist/`** — Frontend assets (CSS/JS built by Vite)
 
 ### 2. Deploy Artifacts to Server
-
-Only these files are needed at runtime:
 
 | Artifact | Purpose |
 |----------|---------|
@@ -335,94 +310,65 @@ Only these files are needed at runtime:
 | `migrations/` | SQL migrations (auto-run on startup) |
 | `.env` | Environment configuration |
 
-```bash
-# Example: upload via scp
-scp laju-go user@server:/opt/laju-go/
-scp -r dist user@server:/opt/laju-go/dist
-scp -r migrations user@server:/opt/laju-go/migrations
-scp .env user@server:/opt/laju-go/.env
-```
-
-### 3. Run with systemd (Production)
-
-Set up a systemd service for auto-start and process management:
-
-```bash
-# On the server, create service file
-sudo nano /etc/systemd/system/laju-go.service
-```
-
-```ini
-[Unit]
-Description=Laju Go Application
-After=network.target
-
-[Service]
-Type=simple
-WorkingDirectory=/opt/laju-go
-ExecStart=/opt/laju-go/laju-go
-Restart=always
-RestartSec=5
-EnvironmentFile=/opt/laju-go/.env
-
-[Install]
-WantedBy=multi-target.target
-```
-
-```bash
-sudo systemctl daemon-reload
-sudo systemctl enable laju-go
-sudo systemctl start laju-go
-```
-
-### One-Click Deploy Script
-
-For automated deployment, configure and use the deploy script:
+### 3. One-Click Deploy
 
 ```bash
 cp .deploy.example .deploy
-# Edit .deploy with your server details and APP_NAME
+# Edit .deploy with your server details
 
 npm run deploy
 ```
-
-This script:
-1. ✅ Builds frontend + Go binary **locally**
-2. ✅ Uploads only runtime artifacts (binary, `dist/`, `migrations/`) to server
-3. ✅ Detects first deploy or update
-4. ✅ Sets up `.env` and systemd service (first deploy)
-5. ✅ Restarts the service (update)
 
 > See [One-Click Deployment Guide](docs/deployment/one-click-deployment.md) for full instructions.
 
 ### Docker Deployment
 
 ```bash
-# Build the image
-docker build -t laju-go .
-
-# Run the container
+docker build -t renjana .
 docker run -p 8080:8080 \
   -v $(pwd)/data:/root/data \
   -v $(pwd)/storage:/root/storage \
-  laju-go
+  renjana
 ```
 
-### Ubuntu/Debian Server Setup
+### systemd Service
 
-For complete production deployment instructions including systemd service setup, Nginx reverse proxy, and SSL configuration, see [Production Deployment Guide](docs/deployment/production.md).
+```bash
+sudo nano /etc/systemd/system/renjana.service
+```
+
+```ini
+[Unit]
+Description=RENJANA Dashboard
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/renjana
+ExecStart=/opt/renjana/laju-go
+Restart=always
+RestartSec=5
+EnvironmentFile=/opt/renjana/.env
+
+[Install]
+WantedBy=multi-user.target
+```
+
+---
 
 ## 🔐 Default Admin Setup
 
-After your first registration, promote your user to admin via SQLite:
+Register akun pertama, lalu promote ke admin:
 
 ```bash
 sqlite3 data/app.db "UPDATE users SET role = 'admin' WHERE email = 'your@email.com';"
 ```
 
+---
+
 ## 🗄️ Database Migrations
 
-Migrations run automatically on startup. Manual commands:
+Migrations run automatically on startup.
 
 ```bash
 # Install goose
@@ -431,16 +377,13 @@ go install github.com/pressly/goose/v3/cmd/goose@latest
 # Run all migrations
 goose -dir migrations sqlite3 data/app.db up
 
-# Check migration status
+# Check status
 goose -dir migrations sqlite3 data/app.db status
-
-# Rollback last migration
-goose -dir migrations sqlite3 data/app.db down
 ```
 
-## 📝 SQL Queries (sqlc)
+---
 
-This project uses [sqlc](https://sqlc.dev/) for compile-time type-safe SQL queries. Write your SQL in `queries/*.sql`, then generate Go code:
+## 📝 SQL Queries (sqlc)
 
 ```bash
 # Install sqlc
@@ -450,74 +393,32 @@ go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
 npm run db:generate
 ```
 
-### Directory Structure
-
 | Directory | Purpose |
 |-----------|---------|
 | `queries/` | SQL source files — **write your queries here** |
-| `app/queries/` | Generated Go code + wrapper — **do not edit manually** |
+| `app/queries/` | Generated Go code — **do not edit manually** |
 
-### Adding a New Query
-
-1. Add the query to `queries/user.sql` or create a new `.sql` file:
-```sql
--- name: GetUserCount :one
-SELECT COUNT(*) FROM users;
-```
-
-2. Regenerate:
-```bash
-npm run db:generate
-```
-
-3. Use in your service:
-```go
-count, err := s.querier.GetUserCount(ctx)
-```
-
-## 🧪 Testing
-
-```bash
-# Run all tests
-go test ./...
-
-# Run tests with coverage report
-go test -cover ./...
-```
+---
 
 ## 📊 Performance Optimizations
 
-### SQLite Production Settings
-
-The application includes these optimizations by default, tuned for **Vultr High Frequency 1-2GB RAM**:
+### SQLite Production Settings (tuned for 1-2GB RAM)
 
 | Setting | Value | Benefit |
 |---------|-------|---------|
 | `journal_mode` | WAL | Better write concurrency |
 | `synchronous` | NORMAL | Faster writes with safety |
-| `cache_size` | 16MB | Reduced disk I/O (optimized for 1-2GB RAM) |
+| `cache_size` | 16MB | Reduced disk I/O |
 | `mmap_size` | 256MB | NVMe memory-mapped I/O |
 | `temp_store` | MEMORY | Faster temp table operations |
 | `busy_timeout` | 5000ms | Automatic retry on locks |
 | Connection Pool | 15 max | Efficient connection reuse |
 
-### Tune for Your Server
+> 📖 Full guide: [SQLite Configuration Guide](docs/deployment/sqlite-configuration.md)
 
-Different RAM size? See the complete **[SQLite Configuration Guide](docs/deployment/sqlite-configuration.md)** for optimal settings:
-
-| Server RAM | MaxOpenConns | cache_size | mmap_size |
-|------------|--------------|------------|-----------|
-| 512MB ⚠️ | 10 | 8MB | 128MB |
-| **1-2GB ✅** | **15** | **16MB** | **256MB** |
-| 4GB | 25 | 32MB | 512MB |
-| 8GB | 50 | 256MB | 1GB |
-| 16GB+ | 100 | 500MB+ | 2GB |
-
-> 📖 **Full guide**: [SQLite Configuration Guide](docs/deployment/sqlite-configuration.md) - Complete reference for tuning SQLite based on RAM, CPU, storage type, and workload patterns.
+---
 
 ## 🤝 Contributing
-
-Contributions are welcome! Please follow these steps:
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
@@ -525,20 +426,28 @@ Contributions are welcome! Please follow these steps:
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
+---
+
 ## 📄 License
 
-MIT License - see [LICENSE](LICENSE) for details.
+MIT License — see [LICENSE](LICENSE) for details.
+
+---
 
 ## 🙏 Acknowledgments
 
-- [Go Fiber](https://gofiber.io/) - Fast web framework
-- [Svelte](https://svelte.dev/) - Cybernetically enhanced web apps
-- [Inertia.js](https://inertiajs.com/) - Server-driven SPA
-- [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS
-- [Lucide Icons](https://lucide.dev/) - Beautiful, consistent icons
+- [Laju Go](https://github.com/maulanashalihin/laju-go) — High-performance SaaS boilerplate yang menjadi fondasi proyek ini
+- [Go Fiber](https://gofiber.io/) — Fast web framework
+- [Svelte](https://svelte.dev/) — Cybernetically enhanced web apps
+- [Inertia.js](https://inertiajs.com/) — Server-driven SPA
+- [Tailwind CSS](https://tailwindcss.com/) — Utility-first CSS
+- [Lucide Icons](https://lucide.dev/) — Beautiful, consistent icons
+- **BPBD Kabupaten Tanah Bumbu** — Mitra program RENJANA
+
+---
 
 ## 📞 Support
 
-- **Documentation**: [docs/](docs/) folder
-- **Issues**: [GitHub Issues](https://github.com/maulanashalihin/laju-go/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/maulanashalihin/laju-go/discussions)
+- **Dokumentasi**: [docs/](docs/) folder
+- **Issues**: [GitHub Issues](https://github.com/maulanashalihin/renjana/issues)
+- **PRD**: [PRD.md](PRD.md) — Product Requirements Document lengkap
