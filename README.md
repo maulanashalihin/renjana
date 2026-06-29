@@ -12,11 +12,89 @@ Dashboard ini menyediakan layar komando (*command center*) bagi pengelola progra
 
 ---
 
-## 📸 Preview Dashboard
+## 📸 Visualisasi Platform
 
-### Implementasi Aktual
+### Halaman Autentikasi
 
-![RENJANA Dashboard - Live Preview](public/images/dashboard-preview.png)
+| Login | Register |
+|:---:|:---:|
+| ![Login](public/images/login-visual.png) | ![Register](public/images/register-visual.png) |
+
+---
+
+### Dashboard Utama
+
+![Dashboard - Pusat Komando](public/images/dashboard-iterasi3.png)
+
+*Dashboard menampilkan statistik ringkas, sebaran volunteer, jenis kegiatan, capaian tahunan, dan kegiatan terdekat — lengkap dengan dark mode toggle.*
+
+---
+
+### 📋 12 Modul Lengkap
+
+Setiap modul didesain dengan visual modern, responsif, dan dark-mode ready.
+
+#### 1. Profil RENJANA
+
+*Informasi organisasi: visi, misi, sejarah, struktur, dan mitra.*
+![Profil RENJANA](public/images/profil-visual.png)
+
+#### 2. Kegiatan
+
+*Daftar kegiatan dengan filter status (Mendatang/Selesai) dan tipe (Pelatihan/Simulasi/Edukasi/Aksi Sosial/Lomba).*
+![Kegiatan](public/images/kegiatan-visual.png)
+
+#### 3. Data Relawan
+
+*Direktori 1.248 volunteer dengan search, filter kecamatan, dan filter status.*
+![Data Relawan](public/images/relawan-visual.png)
+
+#### 4. Peta Sebaran
+
+*Peta interaktif Kabupaten Tanah Bumbu dengan 12 kecamatan, 12 hotspot bencana, dan risk level.*
+![Peta Sebaran](public/images/peta-visual.png)
+
+#### 5. Edukasi Bencana
+
+*9 artikel edukatif dengan kategori Mitigasi, Kesiapsiagaan, Tanggap Darurat, dan Pemulihan.*
+![Edukasi Bencana](public/images/edukasi-visual.png)
+
+#### 6. Galeri
+
+*36 foto dokumentasi dengan masonry grid dan lightbox modal.*
+![Galeri](public/images/galeri-visual.png)
+
+#### 7. Berita
+
+*8 berita dengan 2 featured utama dan grid artikel.*
+![Berita](public/images/berita-visual.png)
+
+#### 8. Dokumen
+
+*Pusat dokumen dengan 12 file (SOP, Panduan, Regulasi, Formulir, dll) + detail panel.*
+![Dokumen](public/images/dokumen-visual.png)
+
+#### 9. Inovasi
+
+*8 inovasi volunteer (Teknologi, Edukasi, Logistik) dengan status Konsep/Aktif/Selesai.*
+![Inovasi](public/images/inovasi-visual.png)
+
+#### 10. Pendaftaran Volunteer
+
+*Form pendaftaran 4-langkah (Data Diri → Pendidikan → Motivasi → Konfirmasi).*
+![Pendaftaran](public/images/pendaftaran-visual.png)
+
+#### 11. Kontak
+
+*24 koordinator volunteer dikelompokkan per kecamatan dengan link WhatsApp.*
+![Kontak](public/images/kontak-visual.png)
+
+#### 12. Profil Saya (User Account)
+
+*Pengaturan akun, informasi personal, dark mode toggle, dan ganti password.*
+![Profil Saya](public/images/profile-visual.png)
+
+---
 
 ### Design Reference
 
@@ -54,18 +132,22 @@ Visit `http://localhost:8080` to see the dashboard running.
 
 ### 🧭 Navigasi Lengkap (12 Modul)
 
-1. **Dashboard** — Pusat komando
-2. Profil RENJANA — Informasi organisasi
-3. Kegiatan — Manajemen kegiatan
-4. Data Relawan — Database relawan
-5. Peta Sebaran — Visualisasi sebaran
-6. Edukasi Bencana — Materi edukasi
-7. Galeri — Dokumentasi foto/video
-8. Berita — Publikasi berita
-9. Dokumen — Arsip dokumen
-10. Data Dukung Inovasi — Data pendukung
-11. Pendaftaran — Registrasi relawan baru
-12. Kontak — Informasi kontak
+| # | Modul | Path | Preview |
+|---|-------|------|---------|
+| 1 | **Dashboard** | `/app` | ![](public/images/dashboard-iterasi3.png) |
+| 2 | **Profil RENJANA** | `/app/profil` | ![](public/images/profil-visual.png) |
+| 3 | **Kegiatan** | `/app/kegiatan` | ![](public/images/kegiatan-visual.png) |
+| 4 | **Data Relawan** | `/app/relawan` | ![](public/images/relawan-visual.png) |
+| 5 | **Peta Sebaran** | `/app/peta` | ![](public/images/peta-visual.png) |
+| 6 | **Edukasi Bencana** | `/app/edukasi` | ![](public/images/edukasi-visual.png) |
+| 7 | **Galeri** | `/app/galeri` | ![](public/images/galeri-visual.png) |
+| 8 | **Berita** | `/app/berita` | ![](public/images/berita-visual.png) |
+| 9 | **Dokumen** | `/app/dokumen` | ![](public/images/dokumen-visual.png) |
+| 10 | **Inovasi** | `/app/inovasi` | ![](public/images/inovasi-visual.png) |
+| 11 | **Pendaftaran** | `/app/daftar` | ![](public/images/pendaftaran-visual.png) |
+| 12 | **Kontak** | `/app/kontak` | ![](public/images/kontak-visual.png) |
+
+> Plus halaman **Profil Saya** (`/app/profile`) untuk pengaturan akun user.
 
 ### 🛡️ Keamanan & Manajemen Pengguna
 
