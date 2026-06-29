@@ -11,6 +11,29 @@ import (
 	"time"
 )
 
+const approveVolunteerApplication = `-- name: ApproveVolunteerApplication :execrows
+UPDATE renjana_volunteers
+SET application_status = 'approved',
+    reviewer_id = ?,
+    reviewed_at = CURRENT_TIMESTAMP,
+    rejection_reason = NULL,
+    is_active = 1
+WHERE id = ?
+`
+
+type ApproveVolunteerApplicationParams struct {
+	ReviewerID sql.NullInt64
+	ID         int64
+}
+
+func (q *Queries) ApproveVolunteerApplication(ctx context.Context, arg ApproveVolunteerApplicationParams) (int64, error) {
+	result, err := q.db.ExecContext(ctx, approveVolunteerApplication, arg.ReviewerID, arg.ID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
+}
+
 const countActiveDistricts = `-- name: CountActiveDistricts :one
 SELECT COUNT(DISTINCT district_id) AS total
 FROM renjana_volunteers
@@ -78,6 +101,19 @@ func (q *Queries) CountDistinctSchools(ctx context.Context) (int64, error) {
 	return total, err
 }
 
+const countPendingApplications = `-- name: CountPendingApplications :one
+SELECT COUNT(*) AS total
+FROM renjana_volunteers
+WHERE application_status = 'pending'
+`
+
+func (q *Queries) CountPendingApplications(ctx context.Context) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countPendingApplications)
+	var total int64
+	err := row.Scan(&total)
+	return total, err
+}
+
 const countVolunteersByDistrict = `-- name: CountVolunteersByDistrict :many
 SELECT
     d.id AS district_id,
@@ -116,6 +152,81 @@ func (q *Queries) CountVolunteersByDistrict(ctx context.Context) ([]CountVolunte
 		return nil, err
 	}
 	return items, nil
+}
+
+const countVolunteersFiltered = `-- name: CountVolunteersFiltered :one
+SELECT COUNT(*) AS total
+FROM renjana_volunteers v
+WHERE (?1 IS NULL OR ?1 = ''
+       OR v.name LIKE '%' || ?1 || '%'
+       OR v.school LIKE '%' || ?1 || '%')
+  AND (?2 = 0 OR v.district_id = ?2)
+  AND (?3 IS NULL OR ?3 = '' OR v.status = ?3)
+  AND (?4 IS NULL OR ?4 = '' OR v.application_status = ?4)
+`
+
+type CountVolunteersFilteredParams struct {
+	Column1 interface{}
+	Column2 interface{}
+	Column3 interface{}
+	Column4 interface{}
+}
+
+func (q *Queries) CountVolunteersFiltered(ctx context.Context, arg CountVolunteersFilteredParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countVolunteersFiltered,
+		arg.Column1,
+		arg.Column2,
+		arg.Column3,
+		arg.Column4,
+	)
+	var total int64
+	err := row.Scan(&total)
+	return total, err
+}
+
+const createVolunteer = `-- name: CreateVolunteer :one
+INSERT INTO renjana_volunteers (
+    name, school, district_id, phone, status, joined_at, is_active, application_status
+)
+VALUES (?, ?, ?, ?, ?, ?, 1, ?)
+RETURNING id
+`
+
+type CreateVolunteerParams struct {
+	Name              string
+	School            string
+	DistrictID        int64
+	Phone             sql.NullString
+	Status            string
+	JoinedAt          time.Time
+	ApplicationStatus string
+}
+
+func (q *Queries) CreateVolunteer(ctx context.Context, arg CreateVolunteerParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, createVolunteer,
+		arg.Name,
+		arg.School,
+		arg.DistrictID,
+		arg.Phone,
+		arg.Status,
+		arg.JoinedAt,
+		arg.ApplicationStatus,
+	)
+	var id int64
+	err := row.Scan(&id)
+	return id, err
+}
+
+const deleteVolunteer = `-- name: DeleteVolunteer :execrows
+DELETE FROM renjana_volunteers WHERE id = ?
+`
+
+func (q *Queries) DeleteVolunteer(ctx context.Context, id int64) (int64, error) {
+	result, err := q.db.ExecContext(ctx, deleteVolunteer, id)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
 }
 
 const getActiveVolunteersWithLimit = `-- name: GetActiveVolunteersWithLimit :many
@@ -177,4 +288,291 @@ func (q *Queries) GetActiveVolunteersWithLimit(ctx context.Context, limit int64)
 		return nil, err
 	}
 	return items, nil
+}
+
+const getVolunteerByID = `-- name: GetVolunteerByID :one
+
+SELECT
+    v.id, v.name, v.school, v.district_id, v.phone, v.status, v.avatar_url,
+    v.joined_at, v.is_active, v.application_status, v.reviewer_id, v.reviewed_at,
+    v.rejection_reason,
+    d.name AS district_name
+FROM renjana_volunteers v
+LEFT JOIN renjana_districts d ON d.id = v.district_id
+WHERE v.id = ?
+`
+
+type GetVolunteerByIDRow struct {
+	ID                int64
+	Name              string
+	School            string
+	DistrictID        int64
+	Phone             sql.NullString
+	Status            string
+	AvatarUrl         sql.NullString
+	JoinedAt          time.Time
+	IsActive          bool
+	ApplicationStatus string
+	ReviewerID        sql.NullInt64
+	ReviewedAt        sql.NullTime
+	RejectionReason   sql.NullString
+	DistrictName      sql.NullString
+}
+
+// ============================================================================
+// CRUD queries for iterasi 3
+// ============================================================================
+func (q *Queries) GetVolunteerByID(ctx context.Context, id int64) (GetVolunteerByIDRow, error) {
+	row := q.db.QueryRowContext(ctx, getVolunteerByID, id)
+	var i GetVolunteerByIDRow
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.School,
+		&i.DistrictID,
+		&i.Phone,
+		&i.Status,
+		&i.AvatarUrl,
+		&i.JoinedAt,
+		&i.IsActive,
+		&i.ApplicationStatus,
+		&i.ReviewerID,
+		&i.ReviewedAt,
+		&i.RejectionReason,
+		&i.DistrictName,
+	)
+	return i, err
+}
+
+const getVolunteerStats = `-- name: GetVolunteerStats :one
+SELECT
+    COUNT(*) AS total,
+    SUM(CASE WHEN status = 'aktif' THEN 1 ELSE 0 END) AS active,
+    SUM(CASE WHEN status = 'nonaktif' THEN 1 ELSE 0 END) AS inactive,
+    SUM(CASE WHEN application_status = 'pending' THEN 1 ELSE 0 END) AS pending,
+    SUM(CASE WHEN application_status = 'rejected' THEN 1 ELSE 0 END) AS rejected,
+    COUNT(DISTINCT school) AS schools
+FROM renjana_volunteers
+`
+
+type GetVolunteerStatsRow struct {
+	Total    int64
+	Active   sql.NullFloat64
+	Inactive sql.NullFloat64
+	Pending  sql.NullFloat64
+	Rejected sql.NullFloat64
+	Schools  int64
+}
+
+func (q *Queries) GetVolunteerStats(ctx context.Context) (GetVolunteerStatsRow, error) {
+	row := q.db.QueryRowContext(ctx, getVolunteerStats)
+	var i GetVolunteerStatsRow
+	err := row.Scan(
+		&i.Total,
+		&i.Active,
+		&i.Inactive,
+		&i.Pending,
+		&i.Rejected,
+		&i.Schools,
+	)
+	return i, err
+}
+
+const listPendingApplications = `-- name: ListPendingApplications :many
+SELECT
+    v.id, v.name, v.school, v.district_id, d.name AS district_name,
+    v.phone, v.avatar_url, v.application_status, v.joined_at
+FROM renjana_volunteers v
+JOIN renjana_districts d ON d.id = v.district_id
+WHERE v.application_status = 'pending'
+ORDER BY v.joined_at ASC
+LIMIT ? OFFSET ?
+`
+
+type ListPendingApplicationsParams struct {
+	Limit  int64
+	Offset int64
+}
+
+type ListPendingApplicationsRow struct {
+	ID                int64
+	Name              string
+	School            string
+	DistrictID        int64
+	DistrictName      string
+	Phone             sql.NullString
+	AvatarUrl         sql.NullString
+	ApplicationStatus string
+	JoinedAt          time.Time
+}
+
+func (q *Queries) ListPendingApplications(ctx context.Context, arg ListPendingApplicationsParams) ([]ListPendingApplicationsRow, error) {
+	rows, err := q.db.QueryContext(ctx, listPendingApplications, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListPendingApplicationsRow
+	for rows.Next() {
+		var i ListPendingApplicationsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.School,
+			&i.DistrictID,
+			&i.DistrictName,
+			&i.Phone,
+			&i.AvatarUrl,
+			&i.ApplicationStatus,
+			&i.JoinedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listVolunteersPaginated = `-- name: ListVolunteersPaginated :many
+SELECT
+    v.id, v.name, v.school, v.district_id, d.name AS district_name,
+    v.status, v.phone, v.avatar_url, v.application_status, v.joined_at, v.is_active
+FROM renjana_volunteers v
+JOIN renjana_districts d ON d.id = v.district_id
+WHERE (?1 IS NULL OR ?1 = ''
+       OR v.name LIKE '%' || ?1 || '%'
+       OR v.school LIKE '%' || ?1 || '%')
+  AND (?2 = 0 OR v.district_id = ?2)
+  AND (?3 IS NULL OR ?3 = '' OR v.status = ?3)
+  AND (?4 IS NULL OR ?4 = '' OR v.application_status = ?4)
+ORDER BY v.joined_at DESC
+LIMIT ?5 OFFSET ?6
+`
+
+type ListVolunteersPaginatedParams struct {
+	Column1 interface{}
+	Column2 interface{}
+	Column3 interface{}
+	Column4 interface{}
+	Limit   int64
+	Offset  int64
+}
+
+type ListVolunteersPaginatedRow struct {
+	ID                int64
+	Name              string
+	School            string
+	DistrictID        int64
+	DistrictName      string
+	Status            string
+	Phone             sql.NullString
+	AvatarUrl         sql.NullString
+	ApplicationStatus string
+	JoinedAt          time.Time
+	IsActive          bool
+}
+
+func (q *Queries) ListVolunteersPaginated(ctx context.Context, arg ListVolunteersPaginatedParams) ([]ListVolunteersPaginatedRow, error) {
+	rows, err := q.db.QueryContext(ctx, listVolunteersPaginated,
+		arg.Column1,
+		arg.Column2,
+		arg.Column3,
+		arg.Column4,
+		arg.Limit,
+		arg.Offset,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListVolunteersPaginatedRow
+	for rows.Next() {
+		var i ListVolunteersPaginatedRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.School,
+			&i.DistrictID,
+			&i.DistrictName,
+			&i.Status,
+			&i.Phone,
+			&i.AvatarUrl,
+			&i.ApplicationStatus,
+			&i.JoinedAt,
+			&i.IsActive,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const rejectVolunteerApplication = `-- name: RejectVolunteerApplication :execrows
+UPDATE renjana_volunteers
+SET application_status = 'rejected',
+    reviewer_id = ?,
+    reviewed_at = CURRENT_TIMESTAMP,
+    rejection_reason = ?,
+    is_active = 0
+WHERE id = ?
+`
+
+type RejectVolunteerApplicationParams struct {
+	ReviewerID      sql.NullInt64
+	RejectionReason sql.NullString
+	ID              int64
+}
+
+func (q *Queries) RejectVolunteerApplication(ctx context.Context, arg RejectVolunteerApplicationParams) (int64, error) {
+	result, err := q.db.ExecContext(ctx, rejectVolunteerApplication, arg.ReviewerID, arg.RejectionReason, arg.ID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
+}
+
+const updateVolunteer = `-- name: UpdateVolunteer :execrows
+UPDATE renjana_volunteers
+SET name = ?, school = ?, district_id = ?, phone = ?, status = ?,
+    joined_at = ?
+WHERE id = ?
+`
+
+type UpdateVolunteerParams struct {
+	Name       string
+	School     string
+	DistrictID int64
+	Phone      sql.NullString
+	Status     string
+	JoinedAt   time.Time
+	ID         int64
+}
+
+func (q *Queries) UpdateVolunteer(ctx context.Context, arg UpdateVolunteerParams) (int64, error) {
+	result, err := q.db.ExecContext(ctx, updateVolunteer,
+		arg.Name,
+		arg.School,
+		arg.DistrictID,
+		arg.Phone,
+		arg.Status,
+		arg.JoinedAt,
+		arg.ID,
+	)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
 }

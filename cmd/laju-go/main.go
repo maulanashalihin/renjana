@@ -97,6 +97,7 @@ func main() {
 	})
 	userService := services.NewUserService(querier, userCache)
 	dashboardService := services.NewDashboardService(querier)
+	volunteerService := services.NewVolunteerService(querier)
 
 	// Initialize Asset service (for production builds with hashed filenames)
 	assetService := services.NewAssetService("./dist/.vite/manifest.json", ".vite-port", cfg.IsDevelopment())
@@ -110,6 +111,7 @@ func main() {
 		Auth:   handlers.NewAuthHandler(authService, userService, sessionStore, inertiaService),
 		App:    handlers.NewAppHandler(userService, sessionStore, inertiaService, dashboardService),
 		Upload: handlers.NewUploadHandler(sessionStore, userService),
+		Volunteer: handlers.NewVolunteerHandler(sessionStore, inertiaService, volunteerService, querier),
 	}
 
 	// Setup CSRF middleware

@@ -53,6 +53,22 @@ type RenjanaAnnouncement struct {
 	PublishedAt time.Time
 	IsPublished bool
 	CreatedAt   time.Time
+	Category    string
+	Slug        sql.NullString
+	Body        sql.NullString
+	CoverUrl    sql.NullString
+	AuthorID    sql.NullInt64
+}
+
+type RenjanaContact struct {
+	ID         int64
+	DistrictID int64
+	Name       string
+	Role       string
+	Phone      sql.NullString
+	Email      sql.NullString
+	IsActive   bool
+	CreatedAt  time.Time
 }
 
 type RenjanaDistrict struct {
@@ -62,17 +78,84 @@ type RenjanaDistrict struct {
 	CreatedAt time.Time
 }
 
+type RenjanaDocument struct {
+	ID          int64
+	Title       string
+	FileUrl     string
+	Category    string
+	Version     int64
+	FileSize    sql.NullInt64
+	Description sql.NullString
+	UploadedBy  sql.NullInt64
+	UploadedAt  time.Time
+}
+
+type RenjanaEducation struct {
+	ID              int64
+	Title           string
+	Category        string
+	Body            string
+	AgeGroup        sql.NullString
+	DurationMinutes sql.NullInt64
+	IsPublished     bool
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
+}
+
+type RenjanaInnovation struct {
+	ID        int64
+	Title     string
+	Year      int64
+	Category  string
+	Summary   sql.NullString
+	Body      sql.NullString
+	Author    sql.NullString
+	CreatedAt time.Time
+}
+
+type RenjanaMedium struct {
+	ID          int64
+	Title       string
+	FileUrl     string
+	MediaType   string
+	ActivityID  sql.NullInt64
+	DistrictID  sql.NullInt64
+	Caption     sql.NullString
+	UploadedBy  sql.NullInt64
+	UploadedAt  time.Time
+	IsPublished bool
+}
+
+type RenjanaOrganization struct {
+	ID              int64
+	Vision          sql.NullString
+	Mission         sql.NullString
+	History         sql.NullString
+	Structure       sql.NullString
+	ContactEmail    sql.NullString
+	ContactPhone    sql.NullString
+	Address         sql.NullString
+	SocialInstagram sql.NullString
+	SocialTiktok    sql.NullString
+	SocialYoutube   sql.NullString
+	UpdatedAt       time.Time
+}
+
 type RenjanaVolunteer struct {
-	ID         int64
-	Name       string
-	School     string
-	DistrictID int64
-	Phone      sql.NullString
-	Status     string
-	AvatarUrl  sql.NullString
-	JoinedAt   time.Time
-	IsActive   bool
-	CreatedAt  time.Time
+	ID                int64
+	Name              string
+	School            string
+	DistrictID        int64
+	Phone             sql.NullString
+	Status            string
+	AvatarUrl         sql.NullString
+	JoinedAt          time.Time
+	IsActive          bool
+	CreatedAt         time.Time
+	ApplicationStatus string
+	ReviewerID        sql.NullInt64
+	ReviewedAt        sql.NullTime
+	RejectionReason   sql.NullString
 }
 
 type Session struct {

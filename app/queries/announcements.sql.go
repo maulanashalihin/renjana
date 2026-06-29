@@ -7,6 +7,7 @@ package queries
 
 import (
 	"context"
+	"time"
 )
 
 const getLatestPublishedAnnouncement = `-- name: GetLatestPublishedAnnouncement :one
@@ -17,9 +18,18 @@ ORDER BY published_at DESC
 LIMIT 1
 `
 
-func (q *Queries) GetLatestPublishedAnnouncement(ctx context.Context) (RenjanaAnnouncement, error) {
+type GetLatestPublishedAnnouncementRow struct {
+	ID          int64
+	Title       string
+	Content     string
+	PublishedAt time.Time
+	IsPublished bool
+	CreatedAt   time.Time
+}
+
+func (q *Queries) GetLatestPublishedAnnouncement(ctx context.Context) (GetLatestPublishedAnnouncementRow, error) {
 	row := q.db.QueryRowContext(ctx, getLatestPublishedAnnouncement)
-	var i RenjanaAnnouncement
+	var i GetLatestPublishedAnnouncementRow
 	err := row.Scan(
 		&i.ID,
 		&i.Title,
@@ -39,15 +49,24 @@ ORDER BY published_at DESC
 LIMIT ?
 `
 
-func (q *Queries) GetLatestPublishedAnnouncements(ctx context.Context, limit int64) ([]RenjanaAnnouncement, error) {
+type GetLatestPublishedAnnouncementsRow struct {
+	ID          int64
+	Title       string
+	Content     string
+	PublishedAt time.Time
+	IsPublished bool
+	CreatedAt   time.Time
+}
+
+func (q *Queries) GetLatestPublishedAnnouncements(ctx context.Context, limit int64) ([]GetLatestPublishedAnnouncementsRow, error) {
 	rows, err := q.db.QueryContext(ctx, getLatestPublishedAnnouncements, limit)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []RenjanaAnnouncement
+	var items []GetLatestPublishedAnnouncementsRow
 	for rows.Next() {
-		var i RenjanaAnnouncement
+		var i GetLatestPublishedAnnouncementsRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Title,

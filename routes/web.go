@@ -17,6 +17,7 @@ type Handlers struct {
 	App           *handlers.AppHandler
 	Upload        *handlers.UploadHandler
 	PasswordReset *handlers.PasswordResetHandler
+	Volunteer     *handlers.VolunteerHandler
 }
 
 func SetupRoutes(app *fiber.App, handlers Handlers, store *session.Store, mailerService *services.MailerService, csrfMiddleware *middlewares.CSRFMiddleware) {
@@ -30,7 +31,7 @@ func SetupRoutes(app *fiber.App, handlers Handlers, store *session.Store, mailer
 	setupAuthRoutes(app, handlers.Auth, handlers.PasswordReset, store, mailerService)
 
 	// Setup app routes (protected)
-	setupAppRoutes(app, handlers.App, handlers.Upload, store, csrfMiddleware)
+	setupAppRoutes(app, handlers.App, handlers.Upload, handlers.Volunteer, store, csrfMiddleware)
 }
 
 func setupStaticRoutes(app *fiber.App) {
@@ -92,7 +93,7 @@ func setupAuthRoutes(app *fiber.App, authHandler *handlers.AuthHandler, password
 	app.Post("/reset-password/:token", passwordResetHandler.ResetPassword)
 }
 
-func setupAppRoutes(app *fiber.App, appHandler *handlers.AppHandler, uploadHandler *handlers.UploadHandler, store *session.Store, csrfMiddleware *middlewares.CSRFMiddleware) {
+func setupAppRoutes(app *fiber.App, appHandler *handlers.AppHandler, uploadHandler *handlers.UploadHandler, volunteerHandler *handlers.VolunteerHandler, store *session.Store, csrfMiddleware *middlewares.CSRFMiddleware) {
 	// Protected app routes with CSRF protection
 	protected := app.Group("/app", middlewares.AuthRequired(store))
 	protected.Use(csrfMiddleware.Protect())
@@ -106,7 +107,13 @@ func setupAppRoutes(app *fiber.App, appHandler *handlers.AppHandler, uploadHandl
 	// 11 stub menu pages (Coming Soon — Iterasi 2 stub)
 	protected.Get("/profil", appHandler.Menu)
 	protected.Get("/kegiatan", appHandler.Menu)
-	protected.Get("/relawan", appHandler.Menu)
+	protected.Get("/relawan", volunteerHandler.Index)
+	protected.Get("/relawan/create", volunteerHandler.Create)
+	protected.Post("/relawan", volunteerHandler.Store)
+	protected.Get("/relawan/:id", volunteerHandler.Show)
+	protected.Get("/relawan/:id/edit", volunteerHandler.Edit)
+	protected.Put("/relawan/:id", volunteerHandler.Update)
+	protected.Delete("/relawan/:id", volunteerHandler.Destroy)
 	protected.Get("/peta", appHandler.Menu)
 	protected.Get("/edukasi", appHandler.Menu)
 	protected.Get("/galeri", appHandler.Menu)
