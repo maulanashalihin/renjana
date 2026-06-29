@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 320" fill="none">
+  <!-- Sky gradient background -->
+  <defs>
+    <linearGradient id="sky-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#dbeafe"/>
+      <stop offset="100%" stop-color="#e0f2fe"/>
+    </linearGradient>
+    <linearGradient id="mount-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#94a3b8"/>
+      <stop offset="100%" stop-color="#64748b"/>
+    </linearGradient>
+    <linearGradient id="tree-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#22c55e"/>
+      <stop offset="100%" stop-color="#16a34a"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Sky -->
+  <rect width="480" height="320" fill="url(#sky-grad)"/>
+
+  <!-- Distant mountains -->
+  <path d="M0 220 L60 160 L120 200 L180 140 L240 190 L300 130 L360 180 L420 150 L480 200 L480 320 L0 320 Z" fill="url(#mount-grad)" opacity="0.5"/>
+
+  <!-- Mid mountains -->
+  <path d="M0 250 L80 200 L160 240 L240 190 L320 230 L400 200 L480 240 L480 320 L0 320 Z" fill="#475569" opacity="0.6"/>
+
+  <!-- Trees on left -->
+  <g>
+    <ellipse cx="40" cy="270" rx="22" ry="30" fill="url(#tree-grad)"/>
+    <rect x="38" y="290" width="4" height="10" fill="#7c2d12"/>
+  </g>
+  <g>
+    <ellipse cx="80" cy="280" rx="18" ry="24" fill="#16a34a"/>
+    <rect x="78" y="295" width="4" height="8" fill="#7c2d12"/>
+  </g>
+
+  <!-- Trees on right -->
+  <g>
+    <ellipse cx="430" cy="270" rx="20" ry="28" fill="url(#tree-grad)"/>
+    <rect x="428" y="290" width="4" height="10" fill="#7c2d12"/>
+  </g>
+  <g>
+    <ellipse cx="460" cy="280" rx="16" ry="22" fill="#16a34a"/>
+    <rect x="458" y="295" width="4" height="8" fill="#7c2d12"/>
+  </g>
+
+  <!-- Volunteer 1 (left) - pointing -->
+  <g transform="translate(120, 130)">
+    <!-- Body / orange jacket -->
+    <path d="M30 60 L20 110 L20 180 L60 180 L60 110 L50 60 Z" fill="#f97316"/>
+    <!-- RENJANA text on jacket -->
+    <text x="40" y="135" text-anchor="middle" fill="#ffffff" font-size="10" font-weight="800" font-family="sans-serif">RENJANA</text>
+    <!-- Left arm pointing right (orange) -->
+    <path d="M60 75 L120 55 L125 65 L70 90 Z" fill="#f97316"/>
+    <!-- Hand pointing -->
+    <circle cx="125" cy="60" r="6" fill="#fcd9b4"/>
+    <!-- Right arm down -->
+    <path d="M20 75 L8 130 L18 132 L30 85 Z" fill="#f97316"/>
+    <!-- Head -->
+    <circle cx="40" cy="40" r="22" fill="#fcd9b4"/>
+    <!-- Cap -->
+    <path d="M20 30 Q20 12 40 12 Q60 12 60 30 L60 36 L20 36 Z" fill="#1e3a5f"/>
+    <path d="M20 36 L60 36 L65 42 L15 42 Z" fill="#1e3a5f"/>
+    <!-- Eye -->
+    <circle cx="46" cy="42" r="1.5" fill="#1e293b"/>
+    <!-- Smile -->
+    <path d="M42 50 Q48 53 52 50" stroke="#1e293b" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <!-- Cap badge -->
+    <circle cx="40" cy="22" r="4" fill="#f97316"/>
+  </g>
+
+  <!-- Volunteer 2 (center) - holding clipboard -->
+  <g transform="translate(215, 125)">
+    <!-- Body / orange jacket -->
+    <path d="M30 60 L20 110 L20 185 L60 185 L60 110 L50 60 Z" fill="#f97316"/>
+    <!-- RENJANA text on jacket -->
+    <text x="40" y="135" text-anchor="middle" fill="#ffffff" font-size="10" font-weight="800" font-family="sans-serif">RENJANA</text>
+    <!-- Left arm down -->
+    <path d="M20 75 L10 130 L20 132 L30 85 Z" fill="#f97316"/>
+    <!-- Right arm holding clipboard -->
+    <path d="M50 75 L70 120 L60 124 L42 85 Z" fill="#f97316"/>
+    <!-- Clipboard -->
+    <rect x="62" y="105" width="32" height="42" fill="#ffffff" stroke="#1e3a5f" stroke-width="2" rx="2"/>
+    <rect x="72" y="100" width="12" height="6" fill="#1e3a5f" rx="1"/>
+    <line x1="68" y1="115" x2="88" y2="115" stroke="#94a3b8" stroke-width="1.5"/>
+    <line x1="68" y1="122" x2="88" y2="122" stroke="#94a3b8" stroke-width="1.5"/>
+    <line x1="68" y1="129" x2="84" y2="129" stroke="#94a3b8" stroke-width="1.5"/>
+    <!-- Head -->
+    <circle cx="40" cy="40" r="22" fill="#fcd9b4"/>
+    <!-- Hair (long) -->
+    <path d="M22 28 Q22 14 40 14 Q58 14 58 28 L58 60 L52 50 L52 35 L28 35 L28 50 L22 60 Z" fill="#1e293b"/>
+    <!-- Eye -->
+    <circle cx="44" cy="42" r="1.5" fill="#1e293b"/>
+    <!-- Smile -->
+    <path d="M40 50 Q46 53 52 50" stroke="#1e293b" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  </g>
+
+  <!-- Volunteer 3 (right) - with backpack -->
+  <g transform="translate(310, 130)">
+    <!-- Body / orange jacket -->
+    <path d="M30 60 L20 110 L20 180 L60 180 L60 110 L50 60 Z" fill="#f97316"/>
+    <!-- RENJANA text on jacket -->
+    <text x="40" y="135" text-anchor="middle" fill="#ffffff" font-size="10" font-weight="800" font-family="sans-serif">RENJANA</text>
+    <!-- Backpack -->
+    <rect x="2" y="80" width="22" height="50" fill="#1e3a5f" rx="4"/>
+    <rect x="6" y="85" width="14" height="14" fill="#f97316" rx="2"/>
+    <!-- Left arm down -->
+    <path d="M20 75 L8 130 L18 132 L30 85 Z" fill="#f97316"/>
+    <!-- Right arm down -->
+    <path d="M50 75 L62 130 L72 128 L60 85 Z" fill="#f97316"/>
+    <!-- Head -->
+    <circle cx="40" cy="40" r="22" fill="#fcd9b4"/>
+    <!-- Cap -->
+    <path d="M20 30 Q20 12 40 12 Q60 12 60 30 L60 36 L20 36 Z" fill="#1e3a5f"/>
+    <path d="M20 36 L60 36 L65 42 L15 42 Z" fill="#1e3a5f"/>
+    <!-- Eye -->
+    <circle cx="46" cy="42" r="1.5" fill="#1e293b"/>
+    <!-- Smile -->
+    <path d="M42 50 Q48 53 52 50" stroke="#1e293b" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <!-- Cap badge -->
+    <circle cx="40" cy="22" r="4" fill="#f97316"/>
+  </g>
+</svg>

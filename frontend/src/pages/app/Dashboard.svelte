@@ -1,14 +1,22 @@
 <script lang="ts">
-    import Header from "../../components/Header.svelte";
-    import { fly } from "svelte/transition";
+    import RenjanaSidebar from "../../components/dashboard/RenjanaSidebar.svelte";
+    import TopBar from "../../components/dashboard/TopBar.svelte";
+    import HeroBanner from "../../components/dashboard/HeroBanner.svelte";
+    import StatCard from "../../components/dashboard/StatCard.svelte";
+    import VolunteerDistribution from "../../components/dashboard/VolunteerDistribution.svelte";
+    import ActivityDonutChart from "../../components/dashboard/ActivityDonutChart.svelte";
+    import ActiveVolunteers from "../../components/dashboard/ActiveVolunteers.svelte";
+    import AchievementBar from "../../components/dashboard/AchievementBar.svelte";
+    import AnnouncementCard from "../../components/dashboard/AnnouncementCard.svelte";
+    import UpcomingActivity from "../../components/dashboard/UpcomingActivity.svelte";
+    import { Users, GraduationCap, Activity, MapPin } from "lucide-svelte";
 
     interface User {
         id: number;
-        email: string;
         name: string;
+        email: string;
         avatar: string;
         role: string;
-        email_verified: boolean;
     }
 
     interface Props {
@@ -17,261 +25,168 @@
         error?: string;
     }
 
-    let { user, success, error }: Props = $props();
+    let { user }: Props = $props();
+
+    // Mobile sidebar state
+    let isMobileMenuOpen = $state(false);
+
+    // Mock data — replace with backend data later
+    const stats = {
+        volunteers: { value: 1248, delta: 12 },
+        schools: { value: 45, delta: 8 },
+        activities: { value: 128, delta: 15 },
+        districts: { value: 12, delta: undefined as number | undefined },
+    };
+
+    const districts = [
+        { name: "Simpang Empat", count: 312 },
+        { name: "Batulicin", count: 198 },
+        { name: "Kusan Hilir", count: 145 },
+        { name: "Kusan Hulu", count: 120 },
+        { name: "Angsana", count: 98 },
+        { name: "Satui", count: 95 },
+        { name: "Karang Bintang", count: 85 },
+        { name: "Mantewe", count: 65 },
+        { name: "Teluk Kepayang", count: 60 },
+        { name: "Kuranji", count: 50 },
+        { name: "Sungai Loban", count: 20 },
+    ];
+
+    const activityTypes = [
+        { name: "Pelatihan", percentage: 35, color: "#f97316" },
+        { name: "Simulasi", percentage: 25, color: "#0ea5e9" },
+        { name: "Edukasi", percentage: 20, color: "#22c55e" },
+        { name: "Sosialisasi", percentage: 10, color: "#a855f7" },
+        { name: "Aksi Kemanusiaan", percentage: 10, color: "#ef4444" },
+    ];
+
+    const activeVolunteers = [
+        { name: "Ahmad Fauzan", school: "SMPN 1 Simpang Empat" },
+        { name: "Siti Aisyah", school: "SMAN 1 Simpang Empat" },
+        { name: "Muhammad Rizky", school: "SMPN 2 Batulicin" },
+        { name: "Putri Nabila", school: "SMKN 1 Kusan Hilir" },
+    ];
+
+    const achievements = [
+        { label: "Capaian Program", value: 85, unit: "%", iconName: "target" as const },
+        { label: "Siswa Teredukasi", value: 12500, iconName: "users" as const },
+        { label: "Sekolah Aman Bencana", value: 98, iconName: "shield" as const },
+        { label: "Penghargaan", value: 7, iconName: "trophy" as const },
+        { label: "Indeks Kesiapsiagaan", value: 90, unit: "%", iconName: "chart" as const },
+    ];
+
+    const announcement = {
+        title: "Jadwal Pelatihan Dasar Relawan",
+        date: "12 Mei 2024",
+        content: "Pendaftaran dibuka sampai 20 Mei 2024. Segera daftarkan diri Anda untuk menjadi bagian dari program.",
+    };
+
+    const upcomingActivities = [
+        { day: "25", month: "Mei", title: "Pelatihan Siaga Bencana", location: "Aula BPBD Kab. Tanah Bumbu", time: "08.00 - Selesai" },
+        { day: "02", month: "Jun", title: "Simulasi Evakuasi Gempa", location: "SMPN 1 Simpang Empat", time: "08.00 - Selesai" },
+        { day: "10", month: "Jun", title: "Edukasi Bencana di Sekolah", location: "SMAN 1 Simpang Empat", time: "08.00 - Selesai" },
+    ];
 </script>
 
-<Header group="dashboard" />
+<svelte:head>
+    <title>Dashboard - RENJANA</title>
+</svelte:head>
 
-<!-- Main Content -->
-<div class="relative min-h-screen bg-white dark:bg-slate-950">
-    <!-- Desktop Sidebar Spacer -->
-    <div
-        class="hidden lg:block w-72 fixed inset-y-0 left-0 pointer-events-none"
-    ></div>
-
-    <!-- Background Effects -->
-    <div class="fixed inset-0 overflow-hidden pointer-events-none">
-        <div
-            class="absolute top-0 -left-4 w-96 h-96 bg-brand-400/10 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"
-        ></div>
-        <div
-            class="absolute top-0 -right-4 w-96 h-96 bg-brand-400/10 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"
-        ></div>
+<div class="min-h-screen bg-slate-50 dark:bg-slate-950 flex">
+    <!-- Desktop Sidebar -->
+    <div class="hidden lg:block">
+        <RenjanaSidebar active="Dashboard" />
     </div>
 
-    <!-- Page Header -->
-    <div
-        class="relative pt-8 pb-12 px-6 border-b border-slate-200 dark:border-slate-800/50 bg-white/50 dark:bg-slate-950/50 backdrop-blur-xl"
-    >
-        <div class="max-w-5xl mx-auto">
-            <h1 class="text-3xl font-bold text-slate-900 dark:text-white mb-2">Dashboard</h1>
-            <p class="text-slate-600 dark:text-slate-400">Welcome back, {user?.name || "Guest"}</p>
-        </div>
-    </div>
-
-    <!-- Content Area -->
-    <div class="relative max-w-5xl mx-auto px-6 py-12">
-        <!-- Welcome Card -->
-        <div
-            class="bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-900/50 rounded-3xl border border-slate-200 dark:border-slate-800 p-8 mb-8"
-            in:fly={{ y: 20, duration: 600 }}
-        >
-            <div class="flex items-center gap-4">
-                <div
-                    class="w-16 h-16 rounded-2xl bg-gradient-to-br from-brand-400 to-brand-400 flex items-center justify-center shadow-2xl shadow-brand-400/20"
-                >
-                    <svg
-                        class="w-8 h-8 text-white"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M13 10V3L4 14h7v7l9-11h-7z"
-                        />
-                    </svg>
-                </div>
-                <div>
-                    <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-1">
-                        Welcome to Laju Go
-                    </h2>
-                    <p class="text-slate-600 dark:text-slate-400">
-                        High-performance SaaS boilerplate built with Go Fiber + Svelte 5
-                    </p>
-                </div>
+    <!-- Mobile Sidebar Drawer -->
+    {#if isMobileMenuOpen}
+        <div class="lg:hidden fixed inset-0 z-50 flex">
+            <button
+                class="absolute inset-0 bg-black/50 backdrop-blur-sm"
+                onclick={() => (isMobileMenuOpen = false)}
+                aria-label="Tutup menu"
+            ></button>
+            <div class="relative w-72 max-w-[85vw]">
+                <RenjanaSidebar active="Dashboard" />
             </div>
         </div>
+    {/if}
 
-        <!-- Stats Grid -->
-        <div class="grid md:grid-cols-3 gap-6 mb-8">
-            <!-- Stat Card 1 -->
-            <div
-                class="bg-white/50 dark:bg-slate-900/50 rounded-2xl border border-slate-200 dark:border-slate-800 p-6"
-                in:fly={{ y: 20, duration: 600, delay: 100 }}
-            >
-                <div class="flex items-center gap-3 mb-4">
-                    <div
-                        class="w-10 h-10 rounded-xl bg-brand-400/10 flex items-center justify-center"
-                    >
-                        <svg
-                            class="w-5 h-5 text-brand-400"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
-                            />
-                        </svg>
-                    </div>
-                    <span class="text-sm font-medium text-slate-600 dark:text-slate-400">Performance</span>
-                </div>
-                <div class="text-3xl font-bold text-slate-900 dark:text-white mb-1">258,611</div>
-                <div class="text-sm text-green-600 dark:text-green-400">
-                    +11x faster than Express
-                </div>
-            </div>
+    <!-- Main content -->
+    <div class="flex-1 min-w-0 flex flex-col">
+        <TopBar
+            user={user ?? { id: 0, name: "Admin RENJANA", email: "admin@renjana.id", avatar: "/public/images/avatar-1.svg", role: "Super Admin" }}
+            onMenuClick={() => (isMobileMenuOpen = true)}
+        />
 
-            <!-- Stat Card 2 -->
-            <div
-                class="bg-white/50 dark:bg-slate-900/50 rounded-2xl border border-slate-200 dark:border-slate-800 p-6"
-                in:fly={{ y: 20, duration: 600, delay: 200 }}
-            >
-                <div class="flex items-center gap-3 mb-4">
-                    <div
-                        class="w-10 h-10 rounded-xl bg-brand-400/10 flex items-center justify-center"
-                    >
-                        <svg
-                            class="w-5 h-5 text-brand-400"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                            />
-                        </svg>
-                    </div>
-                    <span class="text-sm font-medium text-slate-600 dark:text-slate-400">Avg Latency</span>
-                </div>
-                <div class="text-3xl font-bold text-slate-900 dark:text-white mb-1">1.52ms</div>
-                <div class="text-sm text-green-600 dark:text-green-400">
-                    -3.6x better response time
-                </div>
-            </div>
-
-            <!-- Stat Card 3 -->
-            <div
-                class="bg-white/50 dark:bg-slate-900/50 rounded-2xl border border-slate-200 dark:border-slate-800 p-6"
-                in:fly={{ y: 20, duration: 600, delay: 300 }}
-            >
-                <div class="flex items-center gap-3 mb-4">
-                    <div
-                        class="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center"
-                    >
-                        <svg
-                            class="w-5 h-5 text-cyan-400"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-                            />
-                        </svg>
-                    </div>
-                    <span class="text-sm font-medium text-slate-600 dark:text-slate-400">Uptime</span>
-                </div>
-                <div class="text-3xl font-bold text-slate-900 dark:text-white mb-1">99.99%</div>
-                <div class="text-sm text-slate-600 dark:text-slate-400">Last 30 days</div>
-            </div>
-        </div>
-
-        <!-- Quick Actions -->
-        <div
-            class="bg-white/50 dark:bg-slate-900/50 rounded-2xl border border-slate-200 dark:border-slate-800 p-6"
-            in:fly={{ y: 20, duration: 600, delay: 400 }}
-        >
-            <div class="flex items-center gap-3 mb-6">
-                <div
-                    class="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center"
-                >
-                    <svg
-                        class="w-5 h-5 text-blue-400"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M13 10V3L4 14h7v7l9-11h-7z"
-                        />
-                    </svg>
-                </div>
-                <div>
-                    <h3 class="text-lg font-semibold text-slate-900 dark:text-white">
-                        Quick Start
-                    </h3>
-                    <p class="text-sm text-slate-600 dark:text-slate-500">
-                        Get started with the Laju Go framework
-                    </p>
-                </div>
-            </div>
-
-            <div class="grid sm:grid-cols-2 gap-4">
-                <a
-                    href="https://github.com/maulanashalihin/laju/tree/main/docs"
-                    target="_blank"
-                    class="flex items-center gap-3 p-4 rounded-xl bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 hover:border-brand-400/30 transition-all group"
-                >
-                    <div
-                        class="w-10 h-10 rounded-lg bg-brand-400/10 flex items-center justify-center group-hover:bg-brand-400/20 transition-colors"
-                    >
-                        <svg
-                            class="w-5 h-5 text-brand-400"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-                            />
-                        </svg>
+        <!-- Page content -->
+        <main class="flex-1 p-4 sm:p-6 lg:p-8">
+            <div class="max-w-7xl mx-auto space-y-6">
+                <!-- Hero + Upcoming -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2">
+                        <HeroBanner userName={user?.name} />
                     </div>
                     <div>
-                        <div class="text-sm font-semibold text-slate-900 dark:text-white">
-                            Documentation
-                        </div>
-                        <div class="text-xs text-slate-600 dark:text-slate-500">Read the docs</div>
+                        <UpcomingActivity activities={upcomingActivities} />
                     </div>
-                </a>
+                </div>
 
-                <a
-                    href="/app/profile"
-                    class="flex items-center gap-3 p-4 rounded-xl bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 hover:border-brand-400/30 transition-all group"
-                >
-                    <div
-                        class="w-10 h-10 rounded-lg bg-brand-400/10 flex items-center justify-center group-hover:bg-brand-400/20 transition-colors"
-                    >
-                        <svg
-                            class="w-5 h-5 text-brand-400"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                            />
-                        </svg>
+                <!-- Stat cards -->
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <StatCard
+                        label="Total Relawan"
+                        value={stats.volunteers.value}
+                        delta={stats.volunteers.delta}
+                        icon={Users}
+                        color="#3b82f6"
+                    />
+                    <StatCard
+                        label="Sekolah Binaan"
+                        value={stats.schools.value}
+                        delta={stats.schools.delta}
+                        icon={GraduationCap}
+                        color="#22c55e"
+                    />
+                    <StatCard
+                        label="Total Kegiatan"
+                        value={stats.activities.value}
+                        delta={stats.activities.delta}
+                        icon={Activity}
+                        color="#f97316"
+                    />
+                    <StatCard
+                        label="Kecamatan Terlibat"
+                        value={stats.districts.value}
+                        delta={stats.districts.delta}
+                        icon={MapPin}
+                        color="#a855f7"
+                    />
+                </div>
+
+                <!-- Sebaran + Donut -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2">
+                        <VolunteerDistribution {districts} />
                     </div>
                     <div>
-                        <div class="text-sm font-semibold text-slate-900 dark:text-white">
-                            Profile Settings
-                        </div>
-                        <div class="text-xs text-slate-600 dark:text-slate-500">Manage your account</div>
+                        <ActivityDonutChart activities={activityTypes} total={stats.activities.value} />
                     </div>
-                </a>
+                </div>
+
+                <!-- Relawan Aktif + Pengumuman -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2">
+                        <ActiveVolunteers volunteers={activeVolunteers} />
+                    </div>
+                    <div>
+                        <AnnouncementCard {announcement} />
+                    </div>
+                </div>
+
+                <!-- Capaian -->
+                <AchievementBar {achievements} year={2024} />
             </div>
-        </div>
+        </main>
     </div>
 </div>

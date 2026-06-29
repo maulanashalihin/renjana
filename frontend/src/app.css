@@ -85,6 +85,43 @@
     --color-accent-7: #a3e635;   /* lime — automation */
     --color-accent-8: #e879f9;   /* fuchsia — premium */
 
+    /* RENJANA palette — Relawan Remaja Aman Bencana */
+    --color-renjana-50:  #fff7ed;
+    --color-renjana-100: #ffedd5;
+    --color-renjana-200: #fed7aa;
+    --color-renjana-300: #fdba74;
+    --color-renjana-400: #fb923c;
+    --color-renjana-500: #f97316;   /* ★ PRIMARY RENJANA — buttons, active state */
+    --color-renjana-600: #ea580c;
+    --color-renjana-700: #c2410c;
+    --color-renjana-800: #9a3412;
+    --color-renjana-900: #7c2d12;
+
+    /* RENJANA Sidebar — dark navy panel */
+    --color-renjana-sidebar:         #1e3a5f;
+    --color-renjana-sidebar-hover:   #2a4a75;
+    --color-renjana-sidebar-active:  #f97316;
+    --color-renjana-sidebar-border:  #2a4a75;
+    --color-renjana-nav-text:        #cbd5e1;
+    --color-renjana-nav-active:      #ffffff;
+
+    /* RENJANA Stat card icons */
+    --color-renjana-stat-volunteer: #3b82f6;
+    --color-renjana-stat-school:    #22c55e;
+    --color-renjana-stat-activity:  #f97316;
+    --color-renjana-stat-district:  #a855f7;
+
+    /* RENJANA Achievement icons */
+    --color-renjana-target: #f97316;
+    --color-renjana-users:  #3b82f6;
+    --color-renjana-shield: #22c55e;
+    --color-renjana-trophy: #eab308;
+    --color-renjana-chart:  #06b6d4;
+
+    /* RENJANA Emergency */
+    --color-emergency:       #dc2626;
+    --color-emergency-hover: #b91c1c;
+
     /* Shadows — soft, not heavy. Dark mode uses subtle highlights instead */
     --shadow-soft:
         0 2px 15px -3px rgba(0, 0, 0, 0.07),

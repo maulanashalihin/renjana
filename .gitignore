@@ -41,3 +41,7 @@ logs/
 # Build artifacts
 tmp/
 dist
+
+# Compiled binary
+laju-go
+/laju-go
