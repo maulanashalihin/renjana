@@ -11,7 +11,7 @@ import (
 func AuthRequired(store *session.Store) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		slog.Info("checking auth", "path", c.Path())
-		
+
 		sess, err := store.Get(c)
 		if err != nil {
 			slog.Error("auth session error", "error", err)
@@ -22,7 +22,7 @@ func AuthRequired(store *session.Store) fiber.Handler {
 
 		userID := sess.Get("user_id")
 		slog.Info("auth user id", "user_id", userID)
-		
+
 		if userID == nil {
 			slog.Warn("not authenticated, redirecting to login")
 			// For Inertia requests, return redirect in JSON format
@@ -89,26 +89,111 @@ func Guest(store *session.Store) fiber.Handler {
 
 		userID := sess.Get("user_id")
 		slog.Info("guest check", "user_id", userID)
-		
+
 		if userID != nil {
 			slog.Info("guest already authenticated, redirecting")
-			return c.Redirect("/app")
+			return c.Redirect("/")
 		}
 
 		return c.Next()
 	}
 }
 
-// CORS creates a CORS middleware handler
-func CORS() fiber.Handler {
+// KoordinatorRequired allows koordinator or admin (and super_admin) to pass.
+// Relawan (regular volunteers) are blocked.
+func KoordinatorRequired(store *session.Store) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		c.Set("Access-Control-Allow-Origin", "*")
-		c.Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		c.Set("Access-Control-Allow-Headers", "Origin, Content-Type, Accept, Authorization, X-Inertia, X-Inertia-Version, X-Requested-With")
-		c.Set("Access-Control-Allow-Credentials", "true")
+		sess, err := store.Get(c)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "Failed to get session",
+			})
+		}
 
-		if c.Method() == "OPTIONS" {
-			return c.SendStatus(fiber.StatusNoContent)
+		userID := sess.Get("user_id")
+		if userID == nil {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": "Not authenticated",
+			})
+		}
+
+		role := sess.Get("role")
+		if role != "koordinator" && role != "admin" && role != "super_admin" {
+			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+				"error": "Koordinator or admin access required",
+			})
+		}
+
+		c.Locals("user_id", userID)
+		c.Locals("email", sess.Get("email"))
+		c.Locals("role", role)
+		c.Locals("district_id", sess.Get("district_id"))
+
+		return c.Next()
+	}
+}
+
+// RelawanRequired allows any authenticated user (relawan, koordinator, admin).
+func RelawanRequired(store *session.Store) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		sess, err := store.Get(c)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "Failed to get session",
+			})
+		}
+
+		userID := sess.Get("user_id")
+		if userID == nil {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": "Not authenticated",
+			})
+		}
+
+		role := sess.Get("role")
+		if role == "" {
+			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+				"error": "Authenticated user with valid role required",
+			})
+		}
+
+		c.Locals("user_id", userID)
+		c.Locals("email", sess.Get("email"))
+		c.Locals("role", role)
+		c.Locals("district_id", sess.Get("district_id"))
+		c.Locals("volunteer_id", sess.Get("volunteer_id"))
+
+		return c.Next()
+	}
+}
+
+// ScopeDistrict ensures the user has a district scope (koordinator or admin).
+// For koordinator, only allow access to resources in their assigned district.
+func ScopeDistrict(store *session.Store) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		sess, err := store.Get(c)
+		if err != nil {
+			return c.Next()
+		}
+
+		role := sess.Get("role")
+		districtID := sess.Get("district_id")
+
+		// Admin/super_admin bypass district scope
+		if role == "admin" || role == "super_admin" {
+			return c.Next()
+		}
+
+		// Koord without district_id is invalid
+		if role == "koordinator" && districtID == nil {
+			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+				"error": "Koordinator must be assigned to a district",
+			})
+		}
+
+		// Stash district_id for handlers to use
+		if districtID != nil {
+			c.Locals("scope_district_id", districtID)
 		}
 
 		return c.Next()

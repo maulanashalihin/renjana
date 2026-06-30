@@ -57,14 +57,14 @@
             const formData = new FormData();
             formData.append("file", file);
             isProfileLoading = true;
-            fetch("/app/upload", {
+            fetch("/upload", {
                 method: "POST",
                 body: formData,
             })
                 .then((response) => response.json())
                 .then((data) => {
                     if (data.success && data.url) {
-                        router.put("/app/profile", { avatar: data.url }, {
+                        router.put("/profile", { avatar: data.url }, {
                             onError: (err: any) => {
                                 isProfileLoading = false;
                                 Toast("Failed to save avatar: " + (err?.message || "unknown"), "error");
@@ -92,7 +92,7 @@
     function handleProfileSubmit(e: Event) {
         e.preventDefault();
         isProfileLoading = true;
-        router.put("/app/profile", profileForm, {
+        router.put("/profile", profileForm, {
             onFinish: () => {
                 isProfileLoading = false;
             },
@@ -116,7 +116,7 @@
         }
 
         isPasswordLoading = true;
-        router.put("/app/profile/password", passwordForm, {
+        router.put("/profile/password", passwordForm, {
             onFinish: () => {
                 isPasswordLoading = false;
                 passwordForm.current_password = "";

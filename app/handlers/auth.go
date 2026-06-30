@@ -80,9 +80,7 @@ func (h *AuthHandler) Register(c *fiber.Ctx) error {
 			"error": "Failed to create session",
 		})
 	}
-	sess.Set("user_id", user.ID)
-	sess.Set("email", user.Email)
-	sess.Set("role", string(user.Role))
+	populateSession(sess, user)
 
 	if err := sess.Save(); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -90,10 +88,10 @@ func (h *AuthHandler) Register(c *fiber.Ctx) error {
 		})
 	}
 
-	slog.Info("session created", "handler", "Auth.Register", "user_id", user.ID, "redirect", "/app")
+	slog.Info("session created", "handler", "Auth.Register", "user_id", user.ID, "redirect", "/")
 
 	// Inertia.js will automatically follow this redirect
-	return c.Redirect("/app", fiber.StatusSeeOther)
+	return c.Redirect("/", fiber.StatusSeeOther)
 }
 
 // Login handles user login
@@ -132,9 +130,7 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 			"error": "Failed to create session",
 		})
 	}
-	sess.Set("user_id", user.ID)
-	sess.Set("email", user.Email)
-	sess.Set("role", string(user.Role))
+	populateSession(sess, user)
 
 	if err := sess.Save(); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -142,10 +138,10 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 		})
 	}
 
-	slog.Info("session created", "handler", "Auth.Login", "user_id", user.ID, "redirect", "/app")
+	slog.Info("session created", "handler", "Auth.Login", "user_id", user.ID, "redirect", "/")
 
 	// Inertia.js will automatically follow this redirect
-	return c.Redirect("/app", fiber.StatusSeeOther)
+	return c.Redirect("/", fiber.StatusSeeOther)
 }
 
 // Logout handles user logout
@@ -172,6 +168,20 @@ func (h *AuthHandler) GoogleLogin(c *fiber.Ctx) error {
 
 	url := h.authService.GetOAuthURL(state)
 	return c.Redirect(url)
+}
+
+// populateSession sets the standard auth-related session values for a user.
+// Must be called BEFORE sess.Save().
+func populateSession(sess *session.Session, user *models.User) {
+	sess.Set("user_id", user.ID)
+	sess.Set("email", user.Email)
+	sess.Set("role", string(user.Role))
+	if user.DistrictID.Valid {
+		sess.Set("district_id", user.DistrictID.Int64)
+	}
+	if user.VolunteerID.Valid {
+		sess.Set("volunteer_id", user.VolunteerID.Int64)
+	}
 }
 
 // GoogleCallback handles Google OAuth callback
@@ -207,9 +217,7 @@ func (h *AuthHandler) GoogleCallback(c *fiber.Ctx) error {
 			"error": "Failed to create session",
 		})
 	}
-	sess.Set("user_id", user.ID)
-	sess.Set("email", user.Email)
-	sess.Set("role", string(user.Role))
+	populateSession(sess, user)
 
 	if err := sess.Save(); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -217,10 +225,10 @@ func (h *AuthHandler) GoogleCallback(c *fiber.Ctx) error {
 		})
 	}
 
-	slog.Info("session created", "handler", "Auth.GoogleCallback", "user_id", user.ID, "redirect", "/app")
+	slog.Info("session created", "handler", "Auth.GoogleCallback", "user_id", user.ID, "redirect", "/")
 
 	// Inertia.js will automatically follow this redirect
-	return c.Redirect("/app")
+	return c.Redirect("/")
 }
 
 // Me returns the current authenticated user
@@ -282,7 +290,7 @@ func (h *AuthHandler) GetAvatar(c *fiber.Ctx) error {
 		// Local file - serve directly
 		localPath := "." + user.Avatar
 		slog.Info("serving local avatar file", "handler", "GetAvatar", "path", localPath)
-		
+
 		return c.SendFile(localPath)
 	}
 

@@ -45,11 +45,11 @@
         isSubmitting = true;
         const data = toInertia(form);
         if (mode === "create") {
-            router.post("/app/relawan", data, {
+            router.post("/relawan", data, {
                 onFinish: () => (isSubmitting = false),
             });
         } else {
-            router.put(`/app/relawan/${volunteer.id}`, data, {
+            router.put(`/relawan/${volunteer.id}`, data, {
                 onFinish: () => (isSubmitting = false),
             });
         }
@@ -168,7 +168,7 @@
 
     <div class="flex justify-end gap-3 pt-2">
         <a
-            href="/app/relawan"
+            href="/relawan"
             class="px-4 py-2.5 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
         >
             Batal

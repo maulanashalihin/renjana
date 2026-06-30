@@ -63,6 +63,11 @@ func (h *VolunteerHandler) Index(c *fiber.Ctx) error {
 	status := c.Query("status", "")
 	appStatus := c.Query("application_status", "")
 
+	// Apply district scope for koordinator role
+	if user.Role == models.RoleKoordinator && user.DistrictID.Valid {
+		districtID = user.DistrictID.Int64
+	}
+
 	result, err := h.volunteerService.List(c.Context(), search, districtID, status, appStatus, page, perPage)
 	if err != nil {
 		slog.Error("volunteer list error", "err", err)
@@ -88,7 +93,7 @@ func (h *VolunteerHandler) Index(c *fiber.Ctx) error {
 
 // Create — render Relawan with create modal open via query param.
 func (h *VolunteerHandler) Create(c *fiber.Ctx) error {
-	return c.Redirect("/app/relawan?action=create")
+	return c.Redirect("/relawan?action=create")
 }
 
 // Store — handle POST /app/relawan.
@@ -100,21 +105,21 @@ func (h *VolunteerHandler) Store(c *fiber.Ctx) error {
 
 	var req services.CreateVolunteerRequest
 	if err := c.BodyParser(&req); err != nil {
-		return c.Redirect("/app/relawan?action=create&error=" + err.Error())
+		return c.Redirect("/relawan?action=create&error=" + err.Error())
 	}
 
 	_, err = h.volunteerService.Create(c.Context(), req)
 	if err != nil {
-		return c.Redirect("/app/relawan?action=create&error=" + err.Error())
+		return c.Redirect("/relawan?action=create&error=" + err.Error())
 	}
 
-	return c.Redirect("/app/relawan?success=created")
+	return c.Redirect("/relawan?success=created")
 }
 
 // Edit — render Relawan with edit modal opened via query param.
 func (h *VolunteerHandler) Edit(c *fiber.Ctx) error {
 	id, _ := strconv.ParseInt(c.Params("id"), 10, 64)
-	return c.Redirect(fmt.Sprintf("/app/relawan?action=edit&id=%d", id))
+	return c.Redirect(fmt.Sprintf("/relawan?action=edit&id=%d", id))
 }
 
 // Update — handle PUT /app/relawan/:id.
@@ -127,14 +132,14 @@ func (h *VolunteerHandler) Update(c *fiber.Ctx) error {
 
 	var req services.UpdateVolunteerRequest
 	if err := c.BodyParser(&req); err != nil {
-		return c.Redirect(fmt.Sprintf("/app/relawan?action=edit&id=%d&error=invalid", id))
+		return c.Redirect(fmt.Sprintf("/relawan?action=edit&id=%d&error=invalid", id))
 	}
 
 	if err := h.volunteerService.Update(c.Context(), id, req); err != nil {
-		return c.Redirect(fmt.Sprintf("/app/relawan?action=edit&id=%d&error=%s", id, err.Error()))
+		return c.Redirect(fmt.Sprintf("/relawan?action=edit&id=%d&error=%s", id, err.Error()))
 	}
 
-	return c.Redirect("/app/relawan?success=updated")
+	return c.Redirect("/relawan?success=updated")
 }
 
 // Destroy — handle DELETE /app/relawan/:id.
@@ -150,7 +155,7 @@ func (h *VolunteerHandler) Destroy(c *fiber.Ctx) error {
 			"error": err.Error(),
 		})
 	}
-	return c.Redirect("/app/relawan?success=deleted")
+	return c.Redirect("/relawan?success=deleted")
 }
 
 // Show — view detail.

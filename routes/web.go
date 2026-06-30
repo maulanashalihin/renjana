@@ -12,26 +12,43 @@ import (
 )
 
 type Handlers struct {
-	Public        *handlers.PublicHandler
 	Auth          *handlers.AuthHandler
 	App           *handlers.AppHandler
 	Upload        *handlers.UploadHandler
 	PasswordReset *handlers.PasswordResetHandler
 	Volunteer     *handlers.VolunteerHandler
+	Activity      *handlers.ActivityHandler
+	Announcement  *handlers.AnnouncementHandler
+	Contact       *handlers.ContactHandler
+	Organization  *handlers.OrganizationHandler
+	Registration  *handlers.RegistrationHandler
+	Static        *handlers.StaticHandler
+	UserAdmin     *handlers.UserAdminHandler
 }
 
-func SetupRoutes(app *fiber.App, handlers Handlers, store *session.Store, mailerService *services.MailerService, csrfMiddleware *middlewares.CSRFMiddleware) {
+func SetupRoutes(app *fiber.App, h Handlers, store *session.Store, mailerService *services.MailerService, csrfMiddleware *middlewares.CSRFMiddleware) {
 	// Setup static file serving
 	setupStaticRoutes(app)
 
-	// Setup public routes
-	setupPublicRoutes(app, handlers.Public)
+	// Client-side error reporting (no auth required)
+	app.Post("/api/errors", handlers.HandleClientError)
 
 	// Setup auth routes
-	setupAuthRoutes(app, handlers.Auth, handlers.PasswordReset, store, mailerService)
+	setupAuthRoutes(app, h.Auth, h.PasswordReset, store, mailerService)
 
-	// Setup app routes (protected)
-	setupAppRoutes(app, handlers.App, handlers.Upload, handlers.Volunteer, store, csrfMiddleware)
+	// Setup registration routes (public + protected)
+	setupRegistrationRoutes(app, h.Registration, store, csrfMiddleware)
+
+	// Setup app routes (protected) — semua di root path
+	setupAppRoutes(app, h.App, h.Upload, h.Volunteer, h.Activity, h.Announcement, h.Contact, h.Organization, h.Registration, h.Static, h.UserAdmin, store, csrfMiddleware)
+}
+
+func setupRegistrationRoutes(app *fiber.App, registrationHandler *handlers.RegistrationHandler, store *session.Store, csrfMiddleware *middlewares.CSRFMiddleware) {
+	// Public registration page (no auth required to apply)
+	app.Get("/daftar", registrationHandler.Index)
+	app.Post("/daftar", registrationHandler.Apply)
+	app.Post("/daftar/:id/approve", middlewares.AuthRequired(store), registrationHandler.Approve)
+	app.Post("/daftar/:id/reject", middlewares.AuthRequired(store), registrationHandler.Reject)
 }
 
 func setupStaticRoutes(app *fiber.App) {
@@ -57,11 +74,6 @@ func setupStaticRoutes(app *fiber.App) {
 		CacheDuration: 24 * time.Hour,
 		MaxAge:        86400,
 	})
-}
-
-func setupPublicRoutes(app *fiber.App, handler *handlers.PublicHandler) {
-	app.Get("/", handler.Index)
-	app.Get("/about", handler.About)
 }
 
 func setupAuthRoutes(app *fiber.App, authHandler *handlers.AuthHandler, passwordResetHandler *handlers.PasswordResetHandler, store *session.Store, mailerService *services.MailerService) {
@@ -93,48 +105,86 @@ func setupAuthRoutes(app *fiber.App, authHandler *handlers.AuthHandler, password
 	app.Post("/reset-password/:token", passwordResetHandler.ResetPassword)
 }
 
-func setupAppRoutes(app *fiber.App, appHandler *handlers.AppHandler, uploadHandler *handlers.UploadHandler, volunteerHandler *handlers.VolunteerHandler, store *session.Store, csrfMiddleware *middlewares.CSRFMiddleware) {
-	// Protected app routes with CSRF protection
-	protected := app.Group("/app", middlewares.AuthRequired(store))
-	protected.Use(csrfMiddleware.Protect())
+func setupAppRoutes(app *fiber.App, appHandler *handlers.AppHandler, uploadHandler *handlers.UploadHandler, volunteerHandler *handlers.VolunteerHandler, activityHandler *handlers.ActivityHandler, announcementHandler *handlers.AnnouncementHandler, contactHandler *handlers.ContactHandler, organizationHandler *handlers.OrganizationHandler, registrationHandler *handlers.RegistrationHandler, staticHandler *handlers.StaticHandler, userAdminHandler *handlers.UserAdminHandler, store *session.Store, csrfMiddleware *middlewares.CSRFMiddleware) {
+	// Protected routes (semua di root path, bukan /app/* lagi)
+	// Apply AuthRequired globally — all routes below require auth
+	app.Use(middlewares.AuthRequired(store))
 
-	// Dashboard
-	protected.Get("/", appHandler.Dashboard)
+	// CSRF for state-changing methods (skip GET/HEAD/OPTIONS)
+	app.Use(csrfMiddleware.Protect())
+
+	// Dashboard — di root path "/"
+	app.Get("/", appHandler.Dashboard)
 
 	// Profile
-	protected.Get("/profile", appHandler.Profile)
+	app.Get("/profile", appHandler.Profile)
+	app.Put("/profile", appHandler.UpdateProfile)
+	app.Put("/profile/password", appHandler.UpdatePassword)
 
-	// 11 stub menu pages (Coming Soon — Iterasi 2 stub)
-	protected.Get("/profil", appHandler.Menu)
-	protected.Get("/kegiatan", appHandler.Menu)
-	protected.Get("/relawan", volunteerHandler.Index)
-	protected.Get("/relawan/create", volunteerHandler.Create)
-	protected.Post("/relawan", volunteerHandler.Store)
-	protected.Get("/relawan/:id", volunteerHandler.Show)
-	protected.Get("/relawan/:id/edit", volunteerHandler.Edit)
-	protected.Put("/relawan/:id", volunteerHandler.Update)
-	protected.Delete("/relawan/:id", volunteerHandler.Destroy)
-	protected.Get("/peta", appHandler.Menu)
-	protected.Get("/edukasi", appHandler.Menu)
-	protected.Get("/galeri", appHandler.Menu)
-	protected.Get("/berita", appHandler.Menu)
-	protected.Get("/dokumen", appHandler.Menu)
-	protected.Get("/inovasi", appHandler.Menu)
-	protected.Get("/daftar", appHandler.Menu)
-	protected.Get("/kontak", appHandler.Menu)
-	protected.Put("/profile", appHandler.UpdateProfile)
-	protected.Put("/profile/password", appHandler.UpdatePassword)
+	// Organization profile — viewable by all auth users, editable by admin
+	app.Get("/profil", organizationHandler.Index)
+	app.Put("/profil", middlewares.AdminRequired(store), organizationHandler.Update)
+	app.Post("/profil", middlewares.AdminRequired(store), organizationHandler.Update)
 
-	// Upload
-	protected.Post("/upload", uploadHandler.Upload)
+	// Kegiatan — list/show for all auth users, modify for admin only
+	app.Get("/kegiatan", activityHandler.Index)
+	app.Get("/kegiatan/create", activityHandler.Create)
+	app.Post("/kegiatan", middlewares.AdminRequired(store), activityHandler.Store)
+	app.Get("/kegiatan/:id", activityHandler.Show)
+	app.Get("/kegiatan/:id/edit", activityHandler.Edit)
+	app.Put("/kegiatan/:id", middlewares.AdminRequired(store), activityHandler.Update)
+	app.Delete("/kegiatan/:id", middlewares.AdminRequired(store), activityHandler.Destroy)
 
-	// Admin-only routes
-	admin := app.Group("/admin", middlewares.AdminRequired(store))
-	admin.Get("/", func(c *fiber.Ctx) error {
-		return c.JSON(fiber.Map{
-			"message": "Admin dashboard",
-		})
-	})
+	// Berita — viewable by all auth users, CRUD for admin only
+	app.Get("/berita", announcementHandler.Index)
+	app.Get("/berita/create", announcementHandler.Create)
+	app.Post("/berita", middlewares.AdminRequired(store), announcementHandler.Store)
+	app.Get("/berita/:id", announcementHandler.Show)
+	app.Get("/berita/:id/edit", announcementHandler.Edit)
+	app.Put("/berita/:id", middlewares.AdminRequired(store), announcementHandler.Update)
+	app.Delete("/berita/:id", middlewares.AdminRequired(store), announcementHandler.Destroy)
+
+	// Kontak — viewable by all auth users, CRUD for admin only
+	app.Get("/kontak", contactHandler.Index)
+	app.Get("/kontak/create", contactHandler.Create)
+	app.Post("/kontak", middlewares.AdminRequired(store), contactHandler.Store)
+	app.Get("/kontak/:id/edit", contactHandler.Edit)
+	app.Put("/kontak/:id", middlewares.AdminRequired(store), contactHandler.Update)
+	app.Delete("/kontak/:id", middlewares.AdminRequired(store), contactHandler.Destroy)
+
+	// Relawan — list/show for all auth users, modify for admin only
+	app.Get("/relawan", volunteerHandler.Index)
+	app.Get("/relawan/create", volunteerHandler.Create)
+	app.Post("/relawan", middlewares.AdminRequired(store), volunteerHandler.Store)
+	app.Get("/relawan/:id", volunteerHandler.Show)
+	app.Get("/relawan/:id/edit", volunteerHandler.Edit)
+	app.Put("/relawan/:id", middlewares.AdminRequired(store), volunteerHandler.Update)
+	app.Delete("/relawan/:id", middlewares.AdminRequired(store), volunteerHandler.Destroy)
+
+	// Read-only content pages
+	app.Get("/peta", staticHandler.Peta)
+	app.Get("/edukasi", staticHandler.Edukasi)
+	app.Get("/galeri", staticHandler.Galeri)
+	app.Get("/dokumen", staticHandler.Dokumen)
+	app.Get("/inovasi", staticHandler.Inovasi)
+
+	// Pendaftaran — list for all auth users, approve/reject for admin
+	app.Get("/daftar", appHandler.Menu)
+	app.Post("/daftar/:id/approve", middlewares.AdminRequired(store), registrationHandler.Approve)
+	app.Post("/daftar/:id/reject", middlewares.AdminRequired(store), registrationHandler.Reject)
+
+	// Upload — admin only (file uploads are sensitive)
+	app.Post("/upload", middlewares.AdminRequired(store), uploadHandler.Upload)
+
+	// User management — admin only (Iterasi 4C)
+	app.Get("/admin/users", middlewares.AdminRequired(store), userAdminHandler.Index)
+	app.Get("/admin/users/create", middlewares.AdminRequired(store), userAdminHandler.Create)
+	app.Post("/admin/users", middlewares.AdminRequired(store), userAdminHandler.Store)
+	app.Get("/admin/users/:id/edit", middlewares.AdminRequired(store), userAdminHandler.Edit)
+	app.Put("/admin/users/:id/role", middlewares.AdminRequired(store), userAdminHandler.UpdateRole)
+	app.Post("/admin/users/:id/toggle-active", middlewares.AdminRequired(store), userAdminHandler.ToggleActive)
+	app.Delete("/admin/users/:id", middlewares.AdminRequired(store), userAdminHandler.Destroy)
+
 }
 
 // SetupCSRFMiddleware sets up the CSRF middleware

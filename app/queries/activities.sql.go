@@ -7,6 +7,7 @@ package queries
 
 import (
 	"context"
+	"database/sql"
 	"time"
 )
 
@@ -22,9 +23,9 @@ ORDER BY activity_count DESC, d.name
 `
 
 type CountActivitiesByDistrictRow struct {
-	DistrictID    int64
-	DistrictName  string
-	ActivityCount int64
+	DistrictID    int64  `json:"district_id"`
+	DistrictName  string `json:"district_name"`
+	ActivityCount int64  `json:"activity_count"`
 }
 
 func (q *Queries) CountActivitiesByDistrict(ctx context.Context) ([]CountActivitiesByDistrictRow, error) {
@@ -65,11 +66,11 @@ ORDER BY activity_count DESC, t.display_order
 `
 
 type CountActivitiesByTypeRow struct {
-	TypeID        int64
-	TypeName      string
-	Color         string
-	Icon          string
-	ActivityCount int64
+	TypeID        int64  `json:"type_id"`
+	TypeName      string `json:"type_name"`
+	Color         string `json:"color"`
+	Icon          string `json:"icon"`
+	ActivityCount int64  `json:"activity_count"`
 }
 
 func (q *Queries) CountActivitiesByType(ctx context.Context) ([]CountActivitiesByTypeRow, error) {
@@ -101,6 +102,59 @@ func (q *Queries) CountActivitiesByType(ctx context.Context) ([]CountActivitiesB
 	return items, nil
 }
 
+const countActivitiesFiltered = `-- name: CountActivitiesFiltered :one
+SELECT COUNT(*) AS total
+FROM renjana_activities a
+WHERE (?1 IS NULL OR ?1 = ''
+       OR a.title LIKE '%' || ?1 || '%'
+       OR a.location LIKE '%' || ?1 || '%')
+  AND (?2 = 0 OR a.type_id = ?2)
+  AND (?3 IS NULL OR ?3 = '' OR a.status = ?3)
+`
+
+type CountActivitiesFilteredParams struct {
+	Column1 interface{} `json:"column_1"`
+	Column2 interface{} `json:"column_2"`
+	Column3 interface{} `json:"column_3"`
+}
+
+func (q *Queries) CountActivitiesFiltered(ctx context.Context, arg CountActivitiesFilteredParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countActivitiesFiltered, arg.Column1, arg.Column2, arg.Column3)
+	var total int64
+	err := row.Scan(&total)
+	return total, err
+}
+
+const countActivitiesFilteredScoped = `-- name: CountActivitiesFilteredScoped :one
+SELECT COUNT(*) AS total
+FROM renjana_activities a
+WHERE (?1 IS NULL OR ?1 = ''
+       OR a.title LIKE '%' || ?1 || '%'
+       OR a.location LIKE '%' || ?1 || '%')
+  AND (?2 = 0 OR a.type_id = ?2)
+  AND (?3 IS NULL OR ?3 = '' OR a.status = ?3)
+  AND (?4 = 0 OR a.district_id = ?4)
+`
+
+type CountActivitiesFilteredScopedParams struct {
+	Column1 interface{} `json:"column_1"`
+	Column2 interface{} `json:"column_2"`
+	Column3 interface{} `json:"column_3"`
+	Column4 interface{} `json:"column_4"`
+}
+
+func (q *Queries) CountActivitiesFilteredScoped(ctx context.Context, arg CountActivitiesFilteredScopedParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countActivitiesFilteredScoped,
+		arg.Column1,
+		arg.Column2,
+		arg.Column3,
+		arg.Column4,
+	)
+	var total int64
+	err := row.Scan(&total)
+	return total, err
+}
+
 const countAllActivities = `-- name: CountAllActivities :one
 SELECT COUNT(*) AS total
 FROM renjana_activities
@@ -127,6 +181,132 @@ func (q *Queries) CountAllActivitiesPreviousMonth(ctx context.Context) (int64, e
 	return total, err
 }
 
+const createActivity = `-- name: CreateActivity :one
+INSERT INTO renjana_activities (
+    title, type_id, district_id, description, location, date, time, status
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+RETURNING id
+`
+
+type CreateActivityParams struct {
+	Title       string         `json:"title"`
+	TypeID      int64          `json:"type_id"`
+	DistrictID  int64          `json:"district_id"`
+	Description sql.NullString `json:"description"`
+	Location    string         `json:"location"`
+	Date        time.Time      `json:"date"`
+	Time        string         `json:"time"`
+	Status      string         `json:"status"`
+}
+
+func (q *Queries) CreateActivity(ctx context.Context, arg CreateActivityParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, createActivity,
+		arg.Title,
+		arg.TypeID,
+		arg.DistrictID,
+		arg.Description,
+		arg.Location,
+		arg.Date,
+		arg.Time,
+		arg.Status,
+	)
+	var id int64
+	err := row.Scan(&id)
+	return id, err
+}
+
+const deleteActivity = `-- name: DeleteActivity :execrows
+DELETE FROM renjana_activities WHERE id = ?
+`
+
+func (q *Queries) DeleteActivity(ctx context.Context, id int64) (int64, error) {
+	result, err := q.db.ExecContext(ctx, deleteActivity, id)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
+}
+
+const getActivityByID = `-- name: GetActivityByID :one
+
+SELECT
+    a.id, a.title, a.type_id, t.name AS type_name, t.color AS type_color, t.icon AS type_icon,
+    a.district_id, d.name AS district_name, a.description, a.location, a.date, a.time, a.status
+FROM renjana_activities a
+JOIN renjana_activity_types t ON t.id = a.type_id
+JOIN renjana_districts d ON d.id = a.district_id
+WHERE a.id = ?
+`
+
+type GetActivityByIDRow struct {
+	ID           int64          `json:"id"`
+	Title        string         `json:"title"`
+	TypeID       int64          `json:"type_id"`
+	TypeName     string         `json:"type_name"`
+	TypeColor    string         `json:"type_color"`
+	TypeIcon     string         `json:"type_icon"`
+	DistrictID   int64          `json:"district_id"`
+	DistrictName string         `json:"district_name"`
+	Description  sql.NullString `json:"description"`
+	Location     string         `json:"location"`
+	Date         time.Time      `json:"date"`
+	Time         string         `json:"time"`
+	Status       string         `json:"status"`
+}
+
+// ============================================================================
+// CRUD queries for Kegiatan page
+// ============================================================================
+func (q *Queries) GetActivityByID(ctx context.Context, id int64) (GetActivityByIDRow, error) {
+	row := q.db.QueryRowContext(ctx, getActivityByID, id)
+	var i GetActivityByIDRow
+	err := row.Scan(
+		&i.ID,
+		&i.Title,
+		&i.TypeID,
+		&i.TypeName,
+		&i.TypeColor,
+		&i.TypeIcon,
+		&i.DistrictID,
+		&i.DistrictName,
+		&i.Description,
+		&i.Location,
+		&i.Date,
+		&i.Time,
+		&i.Status,
+	)
+	return i, err
+}
+
+const getActivityStats = `-- name: GetActivityStats :one
+SELECT
+    COUNT(*) AS total,
+    SUM(CASE WHEN status = 'akan_datang' THEN 1 ELSE 0 END) AS upcoming,
+    SUM(CASE WHEN status = 'berlangsung' THEN 1 ELSE 0 END) AS ongoing,
+    SUM(CASE WHEN status = 'selesai' THEN 1 ELSE 0 END) AS completed
+FROM renjana_activities
+`
+
+type GetActivityStatsRow struct {
+	Total     int64           `json:"total"`
+	Upcoming  sql.NullFloat64 `json:"upcoming"`
+	Ongoing   sql.NullFloat64 `json:"ongoing"`
+	Completed sql.NullFloat64 `json:"completed"`
+}
+
+func (q *Queries) GetActivityStats(ctx context.Context) (GetActivityStatsRow, error) {
+	row := q.db.QueryRowContext(ctx, getActivityStats)
+	var i GetActivityStatsRow
+	err := row.Scan(
+		&i.Total,
+		&i.Upcoming,
+		&i.Ongoing,
+		&i.Completed,
+	)
+	return i, err
+}
+
 const getUpcomingActivities = `-- name: GetUpcomingActivities :many
 SELECT
     a.id,
@@ -150,18 +330,18 @@ LIMIT ?
 `
 
 type GetUpcomingActivitiesRow struct {
-	ID           int64
-	Title        string
-	TypeID       int64
-	TypeName     string
-	TypeColor    string
-	TypeIcon     string
-	DistrictID   int64
-	DistrictName string
-	Location     string
-	Date         time.Time
-	Time         string
-	Status       string
+	ID           int64     `json:"id"`
+	Title        string    `json:"title"`
+	TypeID       int64     `json:"type_id"`
+	TypeName     string    `json:"type_name"`
+	TypeColor    string    `json:"type_color"`
+	TypeIcon     string    `json:"type_icon"`
+	DistrictID   int64     `json:"district_id"`
+	DistrictName string    `json:"district_name"`
+	Location     string    `json:"location"`
+	Date         time.Time `json:"date"`
+	Time         string    `json:"time"`
+	Status       string    `json:"status"`
 }
 
 func (q *Queries) GetUpcomingActivities(ctx context.Context, limit int64) ([]GetUpcomingActivitiesRow, error) {
@@ -198,4 +378,212 @@ func (q *Queries) GetUpcomingActivities(ctx context.Context, limit int64) ([]Get
 		return nil, err
 	}
 	return items, nil
+}
+
+const listActivitiesPaginated = `-- name: ListActivitiesPaginated :many
+SELECT
+    a.id, a.title, a.type_id, t.name AS type_name, t.color AS type_color, t.icon AS type_icon,
+    a.district_id, d.name AS district_name, a.description, a.location, a.date, a.time, a.status
+FROM renjana_activities a
+JOIN renjana_activity_types t ON t.id = a.type_id
+JOIN renjana_districts d ON d.id = a.district_id
+WHERE (?1 IS NULL OR ?1 = ''
+       OR a.title LIKE '%' || ?1 || '%'
+       OR a.location LIKE '%' || ?1 || '%')
+  AND (?2 = 0 OR a.type_id = ?2)
+  AND (?3 IS NULL OR ?3 = '' OR a.status = ?3)
+ORDER BY a.date DESC, a.time DESC
+LIMIT ?4 OFFSET ?5
+`
+
+type ListActivitiesPaginatedParams struct {
+	Column1 interface{} `json:"column_1"`
+	Column2 interface{} `json:"column_2"`
+	Column3 interface{} `json:"column_3"`
+	Limit   int64       `json:"limit"`
+	Offset  int64       `json:"offset"`
+}
+
+type ListActivitiesPaginatedRow struct {
+	ID           int64          `json:"id"`
+	Title        string         `json:"title"`
+	TypeID       int64          `json:"type_id"`
+	TypeName     string         `json:"type_name"`
+	TypeColor    string         `json:"type_color"`
+	TypeIcon     string         `json:"type_icon"`
+	DistrictID   int64          `json:"district_id"`
+	DistrictName string         `json:"district_name"`
+	Description  sql.NullString `json:"description"`
+	Location     string         `json:"location"`
+	Date         time.Time      `json:"date"`
+	Time         string         `json:"time"`
+	Status       string         `json:"status"`
+}
+
+func (q *Queries) ListActivitiesPaginated(ctx context.Context, arg ListActivitiesPaginatedParams) ([]ListActivitiesPaginatedRow, error) {
+	rows, err := q.db.QueryContext(ctx, listActivitiesPaginated,
+		arg.Column1,
+		arg.Column2,
+		arg.Column3,
+		arg.Limit,
+		arg.Offset,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListActivitiesPaginatedRow
+	for rows.Next() {
+		var i ListActivitiesPaginatedRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Title,
+			&i.TypeID,
+			&i.TypeName,
+			&i.TypeColor,
+			&i.TypeIcon,
+			&i.DistrictID,
+			&i.DistrictName,
+			&i.Description,
+			&i.Location,
+			&i.Date,
+			&i.Time,
+			&i.Status,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listActivitiesPaginatedScoped = `-- name: ListActivitiesPaginatedScoped :many
+SELECT
+    a.id, a.title, a.type_id, t.name AS type_name, t.color AS type_color, t.icon AS type_icon,
+    a.district_id, d.name AS district_name, a.description, a.location, a.date, a.time, a.status
+FROM renjana_activities a
+JOIN renjana_activity_types t ON t.id = a.type_id
+JOIN renjana_districts d ON d.id = a.district_id
+WHERE (?1 IS NULL OR ?1 = ''
+       OR a.title LIKE '%' || ?1 || '%'
+       OR a.location LIKE '%' || ?1 || '%')
+  AND (?2 = 0 OR a.type_id = ?2)
+  AND (?3 IS NULL OR ?3 = '' OR a.status = ?3)
+  AND (?4 = 0 OR a.district_id = ?4)
+ORDER BY a.date DESC, a.time DESC
+LIMIT ?5 OFFSET ?6
+`
+
+type ListActivitiesPaginatedScopedParams struct {
+	Column1 interface{} `json:"column_1"`
+	Column2 interface{} `json:"column_2"`
+	Column3 interface{} `json:"column_3"`
+	Column4 interface{} `json:"column_4"`
+	Limit   int64       `json:"limit"`
+	Offset  int64       `json:"offset"`
+}
+
+type ListActivitiesPaginatedScopedRow struct {
+	ID           int64          `json:"id"`
+	Title        string         `json:"title"`
+	TypeID       int64          `json:"type_id"`
+	TypeName     string         `json:"type_name"`
+	TypeColor    string         `json:"type_color"`
+	TypeIcon     string         `json:"type_icon"`
+	DistrictID   int64          `json:"district_id"`
+	DistrictName string         `json:"district_name"`
+	Description  sql.NullString `json:"description"`
+	Location     string         `json:"location"`
+	Date         time.Time      `json:"date"`
+	Time         string         `json:"time"`
+	Status       string         `json:"status"`
+}
+
+// Same as ListActivitiesPaginated but with district_id scope (for koordinator).
+// Pass DistrictID = 0 to disable filter (admin use).
+func (q *Queries) ListActivitiesPaginatedScoped(ctx context.Context, arg ListActivitiesPaginatedScopedParams) ([]ListActivitiesPaginatedScopedRow, error) {
+	rows, err := q.db.QueryContext(ctx, listActivitiesPaginatedScoped,
+		arg.Column1,
+		arg.Column2,
+		arg.Column3,
+		arg.Column4,
+		arg.Limit,
+		arg.Offset,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListActivitiesPaginatedScopedRow
+	for rows.Next() {
+		var i ListActivitiesPaginatedScopedRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Title,
+			&i.TypeID,
+			&i.TypeName,
+			&i.TypeColor,
+			&i.TypeIcon,
+			&i.DistrictID,
+			&i.DistrictName,
+			&i.Description,
+			&i.Location,
+			&i.Date,
+			&i.Time,
+			&i.Status,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const updateActivity = `-- name: UpdateActivity :execrows
+UPDATE renjana_activities
+SET title = ?, type_id = ?, district_id = ?, description = ?,
+    location = ?, date = ?, time = ?, status = ?
+WHERE id = ?
+`
+
+type UpdateActivityParams struct {
+	Title       string         `json:"title"`
+	TypeID      int64          `json:"type_id"`
+	DistrictID  int64          `json:"district_id"`
+	Description sql.NullString `json:"description"`
+	Location    string         `json:"location"`
+	Date        time.Time      `json:"date"`
+	Time        string         `json:"time"`
+	Status      string         `json:"status"`
+	ID          int64          `json:"id"`
+}
+
+func (q *Queries) UpdateActivity(ctx context.Context, arg UpdateActivityParams) (int64, error) {
+	result, err := q.db.ExecContext(ctx, updateActivity,
+		arg.Title,
+		arg.TypeID,
+		arg.DistrictID,
+		arg.Description,
+		arg.Location,
+		arg.Date,
+		arg.Time,
+		arg.Status,
+		arg.ID,
+	)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
 }

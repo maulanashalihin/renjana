@@ -27,6 +27,7 @@ func setupAuthTestDB(t *testing.T) *queries.Querier {
 		name TEXT NOT NULL, password TEXT, avatar TEXT DEFAULT '',
 		role TEXT NOT NULL DEFAULT 'user', google_id TEXT UNIQUE,
 		email_verified BOOLEAN NOT NULL DEFAULT FALSE,
+		district_id INTEGER, volunteer_id INTEGER, is_active BOOLEAN NOT NULL DEFAULT 1,
 		created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 		updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 	);
@@ -61,7 +62,7 @@ func TestRegister(t *testing.T) {
 		pass    string
 		wantErr error
 	}{
-		{"success",         "new@example.com", "password123", nil},
+		{"success", "new@example.com", "password123", nil},
 		{"duplicate email", "dup@example.com", "password456", queries.ErrUserAlreadyExists},
 	}
 
@@ -106,10 +107,10 @@ func TestLogin(t *testing.T) {
 		pass    string
 		wantErr error
 	}{
-		{"success",          "normal@example.com", "correct-password", nil},
-		{"wrong password",   "normal@example.com", "wrong",            ErrInvalidCredentials},
-		{"user not found",   "nobody@example.com", "any",              ErrInvalidCredentials},
-		{"oauth-only user",  "oauth@example.com",  "any",              ErrInvalidCredentials},
+		{"success", "normal@example.com", "correct-password", nil},
+		{"wrong password", "normal@example.com", "wrong", ErrInvalidCredentials},
+		{"user not found", "nobody@example.com", "any", ErrInvalidCredentials},
+		{"oauth-only user", "oauth@example.com", "any", ErrInvalidCredentials},
 	}
 
 	for _, tt := range tests {
@@ -138,8 +139,8 @@ func TestGetUserByID(t *testing.T) {
 		userID  int64
 		wantErr error
 	}{
-		{"found",    created.ID, nil},
-		{"not found", 999,        queries.ErrUserNotFound},
+		{"found", created.ID, nil},
+		{"not found", 999, queries.ErrUserNotFound},
 	}
 
 	for _, tt := range tests {
@@ -196,9 +197,9 @@ func TestOAuth(t *testing.T) {
 			got, exp string
 			want     bool
 		}{
-			{"match",    "expected", "expected", true},
-			{"mismatch", "expected", "wrong",    false},
-			{"empty",    "",         "expected", false},
+			{"match", "expected", "expected", true},
+			{"mismatch", "expected", "wrong", false},
+			{"empty", "", "expected", false},
 		}
 		for _, tt := range tests {
 			t.Run(tt.name, func(t *testing.T) {

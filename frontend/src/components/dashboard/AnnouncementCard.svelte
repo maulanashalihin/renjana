@@ -20,7 +20,7 @@
     <div class="flex items-center justify-between mb-3">
         <h3 class="text-base font-bold text-slate-900 dark:text-white">Pengumuman</h3>
         <a
-            href="/app/berita"
+            href="/berita"
             class="text-xs font-semibold text-renjana-500 hover:text-renjana-600 transition-colors"
         >
             Lihat Semua

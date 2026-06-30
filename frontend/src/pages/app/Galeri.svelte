@@ -2,52 +2,71 @@
     import AppLayout from "../../components/AppLayout.svelte";
     import PageHeader from "../../lib/components/PageHeader.svelte";
     import EmptyState from "../../lib/components/EmptyState.svelte";
-    import { galeri, dateLong } from "../../lib/data/dummy";
-    import { Image as ImageIcon, Search, MapPin, Calendar, X, Heart, Download, Share2, Sparkles } from "lucide-svelte";
+    import { Image as ImageIcon, Search, X } from "lucide-svelte";
 
-    let { user }: { user?: any } = $props();
+    interface AppUser {
+        id: number;
+        name: string;
+        email: string;
+        avatar?: string;
+        role?: string;
+    }
 
-    const collections = ["Pelatihan", "Simulasi", "Aksi Sosial", "Edukasi", "Lomba", "Rapat"];
+    interface Media {
+        id: number;
+        title: string;
+        file_url: string;
+        media_type: string;
+        caption: string;
+        uploaded_at: string;
+    }
 
-    let activeCollection = $state<string | null>(null);
+    interface Pagination {
+        data: Media[];
+        current_page: number;
+        total_pages: number;
+    }
+
+    interface Props {
+        user?: AppUser;
+        media?: Pagination;
+    }
+
+    let { user, media }: Props = $props();
+
     let search = $state("");
-    let lightbox = $state<{ id: number; title: string; collection: string; district: string; date: string; cover: string } | null>(null);
+    let activeType = $state<string | null>(null);
+    const types = ["image", "video"];
 
-    const collectionColor: Record<string, string> = {
-        Pelatihan: "bg-renjana-500",
-        Simulasi: "bg-blue-500",
-        "Aksi Sosial": "bg-rose-500",
-        Edukasi: "bg-emerald-500",
-        Lomba: "bg-amber-500",
-        Rapat: "bg-purple-500",
-    };
-
-    // Real images via g.cover (Picsum)
-
-    const filtered = $derived.by(() => {
+    const items = $derived(media?.data ?? []);
+    let filtered = $derived(items);
+    {
         const s = search.toLowerCase().trim();
-        return galeri.filter((g) => {
-            if (activeCollection && g.collection !== activeCollection) return false;
-            if (s && !g.title.toLowerCase().includes(s)) return false;
+        filtered = filtered.filter(m => {
+            if (activeType && m.media_type !== activeType) return false;
+            if (s && !m.title.toLowerCase().includes(s)) return false;
             return true;
         });
-    });
+    }
+
+    function dateLong(d: string): string {
+        if (!d) return "";
+        const date = new Date(d);
+        const months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+        return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
+    }
 </script>
 
-<AppLayout {user} pageTitle="Galeri Kegiatan" pageSubtitle="Dokumentasi foto kegiatan RENJANA di seluruh Tanah Bumbu" activeMenu="Galeri">
-    <PageHeader title="Galeri Kegiatan" subtitle="320+ foto dari berbagai kegiatan kami" icon={ImageIcon} />
+<AppLayout {user} pageTitle="Galeri" pageSubtitle="Dokumentasi foto dan video kegiatan" activeMenu="Galeri">
+    <PageHeader title="Galeri" subtitle="Foto dan video dari setiap kegiatan" icon={ImageIcon} />
 
-    <!-- Filter -->
     <div class="flex flex-wrap items-center gap-2 mb-4">
-        <button onclick={() => (activeCollection = null)} class="px-3 py-1.5 rounded-lg text-xs font-medium border transition {activeCollection === null ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 border-transparent' : 'bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-700'}">
-            Semua ({galeri.length})
+        <button onclick={() => activeType = null} class="px-3 py-1.5 rounded-lg text-xs font-medium border transition {activeType === null ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 border-transparent' : 'bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-700'}">
+            Semua
         </button>
-        {#each collections as c}
-            {@const count = galeri.filter((g) => g.collection === c).length}
-            <button onclick={() => (activeCollection = c)} class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition {activeCollection === c ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 border-transparent' : 'bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-700'}">
-                <span class="w-2 h-2 rounded-full {collectionColor[c]}"></span>
-                {c}
-                <span class="px-1 py-0.5 rounded text-[10px] {activeCollection === c ? 'bg-white/20' : 'bg-neutral-100 dark:bg-neutral-800'}">{count}</span>
+        {#each types as t}
+            <button onclick={() => activeType = t} class="px-3 py-1.5 rounded-lg text-xs font-medium border transition {activeType === t ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 border-transparent' : 'bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-700'}">
+                {t === "image" ? "Foto" : "Video"}
             </button>
         {/each}
     </div>
@@ -55,76 +74,31 @@
     <div class="mb-6">
         <div class="relative max-w-md">
             <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
-            <input type="text" placeholder="Cari foto..." bind:value={search} class="w-full pl-10 pr-3 py-2.5 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 focus:ring-2 focus:ring-renjana-200 dark:focus:ring-renjana-900 outline-none" />
+            <input type="text" placeholder="Cari galeri..." bind:value={search} class="w-full pl-10 pr-3 py-2.5 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
         </div>
     </div>
 
-    <!-- Masonry grid -->
     {#if filtered.length > 0}
-        <div class="columns-2 sm:columns-3 lg:columns-4 gap-3 space-y-3">
-            {#each filtered as g, i}
-                <button onclick={() => (lightbox = g)} class="group block w-full break-inside-avoid mb-3 relative overflow-hidden rounded-2xl hover:shadow-xl transition text-left">
-                    <div class="relative {i % 4 === 0 ? 'aspect-[3/4]' : i % 3 === 0 ? 'aspect-square' : 'aspect-[4/3]'} bg-cover bg-center bg-neutral-200 dark:bg-neutral-800 group-hover:scale-105 transition duration-500" style="background-image: linear-gradient(180deg, rgba(0,0,0,0.05), rgba(0,0,0,0.25)), url('{g.cover}');">
-                        <div class="absolute top-2 left-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white/90 dark:bg-neutral-900/90 text-neutral-700 dark:text-neutral-300">
-                            <span class="w-1.5 h-1.5 rounded-full {collectionColor[g.collection]}"></span>
-                            {g.collection}
-                        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {#each filtered as m}
+                <div class="group rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 overflow-hidden hover:shadow-lg transition">
+                    <div class="relative aspect-video bg-cover bg-center" style="background-image: url('{m.file_url || "/public/images/galeri-visual.png"}');">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                        <span class="absolute top-3 right-3 px-2 py-0.5 rounded text-[10px] font-semibold {m.media_type === 'video' ? 'bg-rose-500 text-white' : 'bg-emerald-500 text-white'}">
+                            {m.media_type === 'video' ? 'VIDEO' : 'FOTO'}
+                        </span>
                     </div>
-                    <div class="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition">
-                        <h3 class="font-semibold text-white text-sm">{g.title}</h3>
-                        <div class="flex items-center gap-2 text-[10px] text-white/80 mt-1">
-                            <span class="flex items-center gap-1"><MapPin class="w-3 h-3" />{g.district}</span>
-                            <span class="flex items-center gap-1"><Calendar class="w-3 h-3" />{dateLong(g.date)}</span>
-                        </div>
+                    <div class="p-4">
+                        <h3 class="text-sm font-bold text-neutral-900 dark:text-white line-clamp-1">{m.title}</h3>
+                        {#if m.caption}
+                            <p class="text-xs text-neutral-500 dark:text-neutral-400 line-clamp-2 mt-1">{m.caption}</p>
+                        {/if}
+                        <p class="text-[10px] text-neutral-400 dark:text-neutral-500 mt-2">{dateLong(m.uploaded_at)}</p>
                     </div>
-                </button>
+                </div>
             {/each}
         </div>
     {:else}
-        <EmptyState title="Tidak ada foto" message="Coba ubah koleksi atau kata kunci pencarian." icon={ImageIcon} />
-    {/if}
-
-    <!-- Lightbox -->
-    {#if lightbox}
-        <div onclick={() => (lightbox = null)} class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 cursor-pointer">
-            <div onclick={(e) => e.stopPropagation()} class="max-w-3xl w-full bg-white dark:bg-neutral-900 rounded-2xl overflow-hidden cursor-default">
-                <div class="relative aspect-video bg-cover bg-center" style="background-image: url('{lightbox.cover}');">
-                    <button onclick={() => (lightbox = null)} class="absolute top-3 right-3 p-2 rounded-full bg-black/40 hover:bg-black/60 text-white transition">
-                        <X class="w-5 h-5" />
-                    </button>
-                </div>
-                <div class="p-6">
-                    <div class="flex items-center gap-2 mb-2">
-                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-renjana-100 dark:bg-renjana-900/30 text-renjana-700 dark:text-renjana-300">
-                            <span class="w-1.5 h-1.5 rounded-full {collectionColor[lightbox.collection]}"></span>
-                            {lightbox.collection}
-                        </span>
-                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300">
-                            <Sparkles class="w-3 h-3" />
-                            Dokumentasi
-                        </span>
-                    </div>
-                    <h3 class="text-xl font-bold text-neutral-900 dark:text-white mb-2">{lightbox.title}</h3>
-                    <div class="flex flex-wrap items-center gap-4 text-sm text-neutral-600 dark:text-neutral-400 mb-4">
-                        <span class="flex items-center gap-1.5"><MapPin class="w-4 h-4" />{lightbox.district}</span>
-                        <span class="flex items-center gap-1.5"><Calendar class="w-4 h-4" />{dateLong(lightbox.date)}</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <button class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-renjana-500 hover:bg-renjana-600 text-white text-sm font-semibold transition">
-                            <Download class="w-4 h-4" />
-                            Download
-                        </button>
-                        <button class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 text-sm font-medium hover:border-renjana-500 transition">
-                            <Heart class="w-4 h-4" />
-                            Suka
-                        </button>
-                        <button class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 text-sm font-medium hover:border-renjana-500 transition">
-                            <Share2 class="w-4 h-4" />
-                            Bagikan
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <EmptyState title="Galeri kosong" message="Belum ada foto atau video yang dipublikasikan." icon={ImageIcon} />
     {/if}
 </AppLayout>

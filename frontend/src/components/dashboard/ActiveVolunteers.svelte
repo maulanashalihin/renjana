@@ -18,7 +18,7 @@
     <div class="flex items-center justify-between mb-4">
         <h3 class="text-base font-bold text-slate-900 dark:text-white">Relawan Aktif</h3>
         <a
-            href="/app/relawan"
+            href="/relawan"
             class="text-xs font-semibold text-renjana-500 hover:text-renjana-600 transition-colors"
         >
             Lihat Semua

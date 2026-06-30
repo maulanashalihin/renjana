@@ -119,7 +119,7 @@
                         </div>
                         <div class="p-2">
                             <a
-                                href="/app/profile"
+                                href="/profile"
                                 class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                             >
                                 <UserIcon class="w-4 h-4" />

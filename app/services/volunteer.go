@@ -406,6 +406,68 @@ func (s *VolunteerService) GetStats(ctx context.Context) (*VolunteerStats, error
 	}, nil
 }
 
+// GetStatsByDistrict returns stats for a single district (for koordinator view).
+func (s *VolunteerService) GetStatsByDistrict(ctx context.Context, districtID int64) (*VolunteerStats, error) {
+	r, err := s.querier.GetVolunteerStatsByDistrict(ctx, districtID)
+	if err != nil {
+		return nil, err
+	}
+	return &VolunteerStats{
+		Total:    r.Total,
+		Active:   nullFloatToInt(r.Active),
+		Inactive: nullFloatToInt(r.Inactive),
+		Pending:  nullFloatToInt(r.Pending),
+		Rejected: nullFloatToInt(r.Rejected),
+		Schools:  r.Schools,
+	}, nil
+}
+
+// GetPendingApplicationsByDistrict returns pending volunteer applications for a specific district.
+func (s *VolunteerService) GetPendingApplicationsByDistrict(ctx context.Context, districtID int64, page, perPage int) (*PaginationResult, error) {
+	page, perPage, offset := NormalizePagination(page, perPage)
+
+	rows, err := s.querier.ListPendingApplicationsByDistrict(ctx, queries.ListPendingApplicationsByDistrictParams{
+		DistrictID: districtID,
+		Limit:      int64(perPage),
+		Offset:     int64(offset),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	items := make([]VolunteerListItem, 0, len(rows))
+	for _, r := range rows {
+		phone := ""
+		if r.Phone.Valid {
+			phone = r.Phone.String
+		}
+		avatar := ""
+		if r.AvatarUrl.Valid {
+			avatar = r.AvatarUrl.String
+		}
+		items = append(items, VolunteerListItem{
+			ID:                r.ID,
+			Name:              r.Name,
+			School:            r.School,
+			DistrictID:        r.DistrictID,
+			DistrictName:      r.DistrictName,
+			Status:            "nonaktif",
+			Phone:             phone,
+			AvatarURL:         avatar,
+			ApplicationStatus: r.ApplicationStatus,
+			JoinedAt:          r.JoinedAt,
+			IsActive:          false,
+		})
+	}
+
+	total, err := s.querier.CountPendingApplicationsByDistrict(ctx, districtID)
+	if err != nil {
+		return nil, err
+	}
+
+	return BuildPagination(items, page, perPage, total), nil
+}
+
 func nullFloatToInt(n sql.NullFloat64) int64 {
 	if !n.Valid {
 		return 0

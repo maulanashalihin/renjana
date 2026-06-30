@@ -7,8 +7,125 @@ package queries
 
 import (
 	"context"
+	"database/sql"
 	"time"
 )
+
+const countAnnouncementsFiltered = `-- name: CountAnnouncementsFiltered :one
+SELECT COUNT(*) AS total
+FROM renjana_announcements
+WHERE (?1 IS NULL OR ?1 = ''
+       OR title LIKE '%' || ?1 || '%'
+       OR content LIKE '%' || ?1 || '%')
+  AND (?2 IS NULL OR ?2 = '' OR category = ?2)
+  AND (?3 IS NULL OR ?3 = '' OR is_published = ?3)
+`
+
+type CountAnnouncementsFilteredParams struct {
+	Column1 interface{} `json:"column_1"`
+	Column2 interface{} `json:"column_2"`
+	Column3 interface{} `json:"column_3"`
+}
+
+func (q *Queries) CountAnnouncementsFiltered(ctx context.Context, arg CountAnnouncementsFilteredParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countAnnouncementsFiltered, arg.Column1, arg.Column2, arg.Column3)
+	var total int64
+	err := row.Scan(&total)
+	return total, err
+}
+
+const createAnnouncement = `-- name: CreateAnnouncement :one
+INSERT INTO renjana_announcements (
+    title, content, category, slug, body, cover_url, author_id, published_at, is_published
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+RETURNING id
+`
+
+type CreateAnnouncementParams struct {
+	Title       string         `json:"title"`
+	Content     string         `json:"content"`
+	Category    string         `json:"category"`
+	Slug        sql.NullString `json:"slug"`
+	Body        sql.NullString `json:"body"`
+	CoverUrl    sql.NullString `json:"cover_url"`
+	AuthorID    sql.NullInt64  `json:"author_id"`
+	PublishedAt time.Time      `json:"published_at"`
+	IsPublished bool           `json:"is_published"`
+}
+
+func (q *Queries) CreateAnnouncement(ctx context.Context, arg CreateAnnouncementParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, createAnnouncement,
+		arg.Title,
+		arg.Content,
+		arg.Category,
+		arg.Slug,
+		arg.Body,
+		arg.CoverUrl,
+		arg.AuthorID,
+		arg.PublishedAt,
+		arg.IsPublished,
+	)
+	var id int64
+	err := row.Scan(&id)
+	return id, err
+}
+
+const deleteAnnouncement = `-- name: DeleteAnnouncement :execrows
+DELETE FROM renjana_announcements WHERE id = ?
+`
+
+func (q *Queries) DeleteAnnouncement(ctx context.Context, id int64) (int64, error) {
+	result, err := q.db.ExecContext(ctx, deleteAnnouncement, id)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
+}
+
+const getAnnouncementByID = `-- name: GetAnnouncementByID :one
+
+SELECT id, title, content, category, slug, body, cover_url, author_id,
+       published_at, is_published, created_at
+FROM renjana_announcements
+WHERE id = ?
+`
+
+type GetAnnouncementByIDRow struct {
+	ID          int64          `json:"id"`
+	Title       string         `json:"title"`
+	Content     string         `json:"content"`
+	Category    string         `json:"category"`
+	Slug        sql.NullString `json:"slug"`
+	Body        sql.NullString `json:"body"`
+	CoverUrl    sql.NullString `json:"cover_url"`
+	AuthorID    sql.NullInt64  `json:"author_id"`
+	PublishedAt time.Time      `json:"published_at"`
+	IsPublished bool           `json:"is_published"`
+	CreatedAt   time.Time      `json:"created_at"`
+}
+
+// ============================================================================
+// CRUD queries for Berita page
+// ============================================================================
+func (q *Queries) GetAnnouncementByID(ctx context.Context, id int64) (GetAnnouncementByIDRow, error) {
+	row := q.db.QueryRowContext(ctx, getAnnouncementByID, id)
+	var i GetAnnouncementByIDRow
+	err := row.Scan(
+		&i.ID,
+		&i.Title,
+		&i.Content,
+		&i.Category,
+		&i.Slug,
+		&i.Body,
+		&i.CoverUrl,
+		&i.AuthorID,
+		&i.PublishedAt,
+		&i.IsPublished,
+		&i.CreatedAt,
+	)
+	return i, err
+}
 
 const getLatestPublishedAnnouncement = `-- name: GetLatestPublishedAnnouncement :one
 SELECT id, title, content, published_at, is_published, created_at
@@ -19,12 +136,12 @@ LIMIT 1
 `
 
 type GetLatestPublishedAnnouncementRow struct {
-	ID          int64
-	Title       string
-	Content     string
-	PublishedAt time.Time
-	IsPublished bool
-	CreatedAt   time.Time
+	ID          int64     `json:"id"`
+	Title       string    `json:"title"`
+	Content     string    `json:"content"`
+	PublishedAt time.Time `json:"published_at"`
+	IsPublished bool      `json:"is_published"`
+	CreatedAt   time.Time `json:"created_at"`
 }
 
 func (q *Queries) GetLatestPublishedAnnouncement(ctx context.Context) (GetLatestPublishedAnnouncementRow, error) {
@@ -50,12 +167,12 @@ LIMIT ?
 `
 
 type GetLatestPublishedAnnouncementsRow struct {
-	ID          int64
-	Title       string
-	Content     string
-	PublishedAt time.Time
-	IsPublished bool
-	CreatedAt   time.Time
+	ID          int64     `json:"id"`
+	Title       string    `json:"title"`
+	Content     string    `json:"content"`
+	PublishedAt time.Time `json:"published_at"`
+	IsPublished bool      `json:"is_published"`
+	CreatedAt   time.Time `json:"created_at"`
 }
 
 func (q *Queries) GetLatestPublishedAnnouncements(ctx context.Context, limit int64) ([]GetLatestPublishedAnnouncementsRow, error) {
@@ -86,4 +203,117 @@ func (q *Queries) GetLatestPublishedAnnouncements(ctx context.Context, limit int
 		return nil, err
 	}
 	return items, nil
+}
+
+const listAnnouncementsPaginated = `-- name: ListAnnouncementsPaginated :many
+SELECT id, title, content, category, slug, body, cover_url, author_id,
+       published_at, is_published, created_at
+FROM renjana_announcements
+WHERE (?1 IS NULL OR ?1 = ''
+       OR title LIKE '%' || ?1 || '%'
+       OR content LIKE '%' || ?1 || '%')
+  AND (?2 IS NULL OR ?2 = '' OR category = ?2)
+  AND (?3 IS NULL OR ?3 = '' OR is_published = ?3)
+ORDER BY published_at DESC, created_at DESC
+LIMIT ?4 OFFSET ?5
+`
+
+type ListAnnouncementsPaginatedParams struct {
+	Column1 interface{} `json:"column_1"`
+	Column2 interface{} `json:"column_2"`
+	Column3 interface{} `json:"column_3"`
+	Limit   int64       `json:"limit"`
+	Offset  int64       `json:"offset"`
+}
+
+type ListAnnouncementsPaginatedRow struct {
+	ID          int64          `json:"id"`
+	Title       string         `json:"title"`
+	Content     string         `json:"content"`
+	Category    string         `json:"category"`
+	Slug        sql.NullString `json:"slug"`
+	Body        sql.NullString `json:"body"`
+	CoverUrl    sql.NullString `json:"cover_url"`
+	AuthorID    sql.NullInt64  `json:"author_id"`
+	PublishedAt time.Time      `json:"published_at"`
+	IsPublished bool           `json:"is_published"`
+	CreatedAt   time.Time      `json:"created_at"`
+}
+
+func (q *Queries) ListAnnouncementsPaginated(ctx context.Context, arg ListAnnouncementsPaginatedParams) ([]ListAnnouncementsPaginatedRow, error) {
+	rows, err := q.db.QueryContext(ctx, listAnnouncementsPaginated,
+		arg.Column1,
+		arg.Column2,
+		arg.Column3,
+		arg.Limit,
+		arg.Offset,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListAnnouncementsPaginatedRow
+	for rows.Next() {
+		var i ListAnnouncementsPaginatedRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Title,
+			&i.Content,
+			&i.Category,
+			&i.Slug,
+			&i.Body,
+			&i.CoverUrl,
+			&i.AuthorID,
+			&i.PublishedAt,
+			&i.IsPublished,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const updateAnnouncement = `-- name: UpdateAnnouncement :execrows
+UPDATE renjana_announcements
+SET title = ?, content = ?, category = ?, slug = ?, body = ?,
+    cover_url = ?, published_at = ?, is_published = ?
+WHERE id = ?
+`
+
+type UpdateAnnouncementParams struct {
+	Title       string         `json:"title"`
+	Content     string         `json:"content"`
+	Category    string         `json:"category"`
+	Slug        sql.NullString `json:"slug"`
+	Body        sql.NullString `json:"body"`
+	CoverUrl    sql.NullString `json:"cover_url"`
+	PublishedAt time.Time      `json:"published_at"`
+	IsPublished bool           `json:"is_published"`
+	ID          int64          `json:"id"`
+}
+
+func (q *Queries) UpdateAnnouncement(ctx context.Context, arg UpdateAnnouncementParams) (int64, error) {
+	result, err := q.db.ExecContext(ctx, updateAnnouncement,
+		arg.Title,
+		arg.Content,
+		arg.Category,
+		arg.Slug,
+		arg.Body,
+		arg.CoverUrl,
+		arg.PublishedAt,
+		arg.IsPublished,
+		arg.ID,
+	)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
 }

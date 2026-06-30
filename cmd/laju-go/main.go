@@ -98,6 +98,11 @@ func main() {
 	userService := services.NewUserService(querier, userCache)
 	dashboardService := services.NewDashboardService(querier)
 	volunteerService := services.NewVolunteerService(querier)
+	activityService := services.NewActivityService(querier)
+	announcementService := services.NewAnnouncementService(querier)
+	contactService := services.NewContactService(querier)
+	organizationService := services.NewOrganizationService(querier)
+	staticService := services.NewStaticService(querier)
 
 	// Initialize Asset service (for production builds with hashed filenames)
 	assetService := services.NewAssetService("./dist/.vite/manifest.json", ".vite-port", cfg.IsDevelopment())
@@ -107,11 +112,17 @@ func main() {
 
 	// Initialize handlers
 	routeHandlers := routes.Handlers{
-		Public:    handlers.NewPublicHandler(authService, userService, inertiaService, assetService),
-		Auth:      handlers.NewAuthHandler(authService, userService, sessionStore, inertiaService),
-		App:       handlers.NewAppHandler(userService, sessionStore, inertiaService, dashboardService),
-		Upload:    handlers.NewUploadHandler(sessionStore, userService),
-		Volunteer: handlers.NewVolunteerHandler(sessionStore, inertiaService, volunteerService, querier),
+		Auth:         handlers.NewAuthHandler(authService, userService, sessionStore, inertiaService),
+		App:          handlers.NewAppHandler(userService, sessionStore, inertiaService, dashboardService),
+		Upload:       handlers.NewUploadHandler(sessionStore, userService),
+		Volunteer:    handlers.NewVolunteerHandler(sessionStore, inertiaService, volunteerService, querier),
+		Activity:     handlers.NewActivityHandler(sessionStore, inertiaService, activityService, querier),
+		Announcement: handlers.NewAnnouncementHandler(sessionStore, inertiaService, announcementService, querier),
+		Contact:      handlers.NewContactHandler(sessionStore, inertiaService, contactService, querier),
+		Organization: handlers.NewOrganizationHandler(sessionStore, inertiaService, organizationService, volunteerService, querier),
+		Registration: handlers.NewRegistrationHandler(sessionStore, inertiaService, volunteerService, querier),
+		Static:       handlers.NewStaticHandler(sessionStore, inertiaService, staticService, querier),
+		UserAdmin:    handlers.NewUserAdminHandler(sessionStore, inertiaService, services.NewUserAdminService(querier), querier),
 	}
 
 	// Setup CSRF middleware

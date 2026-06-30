@@ -19,7 +19,9 @@ func (Session) TableName() string {
 
 // SessionData represents the decoded session data
 type SessionData struct {
-	UserID int64  `json:"user_id"`
-	Email  string `json:"email"`
-	Role   string `json:"role"`
+	UserID      int64  `json:"user_id"`
+	Email       string `json:"email"`
+	Role        string `json:"role"`
+	DistrictID  int64  `json:"district_id,omitempty"`  // For koordinator scope filtering
+	VolunteerID int64  `json:"volunteer_id,omitempty"` // For relawan — links to volunteer record
 }

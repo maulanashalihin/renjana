@@ -115,7 +115,7 @@ func (s *AuthService) ProcessGoogleToken(ctx context.Context, code string) (*mod
 		},
 		Avatar:        googleUser.Picture,
 		EmailVerified: googleUser.Verified,
-		Role:          models.RoleUser,
+		Role:          models.RoleRelawan,
 	}
 
 	if err := s.querier.CreateUserWithGoogleID(ctx, newUser); err != nil {
@@ -150,7 +150,7 @@ func (s *AuthService) Register(name, email, password string) (*models.User, erro
 			String: hashedPassword,
 			Valid:  true,
 		},
-		Role:          models.RoleUser,
+		Role:          models.RoleRelawan,
 		EmailVerified: false,
 	}
 

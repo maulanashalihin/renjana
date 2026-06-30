@@ -22,8 +22,8 @@ WHERE id = ?
 `
 
 type ApproveVolunteerApplicationParams struct {
-	ReviewerID sql.NullInt64
-	ID         int64
+	ReviewerID sql.NullInt64 `json:"reviewer_id"`
+	ID         int64         `json:"id"`
 }
 
 func (q *Queries) ApproveVolunteerApplication(ctx context.Context, arg ApproveVolunteerApplicationParams) (int64, error) {
@@ -114,6 +114,20 @@ func (q *Queries) CountPendingApplications(ctx context.Context) (int64, error) {
 	return total, err
 }
 
+const countPendingApplicationsByDistrict = `-- name: CountPendingApplicationsByDistrict :one
+SELECT COUNT(*) AS total
+FROM renjana_volunteers
+WHERE application_status = 'pending'
+  AND district_id = ?
+`
+
+func (q *Queries) CountPendingApplicationsByDistrict(ctx context.Context, districtID int64) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countPendingApplicationsByDistrict, districtID)
+	var total int64
+	err := row.Scan(&total)
+	return total, err
+}
+
 const countVolunteersByDistrict = `-- name: CountVolunteersByDistrict :many
 SELECT
     d.id AS district_id,
@@ -126,9 +140,9 @@ ORDER BY volunteer_count DESC, d.name
 `
 
 type CountVolunteersByDistrictRow struct {
-	DistrictID     int64
-	DistrictName   string
-	VolunteerCount int64
+	DistrictID     int64  `json:"district_id"`
+	DistrictName   string `json:"district_name"`
+	VolunteerCount int64  `json:"volunteer_count"`
 }
 
 func (q *Queries) CountVolunteersByDistrict(ctx context.Context) ([]CountVolunteersByDistrictRow, error) {
@@ -166,10 +180,10 @@ WHERE (?1 IS NULL OR ?1 = ''
 `
 
 type CountVolunteersFilteredParams struct {
-	Column1 interface{}
-	Column2 interface{}
-	Column3 interface{}
-	Column4 interface{}
+	Column1 interface{} `json:"column_1"`
+	Column2 interface{} `json:"column_2"`
+	Column3 interface{} `json:"column_3"`
+	Column4 interface{} `json:"column_4"`
 }
 
 func (q *Queries) CountVolunteersFiltered(ctx context.Context, arg CountVolunteersFilteredParams) (int64, error) {
@@ -193,13 +207,13 @@ RETURNING id
 `
 
 type CreateVolunteerParams struct {
-	Name              string
-	School            string
-	DistrictID        int64
-	Phone             sql.NullString
-	Status            string
-	JoinedAt          time.Time
-	ApplicationStatus string
+	Name              string         `json:"name"`
+	School            string         `json:"school"`
+	DistrictID        int64          `json:"district_id"`
+	Phone             sql.NullString `json:"phone"`
+	Status            string         `json:"status"`
+	JoinedAt          time.Time      `json:"joined_at"`
+	ApplicationStatus string         `json:"application_status"`
 }
 
 func (q *Queries) CreateVolunteer(ctx context.Context, arg CreateVolunteerParams) (int64, error) {
@@ -248,14 +262,14 @@ LIMIT ?
 `
 
 type GetActiveVolunteersWithLimitRow struct {
-	ID           int64
-	Name         string
-	School       string
-	DistrictID   int64
-	DistrictName string
-	Status       string
-	AvatarUrl    sql.NullString
-	JoinedAt     time.Time
+	ID           int64          `json:"id"`
+	Name         string         `json:"name"`
+	School       string         `json:"school"`
+	DistrictID   int64          `json:"district_id"`
+	DistrictName string         `json:"district_name"`
+	Status       string         `json:"status"`
+	AvatarUrl    sql.NullString `json:"avatar_url"`
+	JoinedAt     time.Time      `json:"joined_at"`
 }
 
 func (q *Queries) GetActiveVolunteersWithLimit(ctx context.Context, limit int64) ([]GetActiveVolunteersWithLimitRow, error) {
@@ -303,20 +317,20 @@ WHERE v.id = ?
 `
 
 type GetVolunteerByIDRow struct {
-	ID                int64
-	Name              string
-	School            string
-	DistrictID        int64
-	Phone             sql.NullString
-	Status            string
-	AvatarUrl         sql.NullString
-	JoinedAt          time.Time
-	IsActive          bool
-	ApplicationStatus string
-	ReviewerID        sql.NullInt64
-	ReviewedAt        sql.NullTime
-	RejectionReason   sql.NullString
-	DistrictName      sql.NullString
+	ID                int64          `json:"id"`
+	Name              string         `json:"name"`
+	School            string         `json:"school"`
+	DistrictID        int64          `json:"district_id"`
+	Phone             sql.NullString `json:"phone"`
+	Status            string         `json:"status"`
+	AvatarUrl         sql.NullString `json:"avatar_url"`
+	JoinedAt          time.Time      `json:"joined_at"`
+	IsActive          bool           `json:"is_active"`
+	ApplicationStatus string         `json:"application_status"`
+	ReviewerID        sql.NullInt64  `json:"reviewer_id"`
+	ReviewedAt        sql.NullTime   `json:"reviewed_at"`
+	RejectionReason   sql.NullString `json:"rejection_reason"`
+	DistrictName      sql.NullString `json:"district_name"`
 }
 
 // ============================================================================
@@ -356,17 +370,52 @@ FROM renjana_volunteers
 `
 
 type GetVolunteerStatsRow struct {
-	Total    int64
-	Active   sql.NullFloat64
-	Inactive sql.NullFloat64
-	Pending  sql.NullFloat64
-	Rejected sql.NullFloat64
-	Schools  int64
+	Total    int64           `json:"total"`
+	Active   sql.NullFloat64 `json:"active"`
+	Inactive sql.NullFloat64 `json:"inactive"`
+	Pending  sql.NullFloat64 `json:"pending"`
+	Rejected sql.NullFloat64 `json:"rejected"`
+	Schools  int64           `json:"schools"`
 }
 
 func (q *Queries) GetVolunteerStats(ctx context.Context) (GetVolunteerStatsRow, error) {
 	row := q.db.QueryRowContext(ctx, getVolunteerStats)
 	var i GetVolunteerStatsRow
+	err := row.Scan(
+		&i.Total,
+		&i.Active,
+		&i.Inactive,
+		&i.Pending,
+		&i.Rejected,
+		&i.Schools,
+	)
+	return i, err
+}
+
+const getVolunteerStatsByDistrict = `-- name: GetVolunteerStatsByDistrict :one
+SELECT
+    COUNT(*) AS total,
+    SUM(CASE WHEN status = 'aktif' THEN 1 ELSE 0 END) AS active,
+    SUM(CASE WHEN status = 'nonaktif' THEN 1 ELSE 0 END) AS inactive,
+    SUM(CASE WHEN application_status = 'pending' THEN 1 ELSE 0 END) AS pending,
+    SUM(CASE WHEN application_status = 'rejected' THEN 1 ELSE 0 END) AS rejected,
+    COUNT(DISTINCT school) AS schools
+FROM renjana_volunteers
+WHERE district_id = ?
+`
+
+type GetVolunteerStatsByDistrictRow struct {
+	Total    int64           `json:"total"`
+	Active   sql.NullFloat64 `json:"active"`
+	Inactive sql.NullFloat64 `json:"inactive"`
+	Pending  sql.NullFloat64 `json:"pending"`
+	Rejected sql.NullFloat64 `json:"rejected"`
+	Schools  int64           `json:"schools"`
+}
+
+func (q *Queries) GetVolunteerStatsByDistrict(ctx context.Context, districtID int64) (GetVolunteerStatsByDistrictRow, error) {
+	row := q.db.QueryRowContext(ctx, getVolunteerStatsByDistrict, districtID)
+	var i GetVolunteerStatsByDistrictRow
 	err := row.Scan(
 		&i.Total,
 		&i.Active,
@@ -390,20 +439,20 @@ LIMIT ? OFFSET ?
 `
 
 type ListPendingApplicationsParams struct {
-	Limit  int64
-	Offset int64
+	Limit  int64 `json:"limit"`
+	Offset int64 `json:"offset"`
 }
 
 type ListPendingApplicationsRow struct {
-	ID                int64
-	Name              string
-	School            string
-	DistrictID        int64
-	DistrictName      string
-	Phone             sql.NullString
-	AvatarUrl         sql.NullString
-	ApplicationStatus string
-	JoinedAt          time.Time
+	ID                int64          `json:"id"`
+	Name              string         `json:"name"`
+	School            string         `json:"school"`
+	DistrictID        int64          `json:"district_id"`
+	DistrictName      string         `json:"district_name"`
+	Phone             sql.NullString `json:"phone"`
+	AvatarUrl         sql.NullString `json:"avatar_url"`
+	ApplicationStatus string         `json:"application_status"`
+	JoinedAt          time.Time      `json:"joined_at"`
 }
 
 func (q *Queries) ListPendingApplications(ctx context.Context, arg ListPendingApplicationsParams) ([]ListPendingApplicationsRow, error) {
@@ -415,6 +464,69 @@ func (q *Queries) ListPendingApplications(ctx context.Context, arg ListPendingAp
 	var items []ListPendingApplicationsRow
 	for rows.Next() {
 		var i ListPendingApplicationsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.School,
+			&i.DistrictID,
+			&i.DistrictName,
+			&i.Phone,
+			&i.AvatarUrl,
+			&i.ApplicationStatus,
+			&i.JoinedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listPendingApplicationsByDistrict = `-- name: ListPendingApplicationsByDistrict :many
+SELECT
+    v.id, v.name, v.school, v.district_id, d.name AS district_name,
+    v.phone, v.avatar_url, v.application_status, v.joined_at
+FROM renjana_volunteers v
+JOIN renjana_districts d ON d.id = v.district_id
+WHERE v.application_status = 'pending'
+  AND v.district_id = ?
+ORDER BY v.joined_at ASC
+LIMIT ? OFFSET ?
+`
+
+type ListPendingApplicationsByDistrictParams struct {
+	DistrictID int64 `json:"district_id"`
+	Limit      int64 `json:"limit"`
+	Offset     int64 `json:"offset"`
+}
+
+type ListPendingApplicationsByDistrictRow struct {
+	ID                int64          `json:"id"`
+	Name              string         `json:"name"`
+	School            string         `json:"school"`
+	DistrictID        int64          `json:"district_id"`
+	DistrictName      string         `json:"district_name"`
+	Phone             sql.NullString `json:"phone"`
+	AvatarUrl         sql.NullString `json:"avatar_url"`
+	ApplicationStatus string         `json:"application_status"`
+	JoinedAt          time.Time      `json:"joined_at"`
+}
+
+func (q *Queries) ListPendingApplicationsByDistrict(ctx context.Context, arg ListPendingApplicationsByDistrictParams) ([]ListPendingApplicationsByDistrictRow, error) {
+	rows, err := q.db.QueryContext(ctx, listPendingApplicationsByDistrict, arg.DistrictID, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListPendingApplicationsByDistrictRow
+	for rows.Next() {
+		var i ListPendingApplicationsByDistrictRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
@@ -456,26 +568,26 @@ LIMIT ?5 OFFSET ?6
 `
 
 type ListVolunteersPaginatedParams struct {
-	Column1 interface{}
-	Column2 interface{}
-	Column3 interface{}
-	Column4 interface{}
-	Limit   int64
-	Offset  int64
+	Column1 interface{} `json:"column_1"`
+	Column2 interface{} `json:"column_2"`
+	Column3 interface{} `json:"column_3"`
+	Column4 interface{} `json:"column_4"`
+	Limit   int64       `json:"limit"`
+	Offset  int64       `json:"offset"`
 }
 
 type ListVolunteersPaginatedRow struct {
-	ID                int64
-	Name              string
-	School            string
-	DistrictID        int64
-	DistrictName      string
-	Status            string
-	Phone             sql.NullString
-	AvatarUrl         sql.NullString
-	ApplicationStatus string
-	JoinedAt          time.Time
-	IsActive          bool
+	ID                int64          `json:"id"`
+	Name              string         `json:"name"`
+	School            string         `json:"school"`
+	DistrictID        int64          `json:"district_id"`
+	DistrictName      string         `json:"district_name"`
+	Status            string         `json:"status"`
+	Phone             sql.NullString `json:"phone"`
+	AvatarUrl         sql.NullString `json:"avatar_url"`
+	ApplicationStatus string         `json:"application_status"`
+	JoinedAt          time.Time      `json:"joined_at"`
+	IsActive          bool           `json:"is_active"`
 }
 
 func (q *Queries) ListVolunteersPaginated(ctx context.Context, arg ListVolunteersPaginatedParams) ([]ListVolunteersPaginatedRow, error) {
@@ -531,9 +643,9 @@ WHERE id = ?
 `
 
 type RejectVolunteerApplicationParams struct {
-	ReviewerID      sql.NullInt64
-	RejectionReason sql.NullString
-	ID              int64
+	ReviewerID      sql.NullInt64  `json:"reviewer_id"`
+	RejectionReason sql.NullString `json:"rejection_reason"`
+	ID              int64          `json:"id"`
 }
 
 func (q *Queries) RejectVolunteerApplication(ctx context.Context, arg RejectVolunteerApplicationParams) (int64, error) {
@@ -552,13 +664,13 @@ WHERE id = ?
 `
 
 type UpdateVolunteerParams struct {
-	Name       string
-	School     string
-	DistrictID int64
-	Phone      sql.NullString
-	Status     string
-	JoinedAt   time.Time
-	ID         int64
+	Name       string         `json:"name"`
+	School     string         `json:"school"`
+	DistrictID int64          `json:"district_id"`
+	Phone      sql.NullString `json:"phone"`
+	Status     string         `json:"status"`
+	JoinedAt   time.Time      `json:"joined_at"`
+	ID         int64          `json:"id"`
 }
 
 func (q *Queries) UpdateVolunteer(ctx context.Context, arg UpdateVolunteerParams) (int64, error) {

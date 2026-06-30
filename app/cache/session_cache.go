@@ -8,12 +8,14 @@ import (
 // CachedSessionData holds the session fields we cache in memory.
 // This avoids a database lookup on every authenticated request.
 type CachedSessionData struct {
-	UserID     int64
-	Email      string
-	Role       string
-	CSRFToken  string
-	CSRFExpiry int64
-	ExpiresAt  time.Time
+	UserID      int64
+	Email       string
+	Role        string
+	DistrictID  int64
+	VolunteerID int64
+	CSRFToken   string
+	CSRFExpiry  int64
+	ExpiresAt   time.Time
 }
 
 type sessionCacheEntry struct {

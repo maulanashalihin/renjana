@@ -36,6 +36,7 @@ func setupTestApp(t *testing.T) (*fiber.App, *queries.Querier) {
 		password TEXT, avatar TEXT DEFAULT '',
 		role TEXT NOT NULL DEFAULT 'user', google_id TEXT UNIQUE,
 		email_verified BOOLEAN NOT NULL DEFAULT FALSE,
+		district_id INTEGER, volunteer_id INTEGER, is_active BOOLEAN NOT NULL DEFAULT 1,
 		created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 		updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 	);
@@ -116,8 +117,8 @@ func TestRegisterEndpoint(t *testing.T) {
 		wantSession  bool
 	}{
 		{
-			"success",    `{"name":"T","email":"a@b.com","password":"pass123"}`,
-			http.StatusSeeOther, "/app", true,
+			"success", `{"name":"T","email":"a@b.com","password":"pass123"}`,
+			http.StatusSeeOther, "/", true,
 		},
 		{
 			"empty fields", `{"name":"","email":"","password":""}`,
@@ -169,9 +170,9 @@ func TestLoginEndpoint(t *testing.T) {
 		wantStatus   int
 		wantLocation string
 	}{
-		{"success",        `{"email":"user@example.com","password":"pass123"}`, http.StatusSeeOther, "/app"},
-		{"wrong password", `{"email":"user@example.com","password":"wrong"}`,   http.StatusSeeOther, "/login"},
-		{"unknown user",   `{"email":"nobody@example.com","password":"any"}`,    http.StatusSeeOther, "/login"},
+		{"success", `{"email":"user@example.com","password":"pass123"}`, http.StatusSeeOther, "/"},
+		{"wrong password", `{"email":"user@example.com","password":"wrong"}`, http.StatusSeeOther, "/login"},
+		{"unknown user", `{"email":"nobody@example.com","password":"any"}`, http.StatusSeeOther, "/login"},
 	}
 
 	for _, tt := range tests {

@@ -11,6 +11,31 @@ import (
 	"time"
 )
 
+const countUsers = `-- name: CountUsers :one
+SELECT COUNT(*) AS total
+FROM users
+`
+
+func (q *Queries) CountUsers(ctx context.Context) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countUsers)
+	var total int64
+	err := row.Scan(&total)
+	return total, err
+}
+
+const countUsersByRole = `-- name: CountUsersByRole :one
+SELECT COUNT(*) AS total
+FROM users
+WHERE role = ?
+`
+
+func (q *Queries) CountUsersByRole(ctx context.Context, role string) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countUsersByRole, role)
+	var total int64
+	err := row.Scan(&total)
+	return total, err
+}
+
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (email, name, password, role, created_at, updated_at)
 VALUES (?, ?, ?, ?, ?, ?)
@@ -18,12 +43,12 @@ RETURNING id
 `
 
 type CreateUserParams struct {
-	Email     string
-	Name      string
-	Password  sql.NullString
-	Role      string
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	Email     string         `json:"email"`
+	Name      string         `json:"name"`
+	Password  sql.NullString `json:"password"`
+	Role      string         `json:"role"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (int64, error) {
@@ -40,6 +65,42 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (int64, 
 	return id, err
 }
 
+const createUserFull = `-- name: CreateUserFull :one
+INSERT INTO users (email, name, password, role, district_id, volunteer_id, is_active, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+RETURNING id
+`
+
+type CreateUserFullParams struct {
+	Email       string         `json:"email"`
+	Name        string         `json:"name"`
+	Password    sql.NullString `json:"password"`
+	Role        string         `json:"role"`
+	DistrictID  sql.NullInt64  `json:"district_id"`
+	VolunteerID sql.NullInt64  `json:"volunteer_id"`
+	IsActive    bool           `json:"is_active"`
+	CreatedAt   time.Time      `json:"created_at"`
+	UpdatedAt   time.Time      `json:"updated_at"`
+}
+
+// Admin-only creation: include district_id, volunteer_id, is_active
+func (q *Queries) CreateUserFull(ctx context.Context, arg CreateUserFullParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, createUserFull,
+		arg.Email,
+		arg.Name,
+		arg.Password,
+		arg.Role,
+		arg.DistrictID,
+		arg.VolunteerID,
+		arg.IsActive,
+		arg.CreatedAt,
+		arg.UpdatedAt,
+	)
+	var id int64
+	err := row.Scan(&id)
+	return id, err
+}
+
 const createUserWithGoogleID = `-- name: CreateUserWithGoogleID :one
 INSERT INTO users (email, name, google_id, avatar, email_verified, role, created_at, updated_at)
 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
@@ -47,14 +108,14 @@ RETURNING id
 `
 
 type CreateUserWithGoogleIDParams struct {
-	Email         string
-	Name          string
-	GoogleID      sql.NullString
-	Avatar        sql.NullString
-	EmailVerified bool
-	Role          string
-	CreatedAt     time.Time
-	UpdatedAt     time.Time
+	Email         string         `json:"email"`
+	Name          string         `json:"name"`
+	GoogleID      sql.NullString `json:"google_id"`
+	Avatar        sql.NullString `json:"avatar"`
+	EmailVerified bool           `json:"email_verified"`
+	Role          string         `json:"role"`
+	CreatedAt     time.Time      `json:"created_at"`
+	UpdatedAt     time.Time      `json:"updated_at"`
 }
 
 func (q *Queries) CreateUserWithGoogleID(ctx context.Context, arg CreateUserWithGoogleIDParams) (int64, error) {
@@ -87,14 +148,30 @@ func (q *Queries) DeleteUser(ctx context.Context, id int64) (int64, error) {
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, email, name, password, avatar, role, google_id, email_verified, created_at, updated_at
+SELECT id, email, name, password, avatar, role, google_id, email_verified, district_id, volunteer_id, is_active, created_at, updated_at
 FROM users
 WHERE email = ?
 `
 
-func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
+type GetUserByEmailRow struct {
+	ID            int64          `json:"id"`
+	Email         string         `json:"email"`
+	Name          string         `json:"name"`
+	Password      sql.NullString `json:"password"`
+	Avatar        sql.NullString `json:"avatar"`
+	Role          string         `json:"role"`
+	GoogleID      sql.NullString `json:"google_id"`
+	EmailVerified bool           `json:"email_verified"`
+	DistrictID    sql.NullInt64  `json:"district_id"`
+	VolunteerID   sql.NullInt64  `json:"volunteer_id"`
+	IsActive      bool           `json:"is_active"`
+	CreatedAt     time.Time      `json:"created_at"`
+	UpdatedAt     time.Time      `json:"updated_at"`
+}
+
+func (q *Queries) GetUserByEmail(ctx context.Context, email string) (GetUserByEmailRow, error) {
 	row := q.db.QueryRowContext(ctx, getUserByEmail, email)
-	var i User
+	var i GetUserByEmailRow
 	err := row.Scan(
 		&i.ID,
 		&i.Email,
@@ -104,6 +181,9 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.Role,
 		&i.GoogleID,
 		&i.EmailVerified,
+		&i.DistrictID,
+		&i.VolunteerID,
+		&i.IsActive,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -111,14 +191,30 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 }
 
 const getUserByGoogleID = `-- name: GetUserByGoogleID :one
-SELECT id, email, name, password, avatar, role, google_id, email_verified, created_at, updated_at
+SELECT id, email, name, password, avatar, role, google_id, email_verified, district_id, volunteer_id, is_active, created_at, updated_at
 FROM users
 WHERE google_id = ?
 `
 
-func (q *Queries) GetUserByGoogleID(ctx context.Context, googleID sql.NullString) (User, error) {
+type GetUserByGoogleIDRow struct {
+	ID            int64          `json:"id"`
+	Email         string         `json:"email"`
+	Name          string         `json:"name"`
+	Password      sql.NullString `json:"password"`
+	Avatar        sql.NullString `json:"avatar"`
+	Role          string         `json:"role"`
+	GoogleID      sql.NullString `json:"google_id"`
+	EmailVerified bool           `json:"email_verified"`
+	DistrictID    sql.NullInt64  `json:"district_id"`
+	VolunteerID   sql.NullInt64  `json:"volunteer_id"`
+	IsActive      bool           `json:"is_active"`
+	CreatedAt     time.Time      `json:"created_at"`
+	UpdatedAt     time.Time      `json:"updated_at"`
+}
+
+func (q *Queries) GetUserByGoogleID(ctx context.Context, googleID sql.NullString) (GetUserByGoogleIDRow, error) {
 	row := q.db.QueryRowContext(ctx, getUserByGoogleID, googleID)
-	var i User
+	var i GetUserByGoogleIDRow
 	err := row.Scan(
 		&i.ID,
 		&i.Email,
@@ -128,6 +224,9 @@ func (q *Queries) GetUserByGoogleID(ctx context.Context, googleID sql.NullString
 		&i.Role,
 		&i.GoogleID,
 		&i.EmailVerified,
+		&i.DistrictID,
+		&i.VolunteerID,
+		&i.IsActive,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -135,14 +234,30 @@ func (q *Queries) GetUserByGoogleID(ctx context.Context, googleID sql.NullString
 }
 
 const getUserByID = `-- name: GetUserByID :one
-SELECT id, email, name, password, avatar, role, google_id, email_verified, created_at, updated_at
+SELECT id, email, name, password, avatar, role, google_id, email_verified, district_id, volunteer_id, is_active, created_at, updated_at
 FROM users
 WHERE id = ?
 `
 
-func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
+type GetUserByIDRow struct {
+	ID            int64          `json:"id"`
+	Email         string         `json:"email"`
+	Name          string         `json:"name"`
+	Password      sql.NullString `json:"password"`
+	Avatar        sql.NullString `json:"avatar"`
+	Role          string         `json:"role"`
+	GoogleID      sql.NullString `json:"google_id"`
+	EmailVerified bool           `json:"email_verified"`
+	DistrictID    sql.NullInt64  `json:"district_id"`
+	VolunteerID   sql.NullInt64  `json:"volunteer_id"`
+	IsActive      bool           `json:"is_active"`
+	CreatedAt     time.Time      `json:"created_at"`
+	UpdatedAt     time.Time      `json:"updated_at"`
+}
+
+func (q *Queries) GetUserByID(ctx context.Context, id int64) (GetUserByIDRow, error) {
 	row := q.db.QueryRowContext(ctx, getUserByID, id)
-	var i User
+	var i GetUserByIDRow
 	err := row.Scan(
 		&i.ID,
 		&i.Email,
@@ -152,10 +267,165 @@ func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
 		&i.Role,
 		&i.GoogleID,
 		&i.EmailVerified,
+		&i.DistrictID,
+		&i.VolunteerID,
+		&i.IsActive,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
 	return i, err
+}
+
+const listUsersByRole = `-- name: ListUsersByRole :many
+SELECT id, email, name, password, avatar, role, google_id, email_verified, district_id, volunteer_id, is_active, created_at, updated_at
+FROM users
+WHERE role = ?
+ORDER BY created_at DESC
+LIMIT ? OFFSET ?
+`
+
+type ListUsersByRoleParams struct {
+	Role   string `json:"role"`
+	Limit  int64  `json:"limit"`
+	Offset int64  `json:"offset"`
+}
+
+type ListUsersByRoleRow struct {
+	ID            int64          `json:"id"`
+	Email         string         `json:"email"`
+	Name          string         `json:"name"`
+	Password      sql.NullString `json:"password"`
+	Avatar        sql.NullString `json:"avatar"`
+	Role          string         `json:"role"`
+	GoogleID      sql.NullString `json:"google_id"`
+	EmailVerified bool           `json:"email_verified"`
+	DistrictID    sql.NullInt64  `json:"district_id"`
+	VolunteerID   sql.NullInt64  `json:"volunteer_id"`
+	IsActive      bool           `json:"is_active"`
+	CreatedAt     time.Time      `json:"created_at"`
+	UpdatedAt     time.Time      `json:"updated_at"`
+}
+
+func (q *Queries) ListUsersByRole(ctx context.Context, arg ListUsersByRoleParams) ([]ListUsersByRoleRow, error) {
+	rows, err := q.db.QueryContext(ctx, listUsersByRole, arg.Role, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListUsersByRoleRow
+	for rows.Next() {
+		var i ListUsersByRoleRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Email,
+			&i.Name,
+			&i.Password,
+			&i.Avatar,
+			&i.Role,
+			&i.GoogleID,
+			&i.EmailVerified,
+			&i.DistrictID,
+			&i.VolunteerID,
+			&i.IsActive,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listUsersPaginated = `-- name: ListUsersPaginated :many
+SELECT id, email, name, password, avatar, role, google_id, email_verified, district_id, volunteer_id, is_active, created_at, updated_at
+FROM users
+ORDER BY created_at DESC
+LIMIT ? OFFSET ?
+`
+
+type ListUsersPaginatedParams struct {
+	Limit  int64 `json:"limit"`
+	Offset int64 `json:"offset"`
+}
+
+type ListUsersPaginatedRow struct {
+	ID            int64          `json:"id"`
+	Email         string         `json:"email"`
+	Name          string         `json:"name"`
+	Password      sql.NullString `json:"password"`
+	Avatar        sql.NullString `json:"avatar"`
+	Role          string         `json:"role"`
+	GoogleID      sql.NullString `json:"google_id"`
+	EmailVerified bool           `json:"email_verified"`
+	DistrictID    sql.NullInt64  `json:"district_id"`
+	VolunteerID   sql.NullInt64  `json:"volunteer_id"`
+	IsActive      bool           `json:"is_active"`
+	CreatedAt     time.Time      `json:"created_at"`
+	UpdatedAt     time.Time      `json:"updated_at"`
+}
+
+func (q *Queries) ListUsersPaginated(ctx context.Context, arg ListUsersPaginatedParams) ([]ListUsersPaginatedRow, error) {
+	rows, err := q.db.QueryContext(ctx, listUsersPaginated, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListUsersPaginatedRow
+	for rows.Next() {
+		var i ListUsersPaginatedRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Email,
+			&i.Name,
+			&i.Password,
+			&i.Avatar,
+			&i.Role,
+			&i.GoogleID,
+			&i.EmailVerified,
+			&i.DistrictID,
+			&i.VolunteerID,
+			&i.IsActive,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const setUserActive = `-- name: SetUserActive :execrows
+UPDATE users
+SET is_active = ?, updated_at = ?
+WHERE id = ?
+`
+
+type SetUserActiveParams struct {
+	IsActive  bool      `json:"is_active"`
+	UpdatedAt time.Time `json:"updated_at"`
+	ID        int64     `json:"id"`
+}
+
+func (q *Queries) SetUserActive(ctx context.Context, arg SetUserActiveParams) (int64, error) {
+	result, err := q.db.ExecContext(ctx, setUserActive, arg.IsActive, arg.UpdatedAt, arg.ID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
 }
 
 const setUserRoleAdmin = `-- name: SetUserRoleAdmin :execrows
@@ -165,9 +435,9 @@ WHERE id = ?
 `
 
 type SetUserRoleAdminParams struct {
-	Role      string
-	UpdatedAt time.Time
-	ID        int64
+	Role      string    `json:"role"`
+	UpdatedAt time.Time `json:"updated_at"`
+	ID        int64     `json:"id"`
 }
 
 func (q *Queries) SetUserRoleAdmin(ctx context.Context, arg SetUserRoleAdminParams) (int64, error) {
@@ -185,11 +455,11 @@ WHERE id = ?
 `
 
 type UpdateUserParams struct {
-	Name          string
-	Avatar        sql.NullString
-	EmailVerified bool
-	UpdatedAt     time.Time
-	ID            int64
+	Name          string         `json:"name"`
+	Avatar        sql.NullString `json:"avatar"`
+	EmailVerified bool           `json:"email_verified"`
+	UpdatedAt     time.Time      `json:"updated_at"`
+	ID            int64          `json:"id"`
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (int64, error) {
@@ -213,9 +483,9 @@ WHERE id = ?
 `
 
 type UpdateUserAvatarParams struct {
-	Avatar    sql.NullString
-	UpdatedAt time.Time
-	ID        int64
+	Avatar    sql.NullString `json:"avatar"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	ID        int64          `json:"id"`
 }
 
 func (q *Queries) UpdateUserAvatar(ctx context.Context, arg UpdateUserAvatarParams) (int64, error) {
@@ -233,13 +503,41 @@ WHERE id = ?
 `
 
 type UpdateUserPasswordParams struct {
-	Password  sql.NullString
-	UpdatedAt time.Time
-	ID        int64
+	Password  sql.NullString `json:"password"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	ID        int64          `json:"id"`
 }
 
 func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) (int64, error) {
 	result, err := q.db.ExecContext(ctx, updateUserPassword, arg.Password, arg.UpdatedAt, arg.ID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
+}
+
+const updateUserRole = `-- name: UpdateUserRole :execrows
+UPDATE users
+SET role = ?, district_id = ?, volunteer_id = ?, updated_at = ?
+WHERE id = ?
+`
+
+type UpdateUserRoleParams struct {
+	Role        string        `json:"role"`
+	DistrictID  sql.NullInt64 `json:"district_id"`
+	VolunteerID sql.NullInt64 `json:"volunteer_id"`
+	UpdatedAt   time.Time     `json:"updated_at"`
+	ID          int64         `json:"id"`
+}
+
+func (q *Queries) UpdateUserRole(ctx context.Context, arg UpdateUserRoleParams) (int64, error) {
+	result, err := q.db.ExecContext(ctx, updateUserRole,
+		arg.Role,
+		arg.DistrictID,
+		arg.VolunteerID,
+		arg.UpdatedAt,
+		arg.ID,
+	)
 	if err != nil {
 		return 0, err
 	}

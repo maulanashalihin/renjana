@@ -10,172 +10,175 @@ import (
 )
 
 type RenjanaAchievement struct {
-	ID           int64
-	Year         int64
-	MetricKey    string
-	MetricName   string
-	Value        float64
-	Unit         string
-	Target       sql.NullFloat64
-	DisplayOrder int64
-	Icon         sql.NullString
-	IconColor    sql.NullString
-	CreatedAt    time.Time
+	ID           int64           `json:"id"`
+	Year         int64           `json:"year"`
+	MetricKey    string          `json:"metric_key"`
+	MetricName   string          `json:"metric_name"`
+	Value        float64         `json:"value"`
+	Unit         string          `json:"unit"`
+	Target       sql.NullFloat64 `json:"target"`
+	DisplayOrder int64           `json:"display_order"`
+	Icon         sql.NullString  `json:"icon"`
+	IconColor    sql.NullString  `json:"icon_color"`
+	CreatedAt    time.Time       `json:"created_at"`
 }
 
 type RenjanaActivity struct {
-	ID          int64
-	Title       string
-	TypeID      int64
-	DistrictID  int64
-	Description sql.NullString
-	Location    string
-	Date        time.Time
-	Time        string
-	Status      string
-	CreatedAt   time.Time
+	ID          int64          `json:"id"`
+	Title       string         `json:"title"`
+	TypeID      int64          `json:"type_id"`
+	DistrictID  int64          `json:"district_id"`
+	Description sql.NullString `json:"description"`
+	Location    string         `json:"location"`
+	Date        time.Time      `json:"date"`
+	Time        string         `json:"time"`
+	Status      string         `json:"status"`
+	CreatedAt   time.Time      `json:"created_at"`
 }
 
 type RenjanaActivityType struct {
-	ID           int64
-	Name         string
-	Color        string
-	Icon         string
-	DisplayOrder int64
-	IsActive     bool
-	CreatedAt    time.Time
+	ID           int64     `json:"id"`
+	Name         string    `json:"name"`
+	Color        string    `json:"color"`
+	Icon         string    `json:"icon"`
+	DisplayOrder int64     `json:"display_order"`
+	IsActive     bool      `json:"is_active"`
+	CreatedAt    time.Time `json:"created_at"`
 }
 
 type RenjanaAnnouncement struct {
-	ID          int64
-	Title       string
-	Content     string
-	PublishedAt time.Time
-	IsPublished bool
-	CreatedAt   time.Time
-	Category    string
-	Slug        sql.NullString
-	Body        sql.NullString
-	CoverUrl    sql.NullString
-	AuthorID    sql.NullInt64
+	ID          int64          `json:"id"`
+	Title       string         `json:"title"`
+	Content     string         `json:"content"`
+	PublishedAt time.Time      `json:"published_at"`
+	IsPublished bool           `json:"is_published"`
+	CreatedAt   time.Time      `json:"created_at"`
+	Category    string         `json:"category"`
+	Slug        sql.NullString `json:"slug"`
+	Body        sql.NullString `json:"body"`
+	CoverUrl    sql.NullString `json:"cover_url"`
+	AuthorID    sql.NullInt64  `json:"author_id"`
 }
 
 type RenjanaContact struct {
-	ID         int64
-	DistrictID int64
-	Name       string
-	Role       string
-	Phone      sql.NullString
-	Email      sql.NullString
-	IsActive   bool
-	CreatedAt  time.Time
+	ID         int64          `json:"id"`
+	DistrictID int64          `json:"district_id"`
+	Name       string         `json:"name"`
+	Role       string         `json:"role"`
+	Phone      sql.NullString `json:"phone"`
+	Email      sql.NullString `json:"email"`
+	IsActive   bool           `json:"is_active"`
+	CreatedAt  time.Time      `json:"created_at"`
 }
 
 type RenjanaDistrict struct {
-	ID        int64
-	Name      string
-	IsActive  bool
-	CreatedAt time.Time
+	ID        int64     `json:"id"`
+	Name      string    `json:"name"`
+	IsActive  bool      `json:"is_active"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
 type RenjanaDocument struct {
-	ID          int64
-	Title       string
-	FileUrl     string
-	Category    string
-	Version     int64
-	FileSize    sql.NullInt64
-	Description sql.NullString
-	UploadedBy  sql.NullInt64
-	UploadedAt  time.Time
+	ID          int64          `json:"id"`
+	Title       string         `json:"title"`
+	FileUrl     string         `json:"file_url"`
+	Category    string         `json:"category"`
+	Version     int64          `json:"version"`
+	FileSize    sql.NullInt64  `json:"file_size"`
+	Description sql.NullString `json:"description"`
+	UploadedBy  sql.NullInt64  `json:"uploaded_by"`
+	UploadedAt  time.Time      `json:"uploaded_at"`
 }
 
 type RenjanaEducation struct {
-	ID              int64
-	Title           string
-	Category        string
-	Body            string
-	AgeGroup        sql.NullString
-	DurationMinutes sql.NullInt64
-	IsPublished     bool
-	CreatedAt       time.Time
-	UpdatedAt       time.Time
+	ID              int64          `json:"id"`
+	Title           string         `json:"title"`
+	Category        string         `json:"category"`
+	Body            string         `json:"body"`
+	AgeGroup        sql.NullString `json:"age_group"`
+	DurationMinutes sql.NullInt64  `json:"duration_minutes"`
+	IsPublished     bool           `json:"is_published"`
+	CreatedAt       time.Time      `json:"created_at"`
+	UpdatedAt       time.Time      `json:"updated_at"`
 }
 
 type RenjanaInnovation struct {
-	ID        int64
-	Title     string
-	Year      int64
-	Category  string
-	Summary   sql.NullString
-	Body      sql.NullString
-	Author    sql.NullString
-	CreatedAt time.Time
+	ID        int64          `json:"id"`
+	Title     string         `json:"title"`
+	Year      int64          `json:"year"`
+	Category  string         `json:"category"`
+	Summary   sql.NullString `json:"summary"`
+	Body      sql.NullString `json:"body"`
+	Author    sql.NullString `json:"author"`
+	CreatedAt time.Time      `json:"created_at"`
 }
 
 type RenjanaMedium struct {
-	ID          int64
-	Title       string
-	FileUrl     string
-	MediaType   string
-	ActivityID  sql.NullInt64
-	DistrictID  sql.NullInt64
-	Caption     sql.NullString
-	UploadedBy  sql.NullInt64
-	UploadedAt  time.Time
-	IsPublished bool
+	ID          int64          `json:"id"`
+	Title       string         `json:"title"`
+	FileUrl     string         `json:"file_url"`
+	MediaType   string         `json:"media_type"`
+	ActivityID  sql.NullInt64  `json:"activity_id"`
+	DistrictID  sql.NullInt64  `json:"district_id"`
+	Caption     sql.NullString `json:"caption"`
+	UploadedBy  sql.NullInt64  `json:"uploaded_by"`
+	UploadedAt  time.Time      `json:"uploaded_at"`
+	IsPublished bool           `json:"is_published"`
 }
 
 type RenjanaOrganization struct {
-	ID              int64
-	Vision          sql.NullString
-	Mission         sql.NullString
-	History         sql.NullString
-	Structure       sql.NullString
-	ContactEmail    sql.NullString
-	ContactPhone    sql.NullString
-	Address         sql.NullString
-	SocialInstagram sql.NullString
-	SocialTiktok    sql.NullString
-	SocialYoutube   sql.NullString
-	UpdatedAt       time.Time
+	ID              int64          `json:"id"`
+	Vision          sql.NullString `json:"vision"`
+	Mission         sql.NullString `json:"mission"`
+	History         sql.NullString `json:"history"`
+	Structure       sql.NullString `json:"structure"`
+	ContactEmail    sql.NullString `json:"contact_email"`
+	ContactPhone    sql.NullString `json:"contact_phone"`
+	Address         sql.NullString `json:"address"`
+	SocialInstagram sql.NullString `json:"social_instagram"`
+	SocialTiktok    sql.NullString `json:"social_tiktok"`
+	SocialYoutube   sql.NullString `json:"social_youtube"`
+	UpdatedAt       time.Time      `json:"updated_at"`
 }
 
 type RenjanaVolunteer struct {
-	ID                int64
-	Name              string
-	School            string
-	DistrictID        int64
-	Phone             sql.NullString
-	Status            string
-	AvatarUrl         sql.NullString
-	JoinedAt          time.Time
-	IsActive          bool
-	CreatedAt         time.Time
-	ApplicationStatus string
-	ReviewerID        sql.NullInt64
-	ReviewedAt        sql.NullTime
-	RejectionReason   sql.NullString
+	ID                int64          `json:"id"`
+	Name              string         `json:"name"`
+	School            string         `json:"school"`
+	DistrictID        int64          `json:"district_id"`
+	Phone             sql.NullString `json:"phone"`
+	Status            string         `json:"status"`
+	AvatarUrl         sql.NullString `json:"avatar_url"`
+	JoinedAt          time.Time      `json:"joined_at"`
+	IsActive          bool           `json:"is_active"`
+	CreatedAt         time.Time      `json:"created_at"`
+	ApplicationStatus string         `json:"application_status"`
+	ReviewerID        sql.NullInt64  `json:"reviewer_id"`
+	ReviewedAt        sql.NullTime   `json:"reviewed_at"`
+	RejectionReason   sql.NullString `json:"rejection_reason"`
 }
 
 type Session struct {
-	ID        string
-	UserID    int64
-	Data      string
-	ExpiresAt time.Time
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID        string    `json:"id"`
+	UserID    int64     `json:"user_id"`
+	Data      string    `json:"data"`
+	ExpiresAt time.Time `json:"expires_at"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type User struct {
-	ID            int64
-	Email         string
-	Name          string
-	Password      sql.NullString
-	Avatar        sql.NullString
-	Role          string
-	GoogleID      sql.NullString
-	EmailVerified bool
-	CreatedAt     time.Time
-	UpdatedAt     time.Time
+	ID            int64          `json:"id"`
+	Email         string         `json:"email"`
+	Name          string         `json:"name"`
+	Password      sql.NullString `json:"password"`
+	Avatar        sql.NullString `json:"avatar"`
+	Role          string         `json:"role"`
+	GoogleID      sql.NullString `json:"google_id"`
+	EmailVerified bool           `json:"email_verified"`
+	CreatedAt     time.Time      `json:"created_at"`
+	UpdatedAt     time.Time      `json:"updated_at"`
+	DistrictID    sql.NullInt64  `json:"district_id"`
+	VolunteerID   sql.NullInt64  `json:"volunteer_id"`
+	IsActive      bool           `json:"is_active"`
 }

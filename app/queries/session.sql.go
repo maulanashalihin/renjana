@@ -16,12 +16,12 @@ VALUES (?, ?, ?, ?, ?, ?)
 `
 
 type CreateSessionParams struct {
-	ID        string
-	UserID    int64
-	Data      string
-	ExpiresAt time.Time
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID        string    `json:"id"`
+	UserID    int64     `json:"user_id"`
+	Data      string    `json:"data"`
+	ExpiresAt time.Time `json:"expires_at"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 func (q *Queries) CreateSession(ctx context.Context, arg CreateSessionParams) error {
@@ -132,10 +132,10 @@ WHERE id = ?
 `
 
 type UpdateSessionParams struct {
-	Data      string
-	ExpiresAt time.Time
-	UpdatedAt time.Time
-	ID        string
+	Data      string    `json:"data"`
+	ExpiresAt time.Time `json:"expires_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+	ID        string    `json:"id"`
 }
 
 func (q *Queries) UpdateSession(ctx context.Context, arg UpdateSessionParams) (int64, error) {

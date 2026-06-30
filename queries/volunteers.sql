@@ -149,3 +149,31 @@ SELECT
     SUM(CASE WHEN application_status = 'rejected' THEN 1 ELSE 0 END) AS rejected,
     COUNT(DISTINCT school) AS schools
 FROM renjana_volunteers;
+
+-- name: GetVolunteerStatsByDistrict :one
+SELECT
+    COUNT(*) AS total,
+    SUM(CASE WHEN status = 'aktif' THEN 1 ELSE 0 END) AS active,
+    SUM(CASE WHEN status = 'nonaktif' THEN 1 ELSE 0 END) AS inactive,
+    SUM(CASE WHEN application_status = 'pending' THEN 1 ELSE 0 END) AS pending,
+    SUM(CASE WHEN application_status = 'rejected' THEN 1 ELSE 0 END) AS rejected,
+    COUNT(DISTINCT school) AS schools
+FROM renjana_volunteers
+WHERE district_id = ?;
+
+-- name: ListPendingApplicationsByDistrict :many
+SELECT
+    v.id, v.name, v.school, v.district_id, d.name AS district_name,
+    v.phone, v.avatar_url, v.application_status, v.joined_at
+FROM renjana_volunteers v
+JOIN renjana_districts d ON d.id = v.district_id
+WHERE v.application_status = 'pending'
+  AND v.district_id = ?
+ORDER BY v.joined_at ASC
+LIMIT ? OFFSET ?;
+
+-- name: CountPendingApplicationsByDistrict :one
+SELECT COUNT(*) AS total
+FROM renjana_volunteers
+WHERE application_status = 'pending'
+  AND district_id = ?;

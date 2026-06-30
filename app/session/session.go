@@ -35,6 +35,8 @@ type SessionData struct {
 	UserID      int64  `json:"user_id"`
 	Email       string `json:"email"`
 	Role        string `json:"role"`
+	DistrictID  int64  `json:"district_id,omitempty"`  // For koordinator scope filtering
+	VolunteerID int64  `json:"volunteer_id,omitempty"` // For relawan — links to volunteer record
 	CSRFToken   string `json:"csrf_token,omitempty"`
 	CSRFExpiry  int64  `json:"csrf_expiry,omitempty"`
 }
@@ -87,6 +89,12 @@ func (s *Store) Get(c *fiber.Ctx) (*Session, error) {
 					session.values["user_id"] = cached.UserID
 					session.values["email"] = cached.Email
 					session.values["role"] = cached.Role
+					if cached.DistrictID != 0 {
+						session.values["district_id"] = cached.DistrictID
+					}
+					if cached.VolunteerID != 0 {
+						session.values["volunteer_id"] = cached.VolunteerID
+					}
 					if cached.CSRFToken != "" {
 						session.values["csrf_token"] = cached.CSRFToken
 						session.values["csrf_expiry"] = cached.CSRFExpiry
@@ -117,6 +125,12 @@ func (s *Store) Get(c *fiber.Ctx) (*Session, error) {
 					session.values["user_id"] = data.UserID
 					session.values["email"] = data.Email
 					session.values["role"] = data.Role
+					if data.DistrictID != 0 {
+						session.values["district_id"] = data.DistrictID
+					}
+					if data.VolunteerID != 0 {
+						session.values["volunteer_id"] = data.VolunteerID
+					}
 					if data.CSRFToken != "" {
 						session.values["csrf_token"] = data.CSRFToken
 					}
@@ -127,12 +141,14 @@ func (s *Store) Get(c *fiber.Ctx) (*Session, error) {
 					// Store in cache for subsequent requests
 					if s.sessionCache != nil {
 						s.sessionCache.Set(cookieValue, cache.CachedSessionData{
-							UserID:     data.UserID,
-							Email:      data.Email,
-							Role:       data.Role,
-							CSRFToken:  data.CSRFToken,
-							CSRFExpiry: data.CSRFExpiry,
-							ExpiresAt:  dbSession.ExpiresAt,
+							UserID:      data.UserID,
+							Email:       data.Email,
+							Role:        data.Role,
+							DistrictID:  data.DistrictID,
+							VolunteerID: data.VolunteerID,
+							CSRFToken:   data.CSRFToken,
+							CSRFExpiry:  data.CSRFExpiry,
+							ExpiresAt:   dbSession.ExpiresAt,
 						})
 					}
 				}
@@ -236,12 +252,14 @@ func (s *Session) Save() error {
 		// Seed cache after creation
 		if s.store.sessionCache != nil {
 			s.store.sessionCache.Set(s.id, cache.CachedSessionData{
-				UserID:     sessionData.UserID,
-				Email:      sessionData.Email,
-				Role:       sessionData.Role,
-				CSRFToken:  sessionData.CSRFToken,
-				CSRFExpiry: sessionData.CSRFExpiry,
-				ExpiresAt:  s.expiresAt,
+				UserID:      sessionData.UserID,
+				Email:       sessionData.Email,
+				Role:        sessionData.Role,
+				DistrictID:  sessionData.DistrictID,
+				VolunteerID: sessionData.VolunteerID,
+				CSRFToken:   sessionData.CSRFToken,
+				CSRFExpiry:  sessionData.CSRFExpiry,
+				ExpiresAt:   s.expiresAt,
 			})
 		}
 	} else {
@@ -261,12 +279,14 @@ func (s *Session) Save() error {
 		// Refresh cache after update
 		if s.store.sessionCache != nil {
 			s.store.sessionCache.Set(s.id, cache.CachedSessionData{
-				UserID:     sessionData.UserID,
-				Email:      sessionData.Email,
-				Role:       sessionData.Role,
-				CSRFToken:  sessionData.CSRFToken,
-				CSRFExpiry: sessionData.CSRFExpiry,
-				ExpiresAt:  s.expiresAt,
+				UserID:      sessionData.UserID,
+				Email:       sessionData.Email,
+				Role:        sessionData.Role,
+				DistrictID:  sessionData.DistrictID,
+				VolunteerID: sessionData.VolunteerID,
+				CSRFToken:   sessionData.CSRFToken,
+				CSRFExpiry:  sessionData.CSRFExpiry,
+				ExpiresAt:   s.expiresAt,
 			})
 		}
 	}
@@ -328,6 +348,22 @@ func (s *Session) Regenerate() error {
 
 	if role, ok := s.values["role"].(string); ok {
 		sessionData.Role = role
+	}
+
+	if districtID, ok := s.values["district_id"].(int64); ok {
+		sessionData.DistrictID = districtID
+	} else if districtID, ok := s.values["district_id"].(int); ok {
+		sessionData.DistrictID = int64(districtID)
+	} else if districtID, ok := s.values["district_id"].(float64); ok {
+		sessionData.DistrictID = int64(districtID)
+	}
+
+	if volunteerID, ok := s.values["volunteer_id"].(int64); ok {
+		sessionData.VolunteerID = volunteerID
+	} else if volunteerID, ok := s.values["volunteer_id"].(int); ok {
+		sessionData.VolunteerID = int64(volunteerID)
+	} else if volunteerID, ok := s.values["volunteer_id"].(float64); ok {
+		sessionData.VolunteerID = int64(volunteerID)
 	}
 
 	if csrfToken, ok := s.values["csrf_token"].(string); ok {
@@ -403,11 +439,11 @@ func (s *Store) Flash(c *fiber.Ctx, key string, value string) {
 func (s *Store) GetFlash(c *fiber.Ctx, key string) string {
 	cookieName := "flash_" + key
 	value := c.Cookies(cookieName)
-	
+
 	if value != "" {
 		// Clear the flash cookie after reading (one-time use)
 		c.ClearCookie(cookieName)
 	}
-	
+
 	return value
 }

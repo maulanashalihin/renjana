@@ -31,6 +31,7 @@ func NewQuerier(db DBTX) *Querier {
 
 // --- User helpers that convert queries.User -> models.User ---
 
+// toModelUser converts a queries.User (full struct) to models.User
 func toModelUser(qUser User) *models.User {
 	return &models.User{
 		ID:            qUser.ID,
@@ -41,6 +42,101 @@ func toModelUser(qUser User) *models.User {
 		Role:          models.UserRole(qUser.Role),
 		GoogleID:      qUser.GoogleID,
 		EmailVerified: qUser.EmailVerified,
+		DistrictID:    qUser.DistrictID,
+		VolunteerID:   qUser.VolunteerID,
+		IsActive:      qUser.IsActive,
+		CreatedAt:     qUser.CreatedAt,
+		UpdatedAt:     qUser.UpdatedAt,
+	}
+}
+
+// toModelUserFromRow converts sqlc-generated *Row types to models.User
+func toModelUserFromIDRow(qUser GetUserByIDRow) *models.User {
+	return &models.User{
+		ID:            qUser.ID,
+		Email:         qUser.Email,
+		Name:          qUser.Name,
+		Password:      qUser.Password,
+		Avatar:        nullStringToString(qUser.Avatar),
+		Role:          models.UserRole(qUser.Role),
+		GoogleID:      qUser.GoogleID,
+		EmailVerified: qUser.EmailVerified,
+		DistrictID:    qUser.DistrictID,
+		VolunteerID:   qUser.VolunteerID,
+		IsActive:      qUser.IsActive,
+		CreatedAt:     qUser.CreatedAt,
+		UpdatedAt:     qUser.UpdatedAt,
+	}
+}
+
+func toModelUserFromEmailRow(qUser GetUserByEmailRow) *models.User {
+	return &models.User{
+		ID:            qUser.ID,
+		Email:         qUser.Email,
+		Name:          qUser.Name,
+		Password:      qUser.Password,
+		Avatar:        nullStringToString(qUser.Avatar),
+		Role:          models.UserRole(qUser.Role),
+		GoogleID:      qUser.GoogleID,
+		EmailVerified: qUser.EmailVerified,
+		DistrictID:    qUser.DistrictID,
+		VolunteerID:   qUser.VolunteerID,
+		IsActive:      qUser.IsActive,
+		CreatedAt:     qUser.CreatedAt,
+		UpdatedAt:     qUser.UpdatedAt,
+	}
+}
+
+func toModelUserFromGoogleRow(qUser GetUserByGoogleIDRow) *models.User {
+	return &models.User{
+		ID:            qUser.ID,
+		Email:         qUser.Email,
+		Name:          qUser.Name,
+		Password:      qUser.Password,
+		Avatar:        nullStringToString(qUser.Avatar),
+		Role:          models.UserRole(qUser.Role),
+		GoogleID:      qUser.GoogleID,
+		EmailVerified: qUser.EmailVerified,
+		DistrictID:    qUser.DistrictID,
+		VolunteerID:   qUser.VolunteerID,
+		IsActive:      qUser.IsActive,
+		CreatedAt:     qUser.CreatedAt,
+		UpdatedAt:     qUser.UpdatedAt,
+	}
+}
+
+// toModelUserFromListRow converts ListUsersPaginatedRow to models.User
+func toModelUserFromListRow(qUser ListUsersPaginatedRow) *models.User {
+	return &models.User{
+		ID:            qUser.ID,
+		Email:         qUser.Email,
+		Name:          qUser.Name,
+		Password:      qUser.Password,
+		Avatar:        nullStringToString(qUser.Avatar),
+		Role:          models.UserRole(qUser.Role),
+		GoogleID:      qUser.GoogleID,
+		EmailVerified: qUser.EmailVerified,
+		DistrictID:    qUser.DistrictID,
+		VolunteerID:   qUser.VolunteerID,
+		IsActive:      qUser.IsActive,
+		CreatedAt:     qUser.CreatedAt,
+		UpdatedAt:     qUser.UpdatedAt,
+	}
+}
+
+func toModelUserFromListByRoleRow(qUser ListUsersByRoleRow) *models.User {
+	return &models.User{
+		ID:            qUser.ID,
+		Email:         qUser.Email,
+		Name:          qUser.Name,
+		Password:      qUser.Password,
+		Avatar:        nullStringToString(qUser.Avatar),
+		Role:          models.UserRole(qUser.Role),
+		GoogleID:      qUser.GoogleID,
+		EmailVerified: qUser.EmailVerified,
+		DistrictID:    qUser.DistrictID,
+		VolunteerID:   qUser.VolunteerID,
+		IsActive:      qUser.IsActive,
 		CreatedAt:     qUser.CreatedAt,
 		UpdatedAt:     qUser.UpdatedAt,
 	}
@@ -95,6 +191,34 @@ func (q *Querier) CreateUserWithGoogleID(ctx context.Context, user *models.User)
 	return nil
 }
 
+// CreateUserFull creates a user with full RBAC details (admin-only operation)
+func (q *Querier) CreateUserFull(ctx context.Context, user *models.User) error {
+	isActive := user.IsActive
+	if !isActive && user.CreatedAt.IsZero() {
+		isActive = true
+	}
+	id, err := q.Queries.CreateUserFull(ctx, CreateUserFullParams{
+		Email:       user.Email,
+		Name:        user.Name,
+		Password:    user.Password,
+		Role:        string(user.Role),
+		DistrictID:  user.DistrictID,
+		VolunteerID: user.VolunteerID,
+		IsActive:    isActive,
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
+	})
+	if err != nil {
+		if isDuplicateEmail(err) {
+			return ErrUserAlreadyExists
+		}
+		return err
+	}
+	user.ID = id
+	user.IsActive = isActive
+	return nil
+}
+
 func (q *Querier) GetUserByID(ctx context.Context, id int64) (*models.User, error) {
 	qUser, err := q.Queries.GetUserByID(ctx, id)
 	if err != nil {
@@ -103,7 +227,7 @@ func (q *Querier) GetUserByID(ctx context.Context, id int64) (*models.User, erro
 		}
 		return nil, err
 	}
-	return toModelUser(qUser), nil
+	return toModelUserFromIDRow(qUser), nil
 }
 
 func (q *Querier) GetUserByEmail(ctx context.Context, email string) (*models.User, error) {
@@ -114,7 +238,7 @@ func (q *Querier) GetUserByEmail(ctx context.Context, email string) (*models.Use
 		}
 		return nil, err
 	}
-	return toModelUser(qUser), nil
+	return toModelUserFromEmailRow(qUser), nil
 }
 
 func (q *Querier) GetUserByGoogleID(ctx context.Context, googleID string) (*models.User, error) {
@@ -125,7 +249,7 @@ func (q *Querier) GetUserByGoogleID(ctx context.Context, googleID string) (*mode
 		}
 		return nil, err
 	}
-	return toModelUser(qUser), nil
+	return toModelUserFromGoogleRow(qUser), nil
 }
 
 func (q *Querier) UpdateUser(ctx context.Context, user *models.User) error {
@@ -175,6 +299,40 @@ func (q *Querier) UpdateUserAvatar(ctx context.Context, id int64, avatarURL stri
 	return nil
 }
 
+// UpdateUserRole updates the role, district_id, and volunteer_id of a user
+func (q *Querier) UpdateUserRole(ctx context.Context, id int64, role models.UserRole, districtID, volunteerID sql.NullInt64) error {
+	rows, err := q.Queries.UpdateUserRole(ctx, UpdateUserRoleParams{
+		Role:        string(role),
+		DistrictID:  districtID,
+		VolunteerID: volunteerID,
+		UpdatedAt:   time.Now(),
+		ID:          id,
+	})
+	if err != nil {
+		return err
+	}
+	if rows == 0 {
+		return ErrUserNotFound
+	}
+	return nil
+}
+
+// SetUserActive toggles is_active status
+func (q *Querier) SetUserActive(ctx context.Context, id int64, isActive bool) error {
+	rows, err := q.Queries.SetUserActive(ctx, SetUserActiveParams{
+		IsActive:  isActive,
+		UpdatedAt: time.Now(),
+		ID:        id,
+	})
+	if err != nil {
+		return err
+	}
+	if rows == 0 {
+		return ErrUserNotFound
+	}
+	return nil
+}
+
 func (q *Querier) DeleteUser(ctx context.Context, id int64) error {
 	rows, err := q.Queries.DeleteUser(ctx, id)
 	if err != nil {
@@ -199,6 +357,39 @@ func (q *Querier) SetUserRoleAdmin(ctx context.Context, id int64) error {
 		return ErrUserNotFound
 	}
 	return nil
+}
+
+// ListUsersPaginated returns paginated users
+func (q *Querier) ListUsersPaginated(ctx context.Context, limit, offset int64) ([]*models.User, error) {
+	rows, err := q.Queries.ListUsersPaginated(ctx, ListUsersPaginatedParams{
+		Limit:  limit,
+		Offset: offset,
+	})
+	if err != nil {
+		return nil, err
+	}
+	users := make([]*models.User, 0, len(rows))
+	for _, r := range rows {
+		users = append(users, toModelUserFromListRow(r))
+	}
+	return users, nil
+}
+
+// ListUsersByRolePaginated returns paginated users filtered by role
+func (q *Querier) ListUsersByRolePaginated(ctx context.Context, role models.UserRole, limit, offset int64) ([]*models.User, error) {
+	rows, err := q.Queries.ListUsersByRole(ctx, ListUsersByRoleParams{
+		Role:   string(role),
+		Limit:  limit,
+		Offset: offset,
+	})
+	if err != nil {
+		return nil, err
+	}
+	users := make([]*models.User, 0, len(rows))
+	for _, r := range rows {
+		users = append(users, toModelUserFromListByRoleRow(r))
+	}
+	return users, nil
 }
 
 // --- Session operations ---

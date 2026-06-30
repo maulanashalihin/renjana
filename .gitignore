@@ -45,3 +45,6 @@ dist
 # Compiled binary
 laju-go
 /laju-go
+laju-go
+--full-page
+recommendations.md

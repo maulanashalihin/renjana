@@ -4,7 +4,7 @@
     interface Props {
         currentPage: number;
         totalPages: number;
-        basePath: string; // e.g. "/app/relawan"
+        basePath: string; // e.g. "/relawan"
         searchParams?: URLSearchParams;
     }
 

@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
 
 /* Scan templates folder for class usage */
 @source "../../templates/**/*.{html,eta,templ}";

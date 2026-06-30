@@ -23,18 +23,18 @@
     }
 
     const menuItems: MenuItem[] = [
-        { href: "/app", label: "Dashboard", icon: Home },
-        { href: "/app/profil", label: "Profil RENJANA", icon: Info },
-        { href: "/app/kegiatan", label: "Kegiatan", icon: CalendarDays },
-        { href: "/app/relawan", label: "Data Relawan", icon: Users },
-        { href: "/app/peta", label: "Peta Sebaran", icon: Map },
-        { href: "/app/edukasi", label: "Edukasi Bencana", icon: GraduationCap },
-        { href: "/app/galeri", label: "Galeri", icon: ImageIcon },
-        { href: "/app/berita", label: "Berita", icon: Newspaper },
-        { href: "/app/dokumen", label: "Dokumen", icon: FileText },
-        { href: "/app/inovasi", label: "Data Dukung Inovasi", icon: Lightbulb },
-        { href: "/app/daftar", label: "Pendaftaran", icon: ClipboardList },
-        { href: "/app/kontak", label: "Kontak", icon: Phone },
+        { href: "/", label: "Dashboard", icon: Home },
+        { href: "/profil", label: "Profil RENJANA", icon: Info },
+        { href: "/kegiatan", label: "Kegiatan", icon: CalendarDays },
+        { href: "/relawan", label: "Data Relawan", icon: Users },
+        { href: "/peta", label: "Peta Sebaran", icon: Map },
+        { href: "/edukasi", label: "Edukasi Bencana", icon: GraduationCap },
+        { href: "/galeri", label: "Galeri", icon: ImageIcon },
+        { href: "/berita", label: "Berita", icon: Newspaper },
+        { href: "/dokumen", label: "Dokumen", icon: FileText },
+        { href: "/inovasi", label: "Data Dukung Inovasi", icon: Lightbulb },
+        { href: "/daftar", label: "Pendaftaran", icon: ClipboardList },
+        { href: "/kontak", label: "Kontak", icon: Phone },
     ];
 
     let { active = "Dashboard" }: { active?: string } = $props();
