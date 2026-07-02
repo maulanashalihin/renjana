@@ -273,10 +273,10 @@
                             <button onclick={() => openEdit(v)} class="flex-1 inline-flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:border-renjana-500 text-neutral-700 dark:text-neutral-300 text-xs font-semibold transition">
                                 <Pencil class="w-3 h-3" />Edit
                             </button>
-                        {/if}
-                        <button onclick={() => handleDelete(v.id)} class="inline-flex items-center gap-1 px-2 py-1.5 rounded-lg border border-rose-200 dark:border-rose-800 hover:bg-rose-50 text-rose-700 dark:text-rose-400 text-xs font-semibold transition">
-                            <Trash2 class="w-3 h-3" />
+                            <button onclick={() => handleDelete(v.id)} class="inline-flex items-center gap-1 px-2 py-1.5 rounded-lg border border-rose-200 dark:border-rose-800 hover:bg-rose-50 text-rose-700 dark:text-rose-400 text-xs font-semibold transition">
+                                <Trash2 class="w-3 h-3" />
                         </button>
+                        {/if}
                     </div>
                 </div>
             {/each}

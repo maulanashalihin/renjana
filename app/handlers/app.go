@@ -102,9 +102,7 @@ func (h *AppHandler) Menu(c *fiber.Ctx) error {
 		"galeri":   "app/Galeri",
 		"berita":   "app/Berita",
 		"dokumen":  "app/Dokumen",
-
-		"daftar": "app/Pendaftaran",
-		"kontak": "app/Kontak",
+		"kontak":   "app/Kontak",
 	}
 
 	component, ok := componentMap[menu]

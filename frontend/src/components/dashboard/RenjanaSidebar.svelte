@@ -9,7 +9,6 @@
         Image as ImageIcon,
         Newspaper,
         FileText,
-        ClipboardList,
         Phone,
         PhoneCall,
         MessageSquareWarning,
@@ -34,7 +33,6 @@
         { href: "/dokumen", label: "Dokumen", icon: FileText },
         { href: "/pengaduan", label: "Pengaduan", icon: MessageSquareWarning },
         { href: "/survey", label: "Survey Pelayanan", icon: BarChart3 },
-        { href: "/daftar", label: "Pendaftaran", icon: ClipboardList },
         { href: "/kontak", label: "Kontak", icon: Phone },
     ];
 
