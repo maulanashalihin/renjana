@@ -42,13 +42,10 @@ func NewAuthHandler(authService *services.AuthService, userService *services.Use
 // needsOnboarding checks if a user (with role 'relawan') doesn't have a volunteer record yet.
 // Admin/koordinator roles skip onboarding.
 func (h *AuthHandler) needsOnboarding(ctx context.Context, userID int64, role string) bool {
-	slog.Info("needsOnboarding check", "user_id", userID, "role", role, "expected_role", string(models.RoleRelawan))
 	if role != string(models.RoleRelawan) {
-		slog.Info("needsOnboarding: skipped - not relawan role", "user_id", userID, "role", role)
 		return false
 	}
-	_, err := h.querier.GetVolunteerByUserID(ctx, sql.NullInt64{Int64: userID, Valid: true})
-	slog.Info("needsOnboarding: get volunteer by user_id result", "user_id", userID, "err", err, "isErrNoRows", errors.Is(err, sql.ErrNoRows))
+	_, err := h.querier.GetVolunteerByUserID(ctx, userID)
 	return errors.Is(err, sql.ErrNoRows)
 }
 

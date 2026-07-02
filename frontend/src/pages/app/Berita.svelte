@@ -127,12 +127,12 @@
 
 <AppLayout {user} pageTitle="Berita & Pengumuman" pageSubtitle="Update terbaru dari kegiatan dan program RENJANA" activeMenu="Berita">
     <PageHeader title="Berita & Pengumuman" subtitle="Cerita inspiratif dari volunteer dan pencapaian kami" icon={Newspaper}>
-        <button onclick={openCreate} class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-renjana-500 hover:bg-renjana-600 text-white text-sm font-semibold transition">
-            {#if user?.role === "admin"}
+        {#if user?.role === "admin"}
+            <button onclick={openCreate} class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-renjana-500 hover:bg-renjana-600 text-white text-sm font-semibold transition">
                 <Plus class="w-4 h-4" />
                 Tambah Berita
-            {/if}
-        </button>
+            </button>
+        {/if}
     </PageHeader>
 
     <!-- Filter -->

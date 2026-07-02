@@ -489,7 +489,7 @@ type OnboardingRequest struct {
 // GetByUserID returns the volunteer record linked to a user.
 // Returns (nil, nil) if no record exists — that's not an error.
 func (s *VolunteerService) GetByUserID(ctx context.Context, userID int64) (*VolunteerDetail, error) {
-	r, err := s.querier.GetVolunteerByUserID(ctx, sql.NullInt64{Int64: userID, Valid: true})
+	r, err := s.querier.GetVolunteerByUserID(ctx, userID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
