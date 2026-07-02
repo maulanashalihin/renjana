@@ -182,6 +182,16 @@ PUBLIC
   GET  /reset-password/:token → PasswordResetHandler.ShowResetPasswordForm
   POST /reset-password/:token → PasswordResetHandler.ResetPassword
 
+  GET  /peta          → StaticHandler.Peta           ✅ publik
+  GET  /edukasi       → StaticHandler.Edukasi         ✅ publik
+  GET  /galeri        → StaticHandler.Galeri          ✅ publik
+  GET  /dokumen       → StaticHandler.Dokumen         ✅ publik
+  GET  /inovasi       → StaticHandler.Inovasi         ✅ publik
+  GET  /berita        → AnnouncementHandler.Index     ✅ publik
+  GET  /kontak        → ContactHandler.Index          ✅ publik
+  GET  /daftar        → RegistrationHandler.Index     ✅ publik
+  POST /daftar        → RegistrationHandler.Apply     ✅ publik
+
 AUTH (Authenticated)
   POST /logout       → AuthHandler.Logout
   GET  /api/me       → AuthHandler.Me
@@ -201,14 +211,14 @@ APP (Authenticated + CSRF) — semua di root path
   GET  /relawan/:id/edit → VolunteerHandler.Edit     ✅
   PUT  /relawan/:id   → VolunteerHandler.Update      ✅
   DELETE /relawan/:id → VolunteerHandler.Destroy     ✅
-  GET  /peta          → StaticHandler.Peta           ✅ real data
-  GET  /edukasi       → StaticHandler.Edukasi         ✅ real data
-  GET  /galeri        → StaticHandler.Galeri          ✅ real data
-  GET  /berita        → AnnouncementHandler.Index     ✅ real data
-  GET  /dokumen       → StaticHandler.Dokumen         ✅ real data
-  GET  /inovasi       → StaticHandler.Inovasi         ✅ real data
-  GET  /daftar        → RegistrationHandler.Index     ✅ real data
-  GET  /kontak        → ContactHandler.Index          ✅ real data
+
+  POST /berita        → AnnouncementHandler.Store    ✅
+  PUT  /berita/:id    → AnnouncementHandler.Update   ✅
+  DELETE /berita/:id  → AnnouncementHandler.Destroy  ✅
+
+  POST /kontak        → ContactHandler.Store         ✅
+  PUT  /kontak/:id    → ContactHandler.Update        ✅
+  DELETE /kontak/:id  → ContactHandler.Destroy       ✅
 
   POST /upload        → UploadHandler.Upload         ✅
 ```
@@ -308,7 +318,8 @@ Saat ini aplikasi hanya punya 2 role (`user`/`admin`) tanpa pembedaan akses — 
 | Hapus kegiatan | ❌ | ❌ | ❌ | ✅ |
 | Lihat data relawan | ❌ | ✅ (diri) | ✅ (kec. sendiri) | ✅ (semua) |
 | Approve pendaftaran | ❌ | ❌ | ✅ (kec. sendiri) | ✅ (semua) |
-| CRUD Berita/Kontak/Dokumen | ❌ | ❌ | ❌ | ✅ |
+| Lihat Berita/Kontak | ✅ | ✅ | ✅ | ✅ |
+| Tulis/Hapus Berita/Kontak/Dokumen | ❌ | ❌ | ❌ | ✅ |
 | Edit profil sendiri | ❌ | ✅ | ✅ | ✅ |
 | Manage user & role | ❌ | ❌ | ❌ | ✅ |
 
@@ -329,6 +340,7 @@ PUBLIC (no middleware)
   GET  /login, /register, /forgot-password, /reset-password
   GET  /daftar, POST /daftar
   GET  /peta, /edukasi, /galeri, /dokumen, /inovasi
+  GET  /berita, /kontak
 
 RELawan (RelawanOrAbove)
   GET  /              → Dashboard
@@ -345,7 +357,7 @@ KOORDINATOR (KoordinatorOrAbove + ScopeDistrict)
 ADMIN (AdminRequired — no scope limit)
   DELETE /kegiatan/:id
   DELETE /relawan/:id
-  CRUD /berita, /kontak, /dokumen
+  POST/PUT/DELETE /berita, /kontak, /dokumen
   Manage users → halaman baru
 ```
 
