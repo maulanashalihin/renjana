@@ -84,7 +84,18 @@ func (h *AnnouncementHandler) Index(c *fiber.Ctx) error {
 
 // Create — render with create modal open.
 func (h *AnnouncementHandler) Create(c *fiber.Ctx) error {
-	return c.Redirect("/berita?action=create")
+	// Detect user from session
+	var user *models.User
+	sess, sessErr := h.store.Get(c)
+	if sessErr == nil {
+		if uid := sess.Get("user_id"); uid != nil {
+			user, _ = h.querier.GetUserByID(c.Context(), uid.(int64))
+		}
+	}
+	return h.inertiaService.Render(c, "app/BeritaEditor", fiber.Map{
+		"user": user,
+		"edit": false,
+	})
 }
 
 // Store — handle POST /berita.
@@ -94,15 +105,19 @@ func (h *AnnouncementHandler) Store(c *fiber.Ctx) error {
 		return c.Redirect("/login")
 	}
 
-	var req services.CreateAnnouncementRequest
-	if err := c.BodyParser(&req); err != nil {
-		return c.Redirect("/berita?action=create&error=" + err.Error())
+	req := services.CreateAnnouncementRequest{
+		Title:       c.FormValue("title"),
+		Content:     c.FormValue("content"),
+		Category:    c.FormValue("category"),
+		Body:        c.FormValue("body"),
+		CoverURL:    c.FormValue("cover_url"),
+		AuthorID:    userID,
+		IsPublished: c.FormValue("is_published") == "true",
 	}
-	req.AuthorID = userID
 
 	_, err = h.announcementSvc.Create(c.Context(), req)
 	if err != nil {
-		return c.Redirect("/berita?action=create&error=" + err.Error())
+		return c.Redirect("/berita?error=" + err.Error())
 	}
 
 	return c.Redirect("/berita?success=created")
@@ -110,8 +125,21 @@ func (h *AnnouncementHandler) Store(c *fiber.Ctx) error {
 
 // Edit — render with edit modal opened.
 func (h *AnnouncementHandler) Edit(c *fiber.Ctx) error {
+	// Detect user from session
+	var user *models.User
+	sess, sessErr := h.store.Get(c)
+	if sessErr == nil {
+		if uid := sess.Get("user_id"); uid != nil {
+			user, _ = h.querier.GetUserByID(c.Context(), uid.(int64))
+		}
+	}
 	id, _ := strconv.ParseInt(c.Params("id"), 10, 64)
-	return c.Redirect(fmt.Sprintf("/berita?action=edit&id=%d", id))
+	ann, _ := h.announcementSvc.Get(c.Context(), id)
+	return h.inertiaService.Render(c, "app/BeritaEditor", fiber.Map{
+		"user":         user,
+		"edit":         true,
+		"announcement": ann,
+	})
 }
 
 // Update — handle PUT /berita/:id.

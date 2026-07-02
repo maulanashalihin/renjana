@@ -395,11 +395,7 @@ func (q *Queries) GetVolunteerByID(ctx context.Context, id int64) (GetVolunteerB
 
 const getVolunteerByUserID = `-- name: GetVolunteerByUserID :one
 
-SELECT
-    v.id, v.name, v.school, v.district_id, v.phone, v.status, v.avatar_url,
-    v.joined_at, v.is_active, v.application_status, v.reviewer_id, v.reviewed_at,
-    v.rejection_reason, v.user_id,
-    d.name AS district_name
+SELECT v.id, v.name, v.school, v.district_id, v.phone, v.status, v.avatar_url, v.joined_at, v.is_active, v.application_status, v.reviewer_id, v.reviewed_at, v.rejection_reason, v.user_id, d.name AS district_name
 FROM renjana_volunteers v
 LEFT JOIN renjana_districts d ON d.id = v.district_id
 WHERE v.user_id =

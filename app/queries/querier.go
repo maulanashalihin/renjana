@@ -488,3 +488,40 @@ func isDuplicateEmail(err error) bool {
 	return strings.Contains(msg, "UNIQUE constraint failed: users.email") ||
 		strings.Contains(msg, "UNIQUE constraint failed: users.google_id")
 }
+
+// VolunteerByUserIDRow is a manually-constructed row type to bypass sqlc generation
+// (workaround for sqlc stripping `?` on this specific query).
+type VolunteerByUserIDRow struct {
+	ID                int64
+	Name              string
+	School            string
+	DistrictID        int64
+	Phone             sql.NullString
+	Status            string
+	AvatarUrl         sql.NullString
+	JoinedAt          time.Time
+	IsActive          bool
+	ApplicationStatus string
+	ReviewerID        sql.NullInt64
+	ReviewedAt        sql.NullTime
+	RejectionReason   sql.NullString
+	UserID            sql.NullInt64
+	DistrictName      sql.NullString
+}
+
+// GetVolunteerByUserID returns the volunteer linked to a user. Direct query implementation
+// because sqlc has a bug stripping `?` from this specific query pattern.
+func (q *Querier) GetVolunteerByUserID(ctx context.Context, userID int64) (VolunteerByUserIDRow, error) {
+	const query = `SELECT v.id, v.name, v.school, v.district_id, v.phone, v.status, v.avatar_url, v.joined_at, v.is_active, v.application_status, v.reviewer_id, v.reviewed_at, v.rejection_reason, v.user_id, d.name AS district_name
+FROM renjana_volunteers v
+LEFT JOIN renjana_districts d ON d.id = v.district_id
+WHERE v.user_id = ?`
+	var row VolunteerByUserIDRow
+	err := q.db.QueryRowContext(ctx, query, userID).Scan(
+		&row.ID, &row.Name, &row.School, &row.DistrictID, &row.Phone, &row.Status,
+		&row.AvatarUrl, &row.JoinedAt, &row.IsActive, &row.ApplicationStatus,
+		&row.ReviewerID, &row.ReviewedAt, &row.RejectionReason, &row.UserID,
+		&row.DistrictName,
+	)
+	return row, err
+}
