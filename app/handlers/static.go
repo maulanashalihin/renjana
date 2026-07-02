@@ -198,13 +198,13 @@ func (h *StaticHandler) Peta(c *fiber.Ctx) error {
 		}
 
 		districtDetail = append(districtDetail, fiber.Map{
-			"id":                d["id"],
-			"name":              name,
-			"volunteer_count":   d["volunteer_count"],
-			"school_count":      schools,
-			"activity_count":    activities,
+			"id":                 d["id"],
+			"name":               name,
+			"volunteer_count":    d["volunteer_count"],
+			"school_count":       schools,
+			"activity_count":     activities,
 			"activity_breakdown": types,
-			"volunteer_status":  statuses,
+			"volunteer_status":   statuses,
 		})
 	}
 
