@@ -539,14 +539,7 @@ func (s *VolunteerService) CreateForUser(ctx context.Context, userID int64, user
 		return nil, errors.New("kecamatan wajib dipilih")
 	}
 
-	id, err := s.querier.CreateVolunteerForUser(ctx, queries.CreateVolunteerForUserParams{
-		UserID:     sql.NullInt64{Int64: userID, Valid: true},
-		Name:       userName,
-		School:     req.School,
-		DistrictID: req.DistrictID,
-		Phone:      sql.NullString{String: req.Phone, Valid: strings.TrimSpace(req.Phone) != ""},
-		JoinedAt:   time.Now(),
-	})
+	id, err := s.querier.CreateVolunteerForUserDirect(ctx, userID, userName, req.School, req.DistrictID, req.Phone, time.Now())
 	if err != nil {
 		return nil, err
 	}

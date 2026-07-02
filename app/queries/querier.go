@@ -525,3 +525,17 @@ WHERE v.user_id = ?`
 	)
 	return row, err
 }
+
+// CreateVolunteerForUserDirect creates a volunteer linked to a user (1:1).
+// Direct query implementation because sqlc has a bug stripping `?` from this specific query.
+func (q *Querier) CreateVolunteerForUserDirect(ctx context.Context, userID int64, name, school string, districtID int64, phone string, joinedAt time.Time) (int64, error) {
+	const query = `INSERT INTO renjana_volunteers (
+    user_id, name, school, district_id, phone, status, joined_at,
+    is_active, application_status
+)
+VALUES (?, ?, ?, ?, ?, 'aktif', ?, 1, 'approved')
+RETURNING id`
+	var id int64
+	err := q.db.QueryRowContext(ctx, query, userID, name, school, districtID, phone, joinedAt).Scan(&id)
+	return id, err
+}

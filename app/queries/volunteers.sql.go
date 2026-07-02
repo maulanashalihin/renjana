@@ -231,41 +231,6 @@ func (q *Queries) CreateVolunteer(ctx context.Context, arg CreateVolunteerParams
 	return id, err
 }
 
-const createVolunteerForUser = `-- name: CreateVolunteerForUser :one
-?;
-
-INSERT INTO renjana_volunteers (
-    user_id, name, school, district_id, phone, status, joined_at,
-    is_active, application_status
-)
-VALUES (?, ?, ?, ?, ?, 'aktif', ?, 1, 'approved')
-RETURNING
-`
-
-type CreateVolunteerForUserParams struct {
-	UserID     sql.NullInt64  `json:"user_id"`
-	Name       string         `json:"name"`
-	School     string         `json:"school"`
-	DistrictID int64          `json:"district_id"`
-	Phone      sql.NullString `json:"phone"`
-	JoinedAt   time.Time      `json:"joined_at"`
-}
-
-// Buat volunteer record dan link ke user_id (1:1)
-func (q *Queries) CreateVolunteerForUser(ctx context.Context, arg CreateVolunteerForUserParams) (int64, error) {
-	row := q.db.QueryRowContext(ctx, createVolunteerForUser,
-		arg.UserID,
-		arg.Name,
-		arg.School,
-		arg.DistrictID,
-		arg.Phone,
-		arg.JoinedAt,
-	)
-	var id int64
-	err := row.Scan(&id)
-	return id, err
-}
-
 const deleteVolunteer = `-- name: DeleteVolunteer :execrows
 DELETE FROM renjana_volunteers WHERE id = ?
 `
@@ -388,58 +353,6 @@ func (q *Queries) GetVolunteerByID(ctx context.Context, id int64) (GetVolunteerB
 		&i.ReviewerID,
 		&i.ReviewedAt,
 		&i.RejectionReason,
-		&i.DistrictName,
-	)
-	return i, err
-}
-
-const getVolunteerByUserID = `-- name: GetVolunteerByUserID :one
-
-SELECT v.id, v.name, v.school, v.district_id, v.phone, v.status, v.avatar_url, v.joined_at, v.is_active, v.application_status, v.reviewer_id, v.reviewed_at, v.rejection_reason, v.user_id, d.name AS district_name
-FROM renjana_volunteers v
-LEFT JOIN renjana_districts d ON d.id = v.district_id
-WHERE v.user_id =
-`
-
-type GetVolunteerByUserIDRow struct {
-	ID                int64          `json:"id"`
-	Name              string         `json:"name"`
-	School            string         `json:"school"`
-	DistrictID        int64          `json:"district_id"`
-	Phone             sql.NullString `json:"phone"`
-	Status            string         `json:"status"`
-	AvatarUrl         sql.NullString `json:"avatar_url"`
-	JoinedAt          time.Time      `json:"joined_at"`
-	IsActive          bool           `json:"is_active"`
-	ApplicationStatus string         `json:"application_status"`
-	ReviewerID        sql.NullInt64  `json:"reviewer_id"`
-	ReviewedAt        sql.NullTime   `json:"reviewed_at"`
-	RejectionReason   sql.NullString `json:"rejection_reason"`
-	UserID            sql.NullInt64  `json:"user_id"`
-	DistrictName      sql.NullString `json:"district_name"`
-}
-
-// ============================================================================
-// 1:1 user ↔ volunteer linkage (onboarding flow)
-// ============================================================================
-func (q *Queries) GetVolunteerByUserID(ctx context.Context, userID sql.NullInt64) (GetVolunteerByUserIDRow, error) {
-	row := q.db.QueryRowContext(ctx, getVolunteerByUserID, userID)
-	var i GetVolunteerByUserIDRow
-	err := row.Scan(
-		&i.ID,
-		&i.Name,
-		&i.School,
-		&i.DistrictID,
-		&i.Phone,
-		&i.Status,
-		&i.AvatarUrl,
-		&i.JoinedAt,
-		&i.IsActive,
-		&i.ApplicationStatus,
-		&i.ReviewerID,
-		&i.ReviewedAt,
-		&i.RejectionReason,
-		&i.UserID,
 		&i.DistrictName,
 	)
 	return i, err
