@@ -1,8 +1,11 @@
 package handlers
 
 import (
+	"context"
 	"crypto/rand"
+	"database/sql"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"
@@ -13,6 +16,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/maulanashalihin/laju-go/app/models"
+	"github.com/maulanashalihin/laju-go/app/queries"
 	"github.com/maulanashalihin/laju-go/app/services"
 	"github.com/maulanashalihin/laju-go/app/session"
 )
@@ -22,15 +26,27 @@ type AuthHandler struct {
 	userService    *services.UserService
 	store          *session.Store
 	inertiaService *services.InertiaService
+	querier        *queries.Querier
 }
 
-func NewAuthHandler(authService *services.AuthService, userService *services.UserService, store *session.Store, inertiaService *services.InertiaService) *AuthHandler {
+func NewAuthHandler(authService *services.AuthService, userService *services.UserService, store *session.Store, inertiaService *services.InertiaService, querier *queries.Querier) *AuthHandler {
 	return &AuthHandler{
 		authService:    authService,
 		userService:    userService,
 		store:          store,
 		inertiaService: inertiaService,
+		querier:        querier,
 	}
+}
+
+// needsOnboarding checks if a user (with role 'relawan') doesn't have a volunteer record yet.
+// Admin/koordinator roles skip onboarding.
+func (h *AuthHandler) needsOnboarding(ctx context.Context, userID int64, role string) bool {
+	if role != string(models.RoleRelawan) {
+		return false
+	}
+	_, err := h.querier.GetVolunteerByUserID(ctx, sql.NullInt64{Int64: userID, Valid: true})
+	return errors.Is(err, sql.ErrNoRows)
 }
 
 // ShowLoginForm displays the login page
@@ -90,6 +106,12 @@ func (h *AuthHandler) Register(c *fiber.Ctx) error {
 
 	slog.Info("session created", "handler", "Auth.Register", "user_id", user.ID, "redirect", "/")
 
+	// Redirect to onboarding if user is a relawan and has no volunteer record yet
+	if h.needsOnboarding(c.Context(), user.ID, string(user.Role)) {
+		h.store.Flash(c, "success", "Selamat datang di RENJANA! Lengkapi profil relawan kamu untuk melanjutkan.")
+		return c.Redirect("/onboarding", fiber.StatusSeeOther)
+	}
+
 	// Inertia.js will automatically follow this redirect
 	return c.Redirect("/", fiber.StatusSeeOther)
 }
@@ -139,6 +161,12 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	}
 
 	slog.Info("session created", "handler", "Auth.Login", "user_id", user.ID, "redirect", "/")
+
+	// Redirect to onboarding if user is a relawan and has no volunteer record yet
+	if h.needsOnboarding(c.Context(), user.ID, string(user.Role)) {
+		h.store.Flash(c, "success", "Selamat datang kembali! Lengkapi profil relawan kamu untuk melanjutkan.")
+		return c.Redirect("/onboarding", fiber.StatusSeeOther)
+	}
 
 	// Inertia.js will automatically follow this redirect
 	return c.Redirect("/", fiber.StatusSeeOther)
@@ -226,6 +254,12 @@ func (h *AuthHandler) GoogleCallback(c *fiber.Ctx) error {
 	}
 
 	slog.Info("session created", "handler", "Auth.GoogleCallback", "user_id", user.ID, "redirect", "/")
+
+	// Redirect to onboarding if user is a relawan and has no volunteer record yet
+	if h.needsOnboarding(c.Context(), user.ID, string(user.Role)) {
+		h.store.Flash(c, "success", "Selamat datang! Lengkapi profil relawan kamu untuk melanjutkan.")
+		return c.Redirect("/onboarding", fiber.StatusSeeOther)
+	}
 
 	// Inertia.js will automatically follow this redirect
 	return c.Redirect("/")

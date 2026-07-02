@@ -40,7 +40,7 @@ func SetupRoutes(app *fiber.App, h Handlers, store *session.Store, mailerService
 	setupAuthRoutes(app, h.Auth, h.PasswordReset, store, mailerService)
 
 	// Setup public content routes — no auth required
-	setupPublicRoutes(app, h.App, h.Activity, h.Announcement, h.Contact, h.Organization, h.Static)
+	setupPublicRoutes(app, h.App, h.Activity, h.Announcement, h.Contact, h.Organization, h.Static, h.Volunteer)
 
 	// Setup education LMS routes — course detail, quiz, certificate
 	setupEducationRoutes(app, h.Education, store)
@@ -93,7 +93,7 @@ func setupPublicFormRoutes(app *fiber.App, complaintHandler *handlers.ComplaintH
 	app.Post("/survey", surveyHandler.Store)
 }
 
-func setupPublicRoutes(app *fiber.App, appHandler *handlers.AppHandler, activityHandler *handlers.ActivityHandler, announcementHandler *handlers.AnnouncementHandler, contactHandler *handlers.ContactHandler, organizationHandler *handlers.OrganizationHandler, staticHandler *handlers.StaticHandler) {
+func setupPublicRoutes(app *fiber.App, appHandler *handlers.AppHandler, activityHandler *handlers.ActivityHandler, announcementHandler *handlers.AnnouncementHandler, contactHandler *handlers.ContactHandler, organizationHandler *handlers.OrganizationHandler, staticHandler *handlers.StaticHandler, volunteerHandler *handlers.VolunteerHandler) {
 	// Dashboard — public, no auth required
 	app.Get("/", appHandler.Dashboard)
 	app.Get("/profile", appHandler.Profile)
@@ -110,6 +110,10 @@ func setupPublicRoutes(app *fiber.App, appHandler *handlers.AppHandler, activity
 	// Kegiatan — read-only list & detail, public
 	app.Get("/kegiatan", activityHandler.Index)
 	app.Get("/kegiatan/:id", activityHandler.Show)
+
+	// Relawan — read-only list & detail, public
+	app.Get("/relawan", volunteerHandler.Index)
+	app.Get("/relawan/:id", volunteerHandler.Show)
 
 	// Read-only public listing
 	app.Get("/berita", announcementHandler.Index)
@@ -202,11 +206,9 @@ func setupAppRoutes(app *fiber.App, appHandler *handlers.AppHandler, uploadHandl
 	app.Put("/kontak/:id", middlewares.AdminRequired(store), contactHandler.Update)
 	app.Delete("/kontak/:id", middlewares.AdminRequired(store), contactHandler.Destroy)
 
-	// Relawan — list/show for all auth users, modify for admin only
-	app.Get("/relawan", volunteerHandler.Index)
+	// Relawan — create/edit only (list/detail is public)
 	app.Get("/relawan/create", volunteerHandler.Create)
 	app.Post("/relawan", middlewares.AdminRequired(store), volunteerHandler.Store)
-	app.Get("/relawan/:id", volunteerHandler.Show)
 	app.Get("/relawan/:id/edit", volunteerHandler.Edit)
 	app.Put("/relawan/:id", middlewares.AdminRequired(store), volunteerHandler.Update)
 	app.Delete("/relawan/:id", middlewares.AdminRequired(store), volunteerHandler.Destroy)

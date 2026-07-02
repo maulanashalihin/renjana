@@ -118,10 +118,12 @@
 
 <AppLayout {user} pageTitle="Direktori Kontak" pageSubtitle="Koordinator RENJANA di seluruh Kabupaten Tanah Bumbu" activeMenu="Kontak">
     <PageHeader title="Direktori Kontak" subtitle="Hubungi koordinator terdekat untuk informasi kegiatan" icon={Phone}>
-        <button onclick={openCreate} class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-renjana-500 hover:bg-renjana-600 text-white text-sm font-semibold transition">
-            <Plus class="w-4 h-4" />
-            Tambah Kontak
-        </button>
+        {#if user?.role === "admin"}
+            <button onclick={openCreate} class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-renjana-500 hover:bg-renjana-600 text-white text-sm font-semibold transition">
+                <Plus class="w-4 h-4" />
+                Tambah Kontak
+            </button>
+        {/if}
     </PageHeader>
 
     <!-- Stats -->
@@ -226,14 +228,16 @@
                                         <span>Tidak aktif</span>
                                     </div>
                                 {/if}
-                                <div class="mt-3 pt-3 border-t border-neutral-200 dark:border-neutral-800 flex gap-2">
-                                    <button onclick={() => openEdit(k)} class="flex-1 inline-flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:border-renjana-500 text-neutral-700 dark:text-neutral-300 text-xs font-semibold transition">
-                                        <Pencil class="w-3 h-3" />Edit
-                                    </button>
-                                    <button onclick={() => handleDelete(k.id)} class="inline-flex items-center gap-1 px-2 py-1.5 rounded-lg border border-rose-200 dark:border-rose-800 hover:bg-rose-50 text-rose-700 dark:text-rose-400 text-xs font-semibold transition">
-                                        <Trash2 class="w-3 h-3" />
-                                    </button>
-                                </div>
+                                {#if user?.role === "admin"}
+                                    <div class="mt-3 pt-3 border-t border-neutral-200 dark:border-neutral-800 flex gap-2">
+                                        <button onclick={() => openEdit(k)} class="flex-1 inline-flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:border-renjana-500 text-neutral-700 dark:text-neutral-300 text-xs font-semibold transition">
+                                            <Pencil class="w-3 h-3" />Edit
+                                        </button>
+                                        <button onclick={() => handleDelete(k.id)} class="inline-flex items-center gap-1 px-2 py-1.5 rounded-lg border border-rose-200 dark:border-rose-800 hover:bg-rose-50 text-rose-700 dark:text-rose-400 text-xs font-semibold transition">
+                                            <Trash2 class="w-3 h-3" />
+                                        </button>
+                                    </div>
+                                {/if}
                             </div>
                         {/each}
                     </div>

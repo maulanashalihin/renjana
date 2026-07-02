@@ -51,9 +51,15 @@ func (h *VolunteerHandler) authUser(c *fiber.Ctx) (int64, *models.User, error) {
 
 // Index — list with search, filter, pagination.
 func (h *VolunteerHandler) Index(c *fiber.Ctx) error {
-	_, user, err := h.authUser(c)
-	if err != nil {
-		return c.Redirect("/login")
+	var user *models.User
+	sess, sessErr := h.store.Get(c)
+	if sessErr == nil {
+		if uid := sess.Get("user_id"); uid != nil {
+			u, err := h.querier.GetUserByID(c.Context(), uid.(int64))
+			if err == nil {
+				user = u
+			}
+		}
 	}
 
 	page, _ := strconv.Atoi(c.Query("page", "1"))
@@ -63,8 +69,8 @@ func (h *VolunteerHandler) Index(c *fiber.Ctx) error {
 	status := c.Query("status", "")
 	appStatus := c.Query("application_status", "")
 
-	// Apply district scope for koordinator role
-	if user.Role == models.RoleKoordinator && user.DistrictID.Valid {
+	// Apply district scope for koordinator role (only when logged in)
+	if user != nil && user.Role == models.RoleKoordinator && user.DistrictID.Valid {
 		districtID = user.DistrictID.Int64
 	}
 
@@ -158,11 +164,17 @@ func (h *VolunteerHandler) Destroy(c *fiber.Ctx) error {
 	return c.Redirect("/relawan?success=deleted")
 }
 
-// Show — view detail.
+// Show — view detail. Public access.
 func (h *VolunteerHandler) Show(c *fiber.Ctx) error {
-	_, user, err := h.authUser(c)
-	if err != nil {
-		return c.Redirect("/login")
+	var user *models.User
+	sess, sessErr := h.store.Get(c)
+	if sessErr == nil {
+		if uid := sess.Get("user_id"); uid != nil {
+			u, err := h.querier.GetUserByID(c.Context(), uid.(int64))
+			if err == nil {
+				user = u
+			}
+		}
 	}
 	id, _ := strconv.ParseInt(c.Params("id"), 10, 64)
 

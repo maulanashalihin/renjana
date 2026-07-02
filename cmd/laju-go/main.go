@@ -115,7 +115,7 @@ func main() {
 
 	// Initialize handlers
 	routeHandlers := routes.Handlers{
-		Auth:         handlers.NewAuthHandler(authService, userService, sessionStore, inertiaService),
+		Auth:         handlers.NewAuthHandler(authService, userService, sessionStore, inertiaService, querier),
 		App:          handlers.NewAppHandler(userService, sessionStore, inertiaService, dashboardService),
 		Upload:       handlers.NewUploadHandler(sessionStore, userService),
 		Volunteer:    handlers.NewVolunteerHandler(sessionStore, inertiaService, volunteerService, querier),
