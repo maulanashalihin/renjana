@@ -1,34 +1,32 @@
 # RENJANA — Consolidated Plan
 
-> **Status:** Iterasi 3 complete · Iterasi 4 (RBAC) on deck
-> **Tanggal:** 29 Juni 2026
+> **Status:** Iterasi 1-4 complete · Enhancement ongoing
+> **Tanggal:** 2 Juli 2026
 > **Branch utama:** `main`
 
 ## Gambaran Besar
 
-RENJANA (**Re**lawan **R**emaja **A**man Be**n**cana **a**gung **J**u**g**a) — aplikasi manajemen relawan kebencanaan untuk Kabupaten Tanah Bumbu. Dibangun di atas boilerplate Laju Go (Go Fiber + Svelte 5 + Inertia.js + SQLite + templ).
+RENJANA (**Re**lawan **R**emaja **A**man Be**n**cana) — aplikasi manajemen relawan kebencanaan untuk Kabupaten Tanah Bumbu. Dibangun di atas boilerplate Laju Go (Go Fiber + Svelte 5 + Inertia.js + SQLite + templ).
 
-### Tech Stack
-
-### Keputusan Arsitektur (diambil 29 Juni 2026)
+### Keputusan Arsitektur
 
 **1. Unified Admin — tidak ada pemisahan public/admin panel**
-Semua CRUD dan manajemen terjadi langsung di halaman yang sama. Admin login, langsung bisa edit data. Tidak ada panel admin terpisah dengan layout berbeda. Jika nanti butuh halaman publik, tinggal tambah route public terpisah.
+Semua CRUD dan manajemen terjadi langsung di halaman yang sama via RBAC. Admin login, langsung bisa edit data. Tidak ada panel admin terpisah. Sebagian besar halaman bersifat publik (read-only) tanpa login.
 
 **2. Root path routing — `/app/*` → `/*`**
+Semua route di root path (`/`, `/profil`, `/kegiatan`, `/relawan`, dst). Login/Register tetap di `/login`, `/register`.
 
-- `/` → Dashboard (protected, auth required)
-- `/profil`, `/kegiatan`, `/relawan`, dst → langsung di root path
-- `/about` → dihapus (tidak dipakai)
-- Login/Register tetap di `/login`, `/register`
+**3. Public-first — tidak perlu login untuk lihat konten**
+Halaman publik: Dashboard, Profil, Kegiatan, Relawan, Peta, Edukasi, Galeri, Berita, Dokumen, Pengaduan, Survey, Kontak. Login hanya diperlukan untuk CRUD/admin dan area terproteksi (kuis, sertifikat).
 
 | Layer | Teknologi |
 |-------|-----------|
-| Backend | Go 1.24+, Fiber v3, sqlc (generated), Goose (migrations) |
-| Frontend | Svelte 5, Inertia.js 3, Tailwind CSS 4, Lucide Svelte |
+| Backend | Go 1.26+, Fiber v2, sqlc (generated), Goose (migrations) |
+| Frontend | Svelte 5 (runes), Inertia.js 3, Tailwind CSS 4, Lucide Svelte |
 | Database | SQLite via modernc.org/sqlite (pure-Go, no CGO), WAL mode |
 | Build | Vite 8 (frontend), Go build (backend), Air (hot reload) |
-| Session | Database-backed, in-memory cache |
+| Session | Database-backed, in-memory LRU cache |
+| Auth | Email/Password + Google OAuth 2.0, bcrypt, session-based |
 
 ---
 
@@ -42,190 +40,211 @@ Semua CRUD dan manajemen terjadi langsung di halaman yang sama. Admin login, lan
 
 ---
 
-## Iterasi 1: Branding + Auth (COMPLETE ✅)
+## Iterasi 1-3: Foundation + CRUD + Full Pages (COMPLETE ✅)
+
+Semua fitur dasar selesai: branding/auth, database/seed data, 12 modul dengan CRUD penuh, root path routing, dashboard real-time, dan frontend Svelte 5 lengkap.
 
 | Area | Status | Detail |
 |------|--------|--------|
-| Login/Register | ✅ | Form + OAuth Google stub |
-| Password Reset | ✅ | Forgot + reset flow |
-| Inertia.js Setup | ✅ | Auto XHR/HTML, Vite dev detection |
-| RENJANA Sidebar | ✅ | Dark navy, 12 menu, emergency 112, quote |
+| Auth (Login/Register/OAuth) | ✅ | Email/password + Google OAuth + password reset |
+| Session Management | ✅ | Database-backed + in-memory LRU cache + flash messages |
+| Inertia.js Setup | ✅ | Auto XHR/HTML, 409 redirect untuk autentikasi |
+| RENJANA Sidebar | ✅ | Dark navy, 12 menu (updated), emergency 112, quote |
 | Dashboard Layout | ✅ | AppLayout → Sidebar + TopBar + content slot |
-| Dashboard Components | ✅ | 9 widgets (HeroBanner, StatCard, dsb) |
-| Profile Page | ✅ | RENJANA branded, edit profile + password |
-| Dark Mode Toggle | ✅ | Toggle di TopBar, dark: variants |
-| RENJANA CSS Tokens | ✅ | Sidebar colors, renjana-500/600, emergency dll |
+| Dashboard Components | ✅ | 9 widgets dengan data real-time dari DB |
+| Dark Mode | ✅ | Toggle di TopBar, dark: variants di semua komponen |
+| CSS Tokens | ✅ | Sidebar colors, renjana-500/600, emergency |
+| Migrations (0001-0006) | ✅ | 6 domain tables + extended schema + seed data |
+| sqlc generate | ✅ | Semua queries type-safe di `app/queries/` |
+| DashboardService | ✅ | Orchestrator + DTOs + sub-queries |
+| Root Path Refactor | ✅ | `/app/*` → `/*`, `/about` dihapus |
+| CRUD Relawan | ✅ | Service + Handler + Frontend + Pagination |
+| CRUD Kegiatan | ✅ | Filter tipe/status, search, pagination |
+| CRUD Berita | ✅ | Editor markdown, category filter |
+| CRUD Kontak | ✅ | Group by district, search, CRUD modal |
+| Profil RENJANA | ✅ | Tabbed edit form (Tentang/Kontak/Sosial) |
+| Peta Sebaran | ✅ | Leaflet interaktif dengan data kecamatan |
+| Galeri | ✅ | Masonry grid + lightbox modal |
+| Dokumen | ✅ | Kategori + detail panel |
+| Pengaduan | ✅ | Public submit + admin manage |
+| Survey | ✅ | Public submit + admin stats |
+| PaginationService | ✅ | Generic LIMIT/OFFSET helpers |
 
 ---
 
-## Iterasi 2: Database + Real Data (COMPLETE ✅)
+## Iterasi 4: RBAC + Edukasi LMS + Polish (COMPLETE ✅)
+
+### 4.1 RBAC — Multi-Stakeholder Access ✅
 
 | Area | Status | Detail |
 |------|--------|--------|
-| **Migrations** | | |
-| `0003` — 6 domain tables | ✅ | districts, volunteers, activity_types, activities, announcements, achievements + FK + index |
-| `0004` — Seed data | ✅ | 12 kecamatan, 5 jenis, 1.248 volunteers, 128 activities, 4 pengumuman, 5 achievements |
-| `0005` — Extended schema | ✅ | contacts, media, documents, education, innovations, organization + extend announcements/volunteers |
-| `0006` — Extended seed | ✅ | 24 koordinator, seed profil RENJANA, pending applications |
-| **Queries (sqlc)** | | |
-| `queries/districts.sql` | ✅ | GetAllDistricts, GetActiveDistricts |
-| `queries/volunteers.sql` | ✅ | CountActiveVolunteers, CountActiveVolunteersPreviousMonth, CountVolunteersByDistrict, etc. + CRUD queries |
-| `queries/activity_types.sql` | ✅ | GetAllActivityTypes |
-| `queries/activities.sql` | ✅ | CountAllActivities, CountActivitiesByType, CountActivitiesByDistrict, GetUpcomingActivities |
-| `queries/announcements.sql` | ✅ | GetLatestPublishedAnnouncement |
-| `queries/achievements.sql` | ✅ | GetAchievementsByYear |
-| sqlc generate | ✅ | All \*.sql.go + querier.go in `app/queries/` |
-| **Backend Services** | | |
-| `DashboardService` | ✅ | Orchestrator + DTOs + sub-queries |
-| `PaginationService` | ✅ | Generic LIMIT/OFFSET helpers |
-| **Backend Handlers** | | |
-| AppHandler.Dashboard | ✅ | Sends real data props to Inertia |
-| AppHandler.Menu | ✅ | Dispatcher for 11 stub/real menu pages |
-| AppHandler.Profile | ✅ | Edit profile + change password |
-| **Routes** | ✅ | All 12 menu routes, CRUD routes for Relawan |
-| **Wiring in main.go** | ✅ | All services instantiated |
+| Role definitions | ✅ | `super_admin`, `admin`, `koordinator`, `relawan`, `user` |
+| AuthRequired middleware | ✅ | Session check + Inertia 409 redirect |
+| Guest middleware | ✅ | Redirect authenticated users from login/register |
+| AdminRequired middleware | ✅ | Role=admin check untuk CRUD sensitive |
+| KoordinatorRequired middleware | ✅ | Koordinator/admin/super_admin only |
+| RelawanRequired middleware | ✅ | Any authenticated user with valid role |
+| ScopeDistrict middleware | ✅ | District-based filtering untuk koordinator |
+| Session data with district_id | ✅ | `SessionData` includes DistrictID + VolunteerID |
+| User management page | ✅ | `/admin/users` — list, create, edit role, toggle active |
+| `is_active` on users table | ✅ | Active/inactive toggle |
+
+### 4.2 Edukasi LMS (Learning Management System) ✅
+
+| Area | Status | Detail |
+|------|--------|--------|
+| EducationService | ✅ | Course detail, quiz scoring, certificate management |
+| EducationHandler | ✅ | CourseShow, QuizShow, QuizSubmit, CertificateShow, CertificatePublic, MyCertificates |
+| Course detail page | ✅ | Modul list, content viewer, progress bar, quiz section |
+| Quiz system | ✅ | Multiple choice questions, auto-scoring, passing score |
+| Quiz result page | ✅ | Score display, pass/fail status, answer review |
+| Certificate page | ✅ | Digital certificate dengan kode unik |
+| Public certificate lookup | ✅ | Verifikasi via `/edukasi/sertifikat/:code` |
+| User progress tracking | ✅ | Completed modules, quiz attempts, certificate status |
+| EdukasiCourse.svelte | ✅ | Svelte 5 component dengan module accordion |
+| EdukasiQuiz.svelte | ✅ | Quiz form with question navigation |
+| EdukasiQuizResult.svelte | ✅ | Result display with retry option |
+| EdukasiCertificate.svelte | ✅ | Certificate display |
+| SertifikatSaya.svelte | ✅ | User certificate list |
+
+### 4.3 Berita Editor (Markdown + Drag-Drop) ✅
+
+| Area | Status | Detail |
+|------|--------|--------|
+| BeritaEditor.svelte | ✅ | Markdown editor + cover image upload + publish toggle |
+| BeritaEditorPage | ✅ | Separate page (`/berita/create`, `/berita/:id/edit`) |
+| Cover image upload | ✅ | Drag-drop via `/upload` with purpose=media |
+| Markdown content | ✅ | Stored in DB, rendered on frontend |
+
+### 4.4 Profile & Avatar ✅
+
+| Area | Status | Detail |
+|------|--------|--------|
+| Profile page | ✅ | Edit name, email, password, avatar |
+| Avatar upload | ✅ | Via `/api/avatar/upload` (auth-only, skipped CSRF) |
+| `UpdateAvatar` service | ✅ | DB update + cache invalidation |
+| Avatar proxy | ✅ | `/api/avatar/:id` — serves local or external avatars |
+
+### 4.5 CSRF & Auth Improvements ✅
+
+| Area | Status | Detail |
+|------|--------|--------|
+| Inertia 409 redirect | ✅ | `AuthRequired` returns 409 + `X-Inertia-Location` |
+| Session zero-value bug | ✅ | `int64(0)` not mistaken for authenticated user |
+| CSRF skip paths | ✅ | `/login`, `/register`, `/auth/`, `/api/`, dll |
+| Rate limiting | ✅ | Auth endpoint throttle via `fiberlimiter` |
 
 ---
 
-## Iterasi 3: CRUD + Full Pages + Root Path (COMPLETE ✅)
+## Iterasi 5: Enhancement (NEXT 🔲)
 
-### 3.1 Data Relawan — DONE ✅
-
-| Area | Status | Detail |
-|------|--------|--------|
-| `app/services/volunteer.go` | ✅ | List, Get, Create, Update, Delete, ApproveApplication, RejectApplication, GetPendingApplications, GetStats |
-| `app/handlers/volunteer.go` | ✅ | Index, Create, Store, Edit, Update, Destroy, Show |
-| `queries/volunteers.sql` CRUD | ✅ | ListVolunteersPaginated, CountVolunteersFiltered, CreateVolunteer, UpdateVolunteer, DeleteVolunteer, ApproveApplication, RejectApplication, ListPendingApplications, CountPendingApplications |
-| `frontend/pages/app/Relawan.svelte` | ✅ | UI complete with real backend props. CRUD modal (create/edit), delete confirmation, search/filter/pagination via URL |
-| CRUD components | ✅ | Modal, Pagination, SearchFilter, ConfirmDialog, VolunteerFormFields |
-
-### 3.2 Kegiatan CRUD — DONE ✅
-
-| Area | Status | Detail |
-|------|--------|--------|
-| Service `app/services/activity.go` | ✅ | List, Get, Create, Update, Delete, GetStats |
-| Handler `app/handlers/activity.go` | ✅ | Index, Create, Store, Edit, Update, Destroy, Show |
-| CRUD queries | ✅ | GetActivityByID, ListActivitiesPaginated, CountActivitiesFiltered, CreateActivity, UpdateActivity, DeleteActivity, GetActivityStats |
-| `frontend/pages/app/Kegiatan.svelte` | ✅ | UI complete with real backend props. Type/status filter, search, CRUD modal, pagination |
-
-### 3.3 Berita CRUD — DONE ✅
-
-| Area | Status | Detail |
-|------|--------|--------|
-| Service `app/services/announcement.go` | ✅ | List, Get, Create, Update, Delete, ListByCategory |
-| Handler `app/handlers/announcement.go` | ✅ | Index, Create, Store, Edit, Update, Destroy, Show |
-| CRUD queries | ✅ | GetAnnouncementByID, ListAnnouncementsPaginated, CountAnnouncementsFiltered, CreateAnnouncement, UpdateAnnouncement, DeleteAnnouncement |
-| `frontend/pages/app/Berita.svelte` | ✅ | UI complete with real backend props. Category filter, search, CRUD modal |
-
-### 3.4 Kontak CRUD — DONE ✅
-
-| Area | Status | Detail |
-|------|--------|--------|
-| Service `app/services/contact.go` | ✅ | List, ListAll, Get, Create, Update, Delete |
-| Handler `app/handlers/contact.go` | ✅ | Index, Create, Store, Edit, Update, Destroy |
-| `queries/contacts.sql` | ✅ | ListContactsByDistrict, ListContactsPaginated, CountContactsFiltered, GetContactByID, CreateContact, UpdateContact, DeleteContact |
-| `frontend/pages/app/Kontak.svelte` | ✅ | UI complete with real backend props. Grouped by district, search, filter, CRUD modal |
-
-### 3.5 Profil RENJANA — DONE ✅
-
-| Area | Status | Detail |
-|------|--------|--------|
-| Service `app/services/organization.go` | ✅ | Get, Update (upsert single row id=1) |
-| Handler `app/handlers/organization.go` | ✅ | Index, Update |
-| `queries/organization.sql` | ✅ | GetOrganization, UpsertOrganization |
-| `frontend/pages/app/Profil.svelte` | ✅ | UI complete with tabbed edit form (Tentang/Kontak/Sosial). Visi/misi displayed as numbered list. |
-
-### 3.6 Pendaftaran — DONE ✅
-
-| Area | Status | Detail |
-|------|--------|--------|
-| Handler `app/handlers/registration.go` | ✅ | Index (public form OR admin queue), Apply, Approve, Reject |
-| Routes | ✅ | Public GET/POST /daftar, protected /daftar/:id/{approve,reject} |
-| `frontend/pages/app/Pendaftaran.svelte` | ✅ | Admin: stats banner + queue with approve/reject buttons. Public: 4-step form with form submit to backend. |
-
-### 3.7 Read-only Backend (Peta, Edukasi, Galeri, Dokumen) — DONE ✅
-
-| Page | Backend | Frontend |
-|------|---------|---------|
-| `Peta.svelte` | ✅ StaticService + StaticHandler.Peta | ✅ Real district data + volunteer counts |
-| `Edukasi.svelte` | ✅ StaticService.ListEducation | ✅ Real articles from DB |
-| `Galeri.svelte` | ✅ StaticService.ListMedia | ✅ Real media from DB |
-| `Dokumen.svelte` | ✅ StaticService.ListDocuments | ✅ Real documents from DB |
-| `Pengaduan.svelte` | ✅ ComplaintService.List + Create | ✅ Real complaints from DB |
-| `Survey.svelte` | ✅ SurveyService.List + Create + Stats | ✅ Real surveys from DB |
-
-### 3.8 Root Path Refactor — DONE ✅
-
-- `/app/*` → root path (`/profil`, `/kegiatan`, `/relawan`, dst)
-- `/` = Dashboard
-- `/about` removed
-- Boilerplate landing page + templates/index.templ + types.go deleted
-- Sidebar hrefs updated
-- All redirects updated (auth.go, auth handler, volunteer handler)
-- All test paths updated (auth_handler_test.go)
+| Task | Priority | Detail |
+|------|----------|--------|
+| Loading skeleton (`.shimmer`) | Low | Skeleton loading untuk widget dashboard |
+| Visual responsive test | Low | Test di 1440/768/375 viewport |
+| Full dark mode audit | Low | Scan semua halaman |
+| Empty state improvement | Low | Better empty state messages per widget |
+| Peta interaktif enhancement | Low | Interactive map instead of fixed SVG |
+| Activity detail page | Low | Separate detail page for activities |
+| Dokumen preview | Low | In-browser PDF/document preview |
+| Notification system | Low | In-app notifications
 
 ---
 
 ## API Endpoint Map
 
 ```
-PUBLIC
-  GET  /              → redirect ke dashboard (AuthRequired middleware)
-                       atau landing page untuk guest (via Guest middleware)
-  GET  /login         → AuthHandler.ShowLoginForm
-  POST /login         → AuthHandler.Login
-  GET  /register      → AuthHandler.ShowRegisterForm
-  POST /register      → AuthHandler.Register
-  GET  /auth/google          → AuthHandler.GoogleLogin
+PUBLIC — no auth required
+  GET  /                    → AppHandler.Dashboard (dengan/g tanpa user)
+  GET  /profile             → AppHandler.Profile (dengan/g tanpa user)
+  GET  /login               → AuthHandler.ShowLoginForm (Guest)
+  POST /login               → AuthHandler.Login (Guest)
+  GET  /register            → AuthHandler.ShowRegisterForm (Guest)
+  POST /register            → AuthHandler.Register (Guest)
+  GET  /auth/google         → AuthHandler.GoogleLogin
   GET  /auth/google/callback → AuthHandler.GoogleCallback
-  GET  /forgot-password       → PasswordResetHandler.ShowForgotPasswordForm
-  POST /forgot-password       → PasswordResetHandler.SendResetLink
+  GET  /forgot-password      → PasswordResetHandler.ShowForgotPasswordForm
+  POST /forgot-password      → PasswordResetHandler.SendResetLink
   GET  /reset-password/:token → PasswordResetHandler.ShowResetPasswordForm
   POST /reset-password/:token → PasswordResetHandler.ResetPassword
+  GET  /api/avatar/:id       → AuthHandler.GetAvatar
 
-  GET  /peta          → StaticHandler.Peta           ✅ publik
-  GET  /edukasi       → StaticHandler.Edukasi         ✅ publik
-  GET  /galeri        → StaticHandler.Galeri          ✅ publik
-  GET  /dokumen       → StaticHandler.Dokumen         ✅ publik
+  GET  /profil              → OrganizationHandler.Index
+  GET  /kegiatan            → ActivityHandler.Index
+  GET  /kegiatan/:id        → ActivityHandler.Show
+  GET  /relawan             → VolunteerHandler.Index
+  GET  /relawan/:id         → VolunteerHandler.Show
+  GET  /peta                → StaticHandler.Peta
+  GET  /edukasi             → StaticHandler.Edukasi
+  GET  /edukasi/course/:id  → EducationHandler.CourseShow
+  GET  /edukasi/sertifikat/:code → EducationHandler.CertificatePublic
+  GET  /galeri              → StaticHandler.Galeri
+  GET  /galeri/:id          → StaticHandler.Galeri
+  GET  /berita              → AnnouncementHandler.Index
+  GET  /berita/:id          → AnnouncementHandler.Show
+  GET  /dokumen             → StaticHandler.Dokumen
+  GET  /pengaduan           → ComplaintHandler.Index
+  POST /pengaduan           → ComplaintHandler.Store
+  GET  /survey              → SurveyHandler.Index
+  POST /survey              → SurveyHandler.Store
+  GET  /kontak              → ContactHandler.Index
 
-  GET  /berita        → AnnouncementHandler.Index     ✅ publik
-  GET  /kontak        → ContactHandler.Index          ✅ publik
-  GET  /daftar        → RegistrationHandler.Index     ✅ publik
-  POST /daftar        → RegistrationHandler.Apply     ✅ publik
-  GET  /pengaduan     → ComplaintHandler.Index       ✅ publik
-  POST /pengaduan     → ComplaintHandler.Store       ✅ publik
-  GET  /survey        → SurveyHandler.Index          ✅ publik
-  POST /survey        → SurveyHandler.Store          ✅ publik
+AUTH — AuthRequired
+  POST  /logout             → AuthHandler.Logout
+  GET   /api/me             → AuthHandler.Me
+  POST  /api/avatar/upload  → UploadHandler.UploadByPurpose
+  PUT   /profile            → AppHandler.UpdateProfile
+  PUT   /profile/password   → AppHandler.UpdatePassword
+  GET   /onboarding         → OnboardingHandler.Show
+  POST  /onboarding         → OnboardingHandler.Store
+  GET   /sertifikat-saya    → EducationHandler.MyCertificates
+  GET   /edukasi/course/:id/quiz     → EducationHandler.QuizShow
+  POST  /edukasi/course/:id/quiz     → EducationHandler.QuizSubmit
+  GET   /edukasi/course/:id/certificate → EducationHandler.CertificateShow
+  GET   /kegiatan/create    → ActivityHandler.Create
+  GET   /kegiatan/:id/edit  → ActivityHandler.Edit
+  GET   /relawan/create     → VolunteerHandler.Create
+  GET   /relawan/:id/edit   → VolunteerHandler.Edit
+  GET   /berita/create      → AnnouncementHandler.Create
+  GET   /berita/:id/edit    → AnnouncementHandler.Edit
+  GET   /galeri/create      → GalleryHandler.Create
+  GET   /galeri/:id/edit    → GalleryHandler.EditAlbum
+  GET   /kontak/create      → ContactHandler.Create
+  GET   /kontak/:id/edit    → ContactHandler.Edit
 
-AUTH (Authenticated)
-  POST /logout       → AuthHandler.Logout
-  GET  /api/me       → AuthHandler.Me
-  GET  /api/avatar/:id → AuthHandler.GetAvatar
-
-APP (Authenticated + CSRF) — semua di root path
-  GET  /                → AppHandler.Dashboard        ✅ real data
-  PUT  /profile         → AppHandler.UpdateProfile    ✅
-  PUT  /profile/password → AppHandler.UpdatePassword ✅
-
-  GET  /profil        → OrganizationHandler.Index    ✅ real data
-  GET  /kegiatan      → ActivityHandler.Index         ✅ real data
-  GET  /relawan       → VolunteerHandler.Index       ✅ real data
-  GET  /relawan/create  → VolunteerHandler.Create    ✅
-  POST /relawan       → VolunteerHandler.Store       ✅
-  GET  /relawan/:id   → VolunteerHandler.Show        ✅
-  GET  /relawan/:id/edit → VolunteerHandler.Edit     ✅
-  PUT  /relawan/:id   → VolunteerHandler.Update      ✅
-  DELETE /relawan/:id → VolunteerHandler.Destroy     ✅
-
-  POST /berita        → AnnouncementHandler.Store    ✅
-  PUT  /berita/:id    → AnnouncementHandler.Update   ✅
-  DELETE /berita/:id  → AnnouncementHandler.Destroy  ✅
-
-  POST /kontak        → ContactHandler.Store         ✅
-  PUT  /kontak/:id    → ContactHandler.Update        ✅
-  DELETE /kontak/:id  → ContactHandler.Destroy       ✅
-
-  POST /upload        → UploadHandler.Upload         ✅
+ADMIN — AuthRequired + AdminRequired
+  POST  /upload             → UploadHandler.UploadByPurpose
+  POST  /kegiatan           → ActivityHandler.Store
+  PUT   /kegiatan/:id       → ActivityHandler.Update
+  DELETE /kegiatan/:id      → ActivityHandler.Destroy
+  POST  /profil             → OrganizationHandler.Update
+  PUT   /profil             → OrganizationHandler.Update
+  POST  /relawan            → VolunteerHandler.Store
+  PUT   /relawan/:id        → VolunteerHandler.Update
+  DELETE /relawan/:id       → VolunteerHandler.Destroy
+  POST  /berita             → AnnouncementHandler.Store
+  PUT   /berita/:id         → AnnouncementHandler.Update
+  DELETE /berita/:id        → AnnouncementHandler.Destroy
+  POST  /galeri             → GalleryHandler.Store
+  PUT   /galeri/album/:albumId → GalleryHandler.UpdateAlbum
+  PUT   /galeri/:id         → GalleryHandler.Update
+  DELETE /galeri/album/:albumId → GalleryHandler.DestroyAlbum
+  DELETE /galeri/:id        → GalleryHandler.Destroy
+  POST  /kontak             → ContactHandler.Store
+  PUT   /kontak/:id         → ContactHandler.Update
+  DELETE /kontak/:id        → ContactHandler.Destroy
+  PUT   /pengaduan/:id      → ComplaintHandler.UpdateStatus
+  DELETE /pengaduan/:id     → ComplaintHandler.Destroy
+  POST  /dokumen            → DocumentHandler.Create
+  PUT   /dokumen/:id        → DocumentHandler.Update
+  DELETE /dokumen/:id       → DocumentHandler.Destroy
+  GET   /admin/users        → UserAdminHandler.Index
+  GET   /admin/users/create → UserAdminHandler.Create
+  POST  /admin/users        → UserAdminHandler.Store
+  GET   /admin/users/:id/edit → UserAdminHandler.Edit
+  PUT   /admin/users/:id/role → UserAdminHandler.UpdateRole
+  POST  /admin/users/:id/toggle-active → UserAdminHandler.ToggleActive
+  DELETE /admin/users/:id   → UserAdminHandler.Destroy
 ```
 
 ---
@@ -234,9 +253,9 @@ APP (Authenticated + CSRF) — semua di root path
 
 | Path | Status | Terpakai di |
 |------|--------|-------------|
-| `AppLayout.svelte` | ✅ Global layout | Semua halaman (href di root path, bukan `/app/*`) |
-| `dashboard/RenjanaSidebar.svelte` | ✅ Sidebar navy (href: `/`, `/profil`, `/kegiatan`, dst) | AppLayout |
-| `dashboard/TopBar.svelte` | ✅ Top bar + menu toggle | AppLayout |
+| `AppLayout.svelte` | ✅ Global layout | Semua halaman |
+| `dashboard/RenjanaSidebar.svelte` | ✅ 12 menu sidebar navy | AppLayout |
+| `dashboard/TopBar.svelte` | ✅ Top bar + user dropdown + guest login button | AppLayout |
 | `dashboard/HeroBanner.svelte` | ✅ | Dashboard |
 | `dashboard/StatCard.svelte` | ✅ | Dashboard |
 | `dashboard/VolunteerDistribution.svelte` | ✅ | Dashboard |
@@ -245,16 +264,34 @@ APP (Authenticated + CSRF) — semua di root path
 | `dashboard/AchievementBar.svelte` | ✅ | Dashboard |
 | `dashboard/AnnouncementCard.svelte` | ✅ | Dashboard |
 | `dashboard/UpcomingActivity.svelte` | ✅ | Dashboard |
-| `ComingSoon.svelte` | ✅ Not dipakai (semua halaman udah dibangun) | — |
-| `crud/Modal.svelte` | ✅ | Relawan (butuh integrasi) |
-| `crud/Pagination.svelte` | ✅ | Relawan (butuh integrasi) |
-| `crud/SearchFilter.svelte` | ✅ | Relawan (butuh integrasi) |
-| `crud/ConfirmDialog.svelte` | ✅ | Relawan (butuh integrasi) |
-| `crud/VolunteerFormFields.svelte` | ✅ | Relawan (butuh integrasi) |
-| `lib/components/PageHeader.svelte` | ✅ | Semua halaman app |
-| `lib/components/EmptyState.svelte` | ✅ | Semua halaman app |
+| `crud/Modal.svelte` | ✅ | Relawan, Kegiatan, Berita, Kontak |
+| `crud/Pagination.svelte` | ✅ | Relawan, Kegiatan, Berita |
+| `crud/SearchFilter.svelte` | ✅ | Relawan, Kegiatan |
+| `crud/ConfirmDialog.svelte` | ✅ | Relawan, Kegiatan |
+| `crud/VolunteerFormFields.svelte` | ✅ | Relawan |
+| `lib/components/PageHeader.svelte` | ✅ | Semua halaman |
+| `lib/components/EmptyState.svelte` | ✅ | Semua halaman |
+| `lib/components/Toast.svelte` | ✅ | Global |
+| `lib/utils/helpers.ts` | ✅ | Utility functions |
 
 ---
+
+## Sidebar Menu (Current)
+
+```
+1. Dashboard         → /
+2. Profil RENJANA    → /profil
+3. Kegiatan          → /kegiatan
+4. Data Relawan      → /relawan
+5. Peta Sebaran      → /peta
+6. Edukasi Bencana   → /edukasi
+7. Galeri            → /galeri
+8. Berita            → /berita
+9. Dokumen           → /dokumen
+10. Pengaduan        → /pengaduan
+11. Survey Pelayanan → /survey
+12. Kontak           → /kontak
+```
 
 ---
 

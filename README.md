@@ -1,229 +1,239 @@
-# RENJANA — Relawan Remaja Aman Bencana
+# 🌋 RENJANA — Relawan Remaja Aman Bencana
 
 [![Go Version](https://img.shields.io/badge/Go-1.26+-00ADD8?style=flat&logo=go)](https://go.dev/)
 [![Svelte](https://img.shields.io/badge/Svelte-5-FF3E00?style=flat&logo=svelte)](https://svelte.dev/)
 [![Built with Inertia](https://img.shields.io/badge/Inertia.js-3-9553E9?style=flat&logo=inertia)](https://inertiajs.com/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-06B6D4?style=flat&logo=tailwindcss)](https://tailwindcss.com/)
+[![SQLite](https://img.shields.io/badge/SQLite-003B57?style=flat&logo=sqlite)](https://sqlite.org/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-**RENJANA** (Relawan Remaja Aman Bencana) adalah sistem informasi dashboard dan manajemen untuk program kebencanaan berbasis remaja di **Kabupaten Tanah Bumbu**. Dibangun di atas platform [Laju Go](https://github.com/maulanashalihin/laju-go) — arsitektur modern Go Fiber + Svelte 5 + Inertia.js 3 + SQLite yang telah teruji performanya.
+**RENJANA** (Relawan Remaja Aman Bencana) adalah sistem informasi dashboard dan manajemen untuk program kebencanaan berbasis remaja di **Kabupaten Tanah Bumbu, Kalimantan Selatan.** Platform ini menjadi pusat komando bagi pengelola program untuk memantau relawan, kegiatan, edukasi, dan capaian — dalam satu aplikasi web modern, responsif, dan offline-capable.
 
-Dashboard ini menyediakan layar komando (*command center*) bagi pengelola program untuk memantau relawan, kegiatan, sebaran per kecamatan, capaian tahunan, dan pengumuman — dalam satu halaman yang informatif dan responsif.
-
----
-
-## 📸 Visualisasi Platform
-
-### Halaman Autentikasi
-
-| Login | Register |
-|:---:|:---:|
-| ![Login](public/images/login-visual.png) | ![Register](public/images/register-visual.png) |
+Dibangun di atas [Laju Go](https://github.com/maulanashalihin/laju-go) — arsitektur **Go Fiber + Svelte 5 + Inertia.js 3 + SQLite + templ** yang teruji performanya.
 
 ---
 
-### Dashboard Utama
+## 📋 Daftar Isi
 
-![Dashboard - Pusat Komando](public/images/dashboard-iterasi3.png)
-
-*Dashboard menampilkan statistik ringkas, sebaran volunteer, jenis kegiatan, capaian tahunan, dan kegiatan terdekat — lengkap dengan dark mode toggle.*
-
----
-
-### 📋 12 Modul Lengkap
-
-Setiap modul didesain dengan visual modern, responsif, dan dark-mode ready.
-
-#### 1. Profil RENJANA
-
-*Informasi organisasi: visi, misi, sejarah, struktur, dan mitra.*
-![Profil RENJANA](public/images/profil-visual.png)
-
-#### 2. Kegiatan
-
-*Daftar kegiatan dengan filter status (Mendatang/Selesai) dan tipe (Pelatihan/Simulasi/Edukasi/Aksi Sosial/Lomba).*
-![Kegiatan](public/images/kegiatan-visual.png)
-
-#### 3. Data Relawan
-
-*Direktori 1.248 volunteer dengan search, filter kecamatan, dan filter status.*
-![Data Relawan](public/images/relawan-visual.png)
-
-#### 4. Peta Sebaran
-
-*Peta interaktif Kabupaten Tanah Bumbu dengan 12 kecamatan, 12 hotspot bencana, dan risk level.*
-![Peta Sebaran](public/images/peta-visual.png)
-
-#### 5. Edukasi Bencana
-
-*9 artikel edukatif dengan kategori Mitigasi, Kesiapsiagaan, Tanggap Darurat, dan Pemulihan.*
-![Edukasi Bencana](public/images/edukasi-visual.png)
-
-#### 6. Galeri
-
-*36 foto dokumentasi dengan masonry grid dan lightbox modal.*
-![Galeri](public/images/galeri-visual.png)
-
-#### 7. Berita
-
-*8 berita dengan 2 featured utama dan grid artikel.*
-![Berita](public/images/berita-visual.png)
-
-#### 8. Dokumen
-
-*Pusat dokumen dengan 12 file (SOP, Panduan, Regulasi, Formulir, dll) + detail panel.*
-![Dokumen](public/images/dokumen-visual.png)
-
-#### 9. Inovasi
-
-*8 inovasi volunteer (Teknologi, Edukasi, Logistik) dengan status Konsep/Aktif/Selesai.*
-![Inovasi](public/images/inovasi-visual.png)
-
-#### 10. Pendaftaran Volunteer
-
-*Form pendaftaran 4-langkah (Data Diri → Pendidikan → Motivasi → Konfirmasi).*
-![Pendaftaran](public/images/pendaftaran-visual.png)
-
-#### 11. Kontak
-
-*24 koordinator volunteer dikelompokkan per kecamatan dengan link WhatsApp.*
-![Kontak](public/images/kontak-visual.png)
-
-#### 12. Profil Saya (User Account)
-
-*Pengaturan akun, informasi personal, dark mode toggle, dan ganti password.*
-![Profil Saya](public/images/profile-visual.png)
+- [Fitur Utama](#-fitur-utama)
+- [Arsitektur](#-arsitektur)
+- [Navigasi & Route](#-navigasi--route)
+- [Tech Stack](#-tech-stack)
+- [Quick Start](#-quick-start)
+- [Development](#-development)
+- [Modul Lengkap](#-modul-lengkap)
+- [Authentication & Authorization](#-authentication--authorization)
+- [Database](#-database)
+- [Production](#-production)
+- [Project Structure](#-project-structure)
+- [Screenshots](#-screenshots)
 
 ---
 
-### Design Reference
+## ✨ Fitur Utama
 
-![RENJANA Dashboard - Design](design.jpeg)
+### 📊 Dashboard Komando
 
----
+Halaman depan (`/`) dengan statistik ringkas, sebaran relawan per kecamatan, jenis kegiatan (donut chart), relawan aktif, capaian tahunan, kegiatan terdekat, dan pengumuman terkini — semuanya dalam satu halaman.
 
-## 🚀 Quick Start
+### 🧭 12 Modul Publik + CMS Admin
 
-```bash
-git clone https://github.com/maulanashalihin/renjana.git
-cd renjana
-cp .env.example .env
-go mod download && npm install
-npm run dev:all
-```
+Seluruh modul bisa diakses publik tanpa login (read-only). Admin mendapat akses CRUD penuh via form yang sama — tanpa perlu halaman admin terpisah.
 
-Visit `http://localhost:8080` to see the dashboard running.
+| Modul | Route | Deskripsi |
+|-------|-------|-----------|
+| **Profil** | `/profil` | Visi, misi, sejarah, struktur organisasi, mitra |
+| **Kegiatan** | `/kegiatan` | Daftar kegiatan dengan filter status & tipe |
+| **Relawan** | `/relawan` | Direktori 1.248+ volunteer, search & filter |
+| **Peta** | `/peta` | Peta interaktif 12 kecamatan, hotspot bencana |
+| **Edukasi** | `/edukasi` | 9+ artikel kebencanaan dengan LMS course |
+| **Galeri** | `/galeri` | Foto dokumentasi masonry grid + lightbox |
+| **Berita** | `/berita` | Pengumuman & berita dengan editor markdown |
+| **Dokumen** | `/dokumen` | Pusat dokumen (SOP, panduan, regulasi) |
+| **Pengaduan** | `/pengaduan` | Form pengaduan publik + admin manage |
+| **Survey** | `/survey` | Survey kepuasan pelayanan publik |
+| **Kontak** | `/kontak` | 24+ koordinator per kecamatan + WhatsApp |
 
-> 👶 **Baru pertama pakai Go?** Lihat [Panduan AI Setup](#-option-1-ai-setup-recommended-for-first-timers) — copas prompt ke AI assistant kesayangan Anda, selesai.
+### 🎓 Learning Management System (LMS)
 
----
+Modul **Edukasi Bencana** mencakup kursus interaktif dengan:
 
-## ✨ Fitur RENJANA
+- **Course detail** dengan modul pembelajaran terstruktur
+- **Kuis** dengan penilaian otomatis (minimal nilai untuk lulus)
+- **Sertifikat** digital yang bisa dibagikan via kode unik
+- Progress belajar per user
 
-### 📊 Dashboard Komprehensif
+### 👤 Manajemen Akun
 
-- **Statistik Ringkas** — Total Relawan, Sekolah Binaan, Total Kegiatan, Kecamatan Terlibat (lengkap dengan delta persentase)
-- **Sebaran Relawan per Kecamatan** — 12 kecamatan dengan bar chart horizontal
-- **Jenis Kegiatan** — Donut chart 5 segmen (Pelatihan, Simulasi, Edukasi, Sosialisasi, Aksi Kemanusiaan)
-- **Relawan Aktif** — Daftar relawan dengan foto, nama, sekolah, dan status
-- **Capaian Tahun 2024** — Progress bar persentase + metrik absolut
-- **Kegiatan Terdekat** — Card upcoming activity
-- **Pengumuman** — Informasi terkini program
+- Register & Login (email/password + Google OAuth)
+- Profil pengguna dengan foto avatar (upload via `/api/avatar/upload`)
+- Ganti password
+- Onboarding relawan baru
+- Reset password via email
 
-### 🧭 Navigasi Lengkap (12 Modul)
+### 🛡️ Keamanan
 
-| # | Modul | Path | Preview |
-|---|-------|------|---------|
-| 1 | **Dashboard** | `/app` | ![](public/images/dashboard-iterasi3.png) |
-| 2 | **Profil RENJANA** | `/app/profil` | ![](public/images/profil-visual.png) |
-| 3 | **Kegiatan** | `/app/kegiatan` | ![](public/images/kegiatan-visual.png) |
-| 4 | **Data Relawan** | `/app/relawan` | ![](public/images/relawan-visual.png) |
-| 5 | **Peta Sebaran** | `/app/peta` | ![](public/images/peta-visual.png) |
-| 6 | **Edukasi Bencana** | `/app/edukasi` | ![](public/images/edukasi-visual.png) |
-| 7 | **Galeri** | `/app/galeri` | ![](public/images/galeri-visual.png) |
-| 8 | **Berita** | `/app/berita` | ![](public/images/berita-visual.png) |
-| 9 | **Dokumen** | `/app/dokumen` | ![](public/images/dokumen-visual.png) |
-| 10 | **Inovasi** | `/app/inovasi` | ![](public/images/inovasi-visual.png) |
-| 11 | **Pendaftaran** | `/app/daftar` | ![](public/images/pendaftaran-visual.png) |
-| 12 | **Kontak** | `/app/kontak` | ![](public/images/kontak-visual.png) |
+- Session-based authentication (database-backed)
+- Role-Based Access Control: **admin**, **koordinator**, **relawan**
+- CSRF protection (Inertia auto-handles via XSRF-TOKEN cookie)
+- Rate limiting pada endpoint auth
+- Guest middleware (redirect authenticated users away from login)
+- Graceful Inertia 409 redirect untuk halaman terproteksi
 
-> Plus halaman **Profil Saya** (`/app/profile`) untuk pengaturan akun user.
+### 🎨 UI/UX
 
-### 🛡️ Keamanan & Manajemen Pengguna
-
-- **Autentikasi Email/Password** — Login aman dengan bcrypt
-- **Google OAuth 2.0** — Login satu klik
-- **Reset Password** — Pemulihan via email
-- **Role-Based Access Control** — Admin/User roles
-- **CSRF Protection** — Perlindungan built-in
-- **Rate Limiting** — Throttle endpoint sensitif
-- **Session Management** — Sesi berbasis database
-
-### ⚡ Performa & Developer Experience
-
-- **Hot Module Replacement (HMR)** — Update frontend instan via Vite
-- **Go Hot Reload** — Air rebuild otomatis saat file Go berubah
-- **Clean Architecture** — Handler → Service → Query (sqlc) → SQLite
-- **TypeScript Ready** — Type safety penuh di frontend
-- **Dark Mode** — Toggle light/dark siap pakai
-
-### 🚢 Production Ready
-
-- **SQLite Optimized** — WAL mode, connection pooling
-- **Database Migrations** — Version control via Goose
-- **Docker Support** — Multi-stage build
-- **Systemd Ready** — Service management produksi
-- **Litestream DR** — Replikasi SQLite ke S3
+- **Svelte 5** dengan runes (`$state`, `$derived`, `$effect`)
+- Sidebar navigasi dengan 12 menu + ikon Lucide
+- User dropdown di TopBar (profil, logout)
+- Dark mode toggle
+- Mobile-responsive dengan hamburger menu
+- Page transition (Svelte `fly` animation)
+- Error boundary per halaman (`<svelte:boundary>`)
+- Toast notifications
 
 ---
 
-## 📚 Dokumentasi
-
-| Section | Description |
-|---------|-------------|
-| [Product Requirements Document](PRD.md) | PRD lengkap untuk dashboard RENJANA |
-| [Implementation Plan](PLAN.md) | Rencana implementasi teknis |
-| [Second Opinion](SECOND_OPINION.md) | Critical review implementation plan |
-| [Getting Started](docs/getting-started/introduction.md) | Introduction, installation, and configuration |
-| [Architecture Guide](docs/guide/architecture.md) | Layered architecture, design patterns |
-| [Routing & Handlers](docs/guide/routing.md) | Route definitions, middleware, and request handling |
-| [Database](docs/guide/database.md) | SQLite setup, migrations, and query building |
-| [Authentication](docs/guide/authentication.md) | Auth flows, OAuth, sessions, and password reset |
-| [Frontend](docs/guide/frontend.md) | Svelte 5, React & Vue support via Inertia.js |
-| [Deployment](docs/deployment/development.md) | Development workflow, production deployment, Docker, Litestream DR |
-| [API Reference](docs/reference/api-reference.md) | Complete endpoint documentation |
-| [Troubleshooting](docs/reference/troubleshooting.md) | Common issues and solutions |
-
----
-
-## 📁 Project Structure
+## 🏗️ Arsitektur
 
 ```
-renjana/
-├── cmd/laju-go/main.go        # Application entry point
-├── app/                       # Backend Go code
-│   ├── handlers/              # HTTP request handlers
-│   ├── services/              # Business logic layer
-│   ├── queries/               # Generated SQL query code (sqlc)
-│   ├── middlewares/           # Request middleware
-│   └── models/                # Data structures
-├── frontend/                  # Svelte 5 frontend
-│   └── src/
-│       ├── components/        # Reusable UI components
-│       ├── pages/             # Page components (Dashboard, Profile, Auth)
-│       └── lib/               # Utilities and helpers
-├── queries/                   # SQL source files (write queries here)
-├── routes/                    # Route definitions
-├── migrations/                # Database migrations
-├── templates/                 # Templ templates (HTML + Go typed components)
-├── docs/                      # Documentation
-├── PRD.md                     # Product Requirements Document
-├── PLAN.md                    # Implementation plan
-├── SECOND_OPINION.md          # Critical review
-└── design.jpeg                # Dashboard design reference
+HTTP Request
+    │
+    ▼
+┌─────────────┐    ┌──────────────┐    ┌──────────────┐    ┌──────────┐
+│  Middleware  │───▶│   Handler    │───▶│   Service    │───▶│  Queries │───▶ SQLite
+│  (auth,     │    │  (parse req, │    │  (business   │    │  (sqlc)  │
+│   csrf,     │    │   call svc,  │    │   logic,     │    │          │
+│   guest,    │    │   return     │    │   external   │    │          │
+│   rate-limit)│   │   response)  │    │   APIs)      │    │          │
+└─────────────┘    └──────┬───────┘    └──────────────┘    └──────────┘
+                          │
+                          ▼
+              ┌──────────────────────┐
+              │   Inertia Response   │
+              │  ┌────────────────┐  │
+              │  │  JSON (XHR)    │  │  ← Subsequent navigation (SPA)
+              │  │  HTML (initial) │  │  ← First page load
+              │  └────────────────┘  │
+              └──────────────────────┘
+                          │
+                          ▼
+              ┌──────────────────────┐
+              │   Svelte 5 Pages     │
+              │   (with Inertia)     │
+              └──────────────────────┘
 ```
 
-> 📖 See [Project Structure](docs/reference/project-structure.md) for a complete directory reference.
+### Alur Data
+
+1. **Initial page load** → Server render `templates.InertiaPage` (HTML shell) + JSON data
+2. **Navigasi SPA** → Inertia XHR (`X-Inertia: true`) → Server return JSON `{component, props, url}` → Svelte render komponen baru
+3. **File upload** → `fetch()` langsung ke endpoint (Inertia tidak support binary), simpan URL via `router.put()`
+4. **Auth redirect** → Jika unauthenticated, server return `409 Conflict` + `X-Inertia-Location: /login` → Inertia lakukan full page redirect
+
+### Middleware Chain (per request)
+
+```
+CSRF Protect (skip: /api/, /auth/, /login, /register, /forgot-password)
+  │
+  ├── Public routes (no auth check)
+  │   ├── GET  /                  → Dashboard
+  │   ├── GET  /profile           → Profile (user data if logged in)
+  │   ├── GET  /login             → Guest middleware (redirect if authed)
+  │   ├── GET  /kegiatan          → Public listing
+  │   └── ...
+  │
+  └── Protected routes (flat, no /app/ prefix)
+      └── AuthRequired middleware
+          ├── PUT  /profile       → Update profile
+          ├── PUT  /profile/password
+          ├── POST /api/avatar/upload
+          ├── GET  /onboarding    → Onboarding flow
+          └── AdminRequired (sub-middleware)
+              ├── POST /upload    → File upload (admin only)
+              ├── POST /berita    → CRUD berita
+              └── ...
+```
+
+### Layout Components
+
+```
+AppLayout.svelte
+├── RenjanaSidebar.svelte    ← 12 menu + emergency call 112
+├── TopBar.svelte            ← Title, user menu (guest: "Masuk", authed: dropdown)
+└── <main>
+    └── Page content via Inertia
+```
+
+---
+
+## 🧭 Navigasi & Route
+
+### Route Map Lengkap
+
+| Path | Method | Auth | Deskripsi |
+|------|--------|------|-----------|
+| `/` | GET | Public | Dashboard utama |
+| `/profile` | GET | Public | Profil user (null jika guest) |
+| `/profile` | PUT | Auth | Update profil |
+| `/profile/password` | PUT | Auth | Ganti password |
+| `/login` | GET/POST | Guest | Login form |
+| `/register` | GET/POST | Guest | Register form |
+| `/auth/google` | GET | Public | Google OAuth redirect |
+| `/auth/google/callback` | GET | Public | Google OAuth callback |
+| `/logout` | POST | Auth | Logout |
+| `/forgot-password` | GET/POST | Public | Reset password request |
+| `/reset-password/:token` | GET/POST | Public | Reset password |
+| `/onboarding` | GET/POST | Auth | Onboarding relawan baru |
+| `/api/me` | GET | Auth | Current user API |
+| `/api/avatar/:id` | GET | Public | Avatar proxy |
+| `/api/avatar/upload` | POST | Auth | Upload avatar |
+| `/upload` | POST | Admin | File upload (multi-purpose) |
+| `/profil` | GET | Public | Profil organisasi |
+| `/profil` | PUT/POST | Admin | Edit profil organisasi |
+| `/kegiatan` | GET | Public | Daftar kegiatan |
+| `/kegiatan/:id` | GET | Public | Detail kegiatan |
+| `/kegiatan/create` | GET | Auth | Form buat kegiatan |
+| `/kegiatan/:id/edit` | GET | Auth | Form edit kegiatan |
+| `/kegiatan` | POST | Admin | Simpan kegiatan baru |
+| `/kegiatan/:id` | PUT/DELETE | Admin | Update/hapus kegiatan |
+| `/relawan` | GET | Public | Daftar relawan |
+| `/relawan/:id` | GET | Public | Detail relawan |
+| `/relawan/create` | GET | Auth | Form tambah relawan |
+| `/relawan/:id/edit` | GET | Auth | Form edit relawan |
+| `/relawan` | POST | Admin | Simpan relawan baru |
+| `/relawan/:id` | PUT/DELETE | Admin | Update/hapus relawan |
+| `/peta` | GET | Public | Peta sebaran interaktif |
+| `/edukasi` | GET | Public | Halaman edukasi bencana |
+| `/edukasi/course/:id` | GET | Public | Detail course + modul |
+| `/edukasi/course/:id/quiz` | GET | Auth | Kuis course |
+| `/edukasi/course/:id/quiz` | POST | Auth | Submit jawaban kuis |
+| `/edukasi/course/:id/certificate` | GET | Auth | Sertifikat course |
+| `/edukasi/sertifikat/:code` | GET | Public | Cek sertifikat via kode |
+| `/sertifikat-saya` | GET | Auth | Sertifikat user |
+| `/galeri` | GET | Public | Galeri foto |
+| `/galeri/:id` | GET | Public | Detail album |
+| `/galeri/create` | GET | Auth | Form buat album |
+| `/galeri/:id/edit` | GET | Auth | Form edit album |
+| `/berita` | GET | Public | Daftar berita |
+| `/berita/:id` | GET | Public | Detail berita |
+| `/berita/create` | GET | Auth | Form buat berita |
+| `/berita/:id/edit` | GET | Auth | Form edit berita |
+| `/dokumen` | GET | Public | Pusat dokumen |
+| `/pengaduan` | GET/POST | Public | Form pengaduan |
+| `/pengaduan/:id` | PUT/DELETE | Admin | Manage pengaduan |
+| `/survey` | GET/POST | Public | Survey pelayanan |
+| `/kontak` | GET | Public | Daftar kontak |
+| `/kontak/create` | GET | Auth | Form tambah kontak |
+| `/kontak/:id/edit` | GET | Auth | Form edit kontak |
+
+### Status Codes Penting
+
+| Kode | Konteks | Keterangan |
+|------|---------|------------|
+| `409 Conflict` | Inertia XHR | AuthRequired redirect ke `/login` via `X-Inertia-Location` |
+| `303 See Other` | POST/PUT redirect | Inertia form submission redirect (ubah POST→GET) |
+| `403 Forbidden` | AdminRequired | User bukan admin akses endpoint admin |
+| `401 Unauthorized` | API | Token/kredensial tidak valid |
 
 ---
 
@@ -232,198 +242,245 @@ renjana/
 | Layer | Technology | Purpose |
 |-------|------------|---------|
 | **Backend** | Go 1.26+ | Programming language |
-| **Web Framework** | Fiber v2 | High-performance HTTP framework (fasthttp) |
-| **Database** | SQLite3 | Embedded SQL database |
-| **Query Builder** | sqlc | Compile-time type-safe SQL code generation |
-| **Migrations** | Goose | Database schema management |
-| **Frontend** | Svelte 5 | Reactive UI framework |
-| **Build Tool** | Vite 8 | Fast build tooling and dev server |
-| **Styling** | Tailwind CSS 4 | Utility-first CSS framework |
+| **Web Framework** | Fiber v2 | High-performance HTTP (fasthttp) |
+| **Database** | SQLite3 | Embedded SQL via `modernc.org/sqlite` |
+| **Query Builder** | sqlc | Compile-time type-safe SQL codegen |
+| **Migrations** | Goose | Database schema versioning |
+| **Frontend** | Svelte 5 | Reactive UI (runes: `$state`, `$derived`, `$effect`) |
+| **Build Tool** | Vite 8 | Fast HMR & bundling |
+| **Styling** | Tailwind CSS 4 | Utility-first CSS |
 | **Templating** | templ | Type-safe HTML components for Go |
-| **SPA Bridge** | Inertia.js 3 | Server-driven single-page apps |
-| **Icons** | Lucide Svelte | Beautiful, consistent icons |
+| **SPA Bridge** | Inertia.js 3 | Server-driven SPA |
+| **Icons** | Lucide Svelte | Consistent icon system |
+| **Session** | Database-backed | SQLite sessions with in-memory LRU cache |
+| **Auth** | Email/Password + Google OAuth | bcrypt + OAuth 2.0 |
 
-### Why SQLite?
+### Database Driver
 
-Kami menggunakan `modernc.org/sqlite` (pure Go) untuk kemudahan deployment:
+`modernc.org/sqlite` (pure Go, no CGO):
 
-- ✅ **Cross-compile** — `GOOS=linux GOARCH=amd64 go build` langsung jalan
-- ✅ **Static binary** — Satu binary tanpa dependency eksternal
-- ✅ **Docker/CI** — `FROM golang:alpine` works out of the box
-- ✅ **Stack trace** — Full Go stack traces, no CGO opacity
-- ✅ **Restart safety** — No stale CGO threads
-
-Untuk kebutuhan >50K RPS, dapat beralih ke `mattn/go-sqlite3` (CGO).
-
-> 📋 [Full Benchmark Report →](docs/benchmark/)
+- ✅ Cross-compile dari macOS ke Linux tanpa toolchain C
+- ✅ Static binary tanpa dependency eksternal
+- ✅ Docker-friendly (`FROM golang:alpine`)
+- ✅ Full Go stack traces, no CGO opacity
 
 ---
 
-## 📦 Installation
-
-### Prerequisites
-
-- **Go** 1.26 or higher
-- **Node.js** 18 or higher
-- **SQLite3** (usually pre-installed on macOS/Linux)
-- **Git** for version control
-
-### ⭐ Option 1: AI Setup (Recommended for first-timers)
-
-Tidak punya Go? Copas prompt ini ke AI coding assistant (Claude, ChatGPT, Gemini):
-
-```text
-Set up and run the RENJANA project (https://github.com/maulanashalihin/renjana) on this machine.
-
-1. Check what OS I'm on (macOS/Linux/Windows) and install prerequisites if missing:
-   - Go 1.26+ — install from https://go.dev/dl/ if not found
-   - Node.js 18+ — install from https://nodejs.org/ if not found
-   - Git — install if not found
-   - SQLite3 — macOS/Linux usually have it pre-installed
-
-2. Clone the repo and install dependencies:
-   git clone https://github.com/maulanashalihin/renjana.git
-   cd renjana
-   go mod download
-   npm install
-
-3. Set up environment:
-   cp .env.example .env
-   Generate a random 32-character string for SESSION_SECRET in .env
-
-4. Install Go dev tools (Air for hot reload, templ for templates):
-   go install github.com/air-verse/air@latest
-   go install github.com/a-h/templ/cmd/templ@latest
-   Make sure ~/go/bin is in PATH
-
-5. Start the dev server:
-   npm run dev:all
-
-6. Confirm it's running by visiting http://localhost:8080
-
-Pause after each step if there are errors. Don't skip steps.
-```
-
-### Option 2: Manual Installation
+## 🚀 Quick Start
 
 ```bash
-# Clone
 git clone https://github.com/maulanashalihin/renjana.git
 cd renjana
 
-# Install dependencies
+cp .env.example .env
+# Edit .env — set SESSION_SECRET (min 32 karakter)
+
 go mod download
 npm install
 
-# Configure environment
-cp .env.example .env
-# Edit .env — set SESSION_SECRET minimal 32 karakter
+# Install dev tools
+go install github.com/air-verse/air@latest
+go install github.com/a-h/templ/cmd/templ@latest
+
+# Start development
+npm run dev:all
 ```
+
+Visit **<http://localhost:8080>** — dashboard langsung tampil.
 
 ---
 
 ## 🏃 Development
 
-### Run Everything Together (Recommended)
-
 ```bash
-npm run dev:all
+npm run dev:all        # Vite + Air (hot reload both)
+npm run dev            # Vite only (frontend HMR)
+npm run dev:go         # Air only (Go hot reload)
+
+npm run build:all      # vite build + go build (production)
+npm run test:run       # Frontend tests (Vitest)
+go test ./...          # Go tests
 ```
 
-### Run Servers Separately
+### Hot Reload
 
-```bash
-# Terminal 1 — Vite dev server (frontend HMR)
-npm run dev
-
-# Terminal 2 — Go server with hot reload
-air
-# or
-npm run dev:go
-```
-
-### Available Scripts
-
-```bash
-# Development
-npm run dev          # Start Vite dev server
-npm run dev:go       # Start Go server with Air hot reload
-npm run dev:all      # Run both Vite and Air concurrently
-
-# Production Build
-npm run build        # Build frontend only (vite build)
-npm run build:all    # Full production build: vite + go build
-npm run build:linux  # Cross-compile binary for Linux (pure Go, no CGO)
-npm run serve        # Run production binary (./laju-go)
-
-# Testing
-npm run test:run     # Run frontend tests
-go test ./...        # Run all Go tests
-```
-
-### Development Workflow
-
-| You Edit | What Happens |
-|----------|--------------|
-| `.svelte` files | Vite HMR updates instantly |
-| `.go` files | Air rebuilds and restarts (~1-2 sec) |
-| `.css` files | Hot reload (instant) |
-| `migrations/` | Auto-run on server start |
+| File | Tools | Latency |
+|------|-------|---------|
+| `.svelte` | Vite HMR | Instant |
+| `.go` | Air | ~1-2 detik |
+| `.templ` | Manual `templ generate` | — |
+| `.css` | Vite HMR | Instant |
 
 ---
 
-## 🚀 Production Deployment
+## 🧩 Modul Lengkap
 
-### 1. Build Locally
+### 1. Dashboard (`/`)
+
+Pusat komando dengan statistik real-time: total relawan, sekolah binaan, kegiatan, kecamatan terlibat. Dilengkapi sebaran per kecamatan (bar chart), jenis kegiatan (donut chart), relawan aktif, capaian tahunan, kegiatan terdekat, dan pengumuman.
+
+### 2. Profil RENJANA (`/profil`)
+
+Informasi organisasi: visi, misi, sejarah, struktur kepengurusan, dan mitra. Admin bisa edit langsung. User dropdown mengarah ke `/profile` (akun pribadi).
+
+### 3. Kegiatan (`/kegiatan`)
+
+Daftar kegiatan dengan filter status (Mendatang/Selesai) dan tipe (Pelatihan/Simulasi/Edukasi/Aksi Sosial/Lomba). Ada detail page per kegiatan.
+
+### 4. Data Relawan (`/relawan`)
+
+Direktori relawan dengan search, filter kecamatan, dan filter status keaktifan.
+
+### 5. Peta Sebaran (`/peta`)
+
+Peta interaktif Kabupaten Tanah Bumbu dengan 12 kecamatan, hotspot bencana, dan risk level menggunakan Leaflet.
+
+### 6. Edukasi Bencana (`/edukasi`)
+
+Platform LMS dengan:
+
+- **Artikel edukatif** — 9+ kategori (Mitigasi, Kesiapsiagaan, Tanggap Darurat, Pemulihan)
+- **Course interaktif** — Modul belajar terstruktur, kuis dengan passing score, sertifikat digital
+- **Progress user** — Lacak modul selesai, riwayat kuis
+- **Sertifikat publik** — Verifikasi via kode unik di `/edukasi/sertifikat/:code`
+
+### 7. Galeri (`/galeri`)
+
+Foto dokumentasi dengan masonry grid, grouping per album, dan lightbox modal untuk preview.
+
+### 8. Berita (`/berita`)
+
+Sistem berita/pengumuman dengan:
+
+- 2 featured article di hero
+- Grid artikel dengan pagination
+- Editor markdown untuk admin (`/berita/create`, `/berita/:id/edit`)
+
+### 9. Dokumen (`/dokumen`)
+
+Pusat dokumen dengan kategori (SOP, Panduan, Regulasi, Formulir) + detail panel. Upload oleh admin.
+
+### 10. Pengaduan (`/pengaduan`)
+
+Form pengaduan publik + dashboard admin untuk manage status pengaduan.
+
+### 11. Survey (`/survey`)
+
+Survey kepuasan pelayanan publik — publik submit, admin lihat hasil.
+
+### 12. Kontak (`/kontak`)
+
+24+ koordinator volunteer per kecamatan dengan link WhatsApp langsung.
+
+### 👤 Profil Saya (`/profile`)
+
+Halaman akun pribadi:
+
+- Edit nama & email
+- Upload avatar (via `/api/avatar/upload`)
+- Ganti password
+- Dark mode toggle
+
+---
+
+## 🔐 Authentication & Authorization
+
+### Alur Auth
+
+```
+Guest → /register → Register → Session → Onboarding → Dashboard
+         /login   → Login    → Session → (skip onboarding if exists)
+         /auth/google → OAuth → (same flow)
+```
+
+### Middleware
+
+| Middleware | Fungsi |
+|-----------|--------|
+| `Guest` | Redirect authenticated users away from login/register |
+| `AuthRequired` | Protect routes: `409 Conflict` + `X-Inertia-Location` untuk Inertia XHR, `302` untuk direct |
+| `AdminRequired` | Hanya admin/koordinator bisa akses |
+| `AuthRateLimit` | Throttle login/register attempts |
+| `CSRFProtect` | Set XSRF-TOKEN cookie, validasi pada POST/PUT/DELETE |
+
+### Session Store
+
+- Database-backed (SQLite `sessions` table)
+- In-memory LRU cache untuk akses cepat
+- Sliding expiration (refresh pada setiap request)
+- Flash messages via short-lived cookies
+
+### Session Data
+
+```go
+type SessionData struct {
+    UserID      int64
+    Email       string
+    Role        string
+    DistrictID  int64   // Untuk koordinator scope
+    VolunteerID int64   // Link ke volunteer record
+    CSRFToken   string
+    CSRFExpiry  int64
+}
+```
+
+---
+
+## 🗄️ Database
+
+### Migrations
+
+- Auto-run on startup via Goose
+- Satu file per tabel (convention)
+- Support up/down migration
 
 ```bash
-# Full production build (frontend + Go binary)
+npm run db:migrate        # Run pending migrations
+npm run db:migrate:status # Check migration status
+npm run db:migrate:down   # Rollback last migration
+npm run db:generate       # Regenerate sqlc code
+```
+
+### Query Generation (sqlc)
+
+Tulis SQL di `queries/*.sql` → `npm run db:generate` → kode Go type-safe di `app/queries/`.
+
+### Tables
+
+```
+users, sessions, password_resets, activities, volunteers, organizations,
+announcements, galleries, contacts, documents, complaints, surveys,
+education_courses, education_modules, education_quiz_questions,
+education_quiz_answers, education_quiz_attempts, education_certificates
+```
+
+---
+
+## 🚢 Production
+
+### Build
+
+```bash
 npm run build:all
-
-# Or for Linux deployment from macOS:
-npm run build:linux
+# Produces: laju-go (binary) + dist/ (frontend assets)
 ```
 
-This produces:
-
-- **`laju-go`** — Static Go binary (pure Go SQLite, no CGO)
-- **`dist/`** — Frontend assets (CSS/JS built by Vite)
-
-### 2. Deploy Artifacts to Server
-
-| Artifact | Purpose |
-|----------|---------|
-| `laju-go` | Go binary (the application) |
-| `dist/` | Frontend assets |
-| `migrations/` | SQL migrations (auto-run on startup) |
-| `.env` | Environment configuration |
-
-### 3. One-Click Deploy
-
-```bash
-cp .deploy.example .deploy
-# Edit .deploy with your server details
-
-npm run deploy
-```
-
-> See [One-Click Deployment Guide](docs/deployment/one-click-deployment.md) for full instructions.
-
-### Docker Deployment
+### Docker
 
 ```bash
 docker build -t renjana .
-docker run -p 8080:8080 \
-  -v $(pwd)/data:/root/data \
-  -v $(pwd)/storage:/root/storage \
-  renjana
+docker run -p 8080:8080 -v $(pwd)/data:/root/data -v $(pwd)/storage:/root/storage renjana
 ```
 
-### systemd Service
+### Deploy
 
 ```bash
-sudo nano /etc/systemd/system/renjana.service
+git pull
+make build
+sudo systemctl restart laju-go
 ```
+
+### Systemd Service
 
 ```ini
 [Unit]
@@ -444,98 +501,93 @@ WantedBy=multi-user.target
 
 ---
 
-## 🔐 Default Admin Setup
+## 📁 Project Structure
 
-Register akun pertama, lalu promote ke admin:
-
-```bash
-sqlite3 data/app.db "UPDATE users SET role = 'admin' WHERE email = 'your@email.com';"
+```
+renjana/
+├── cmd/laju-go/main.go        # Entry point
+├── app/
+│   ├── handlers/              # HTTP handlers (parse req → call service → return response)
+│   │   ├── app.go             # Dashboard, Profile, Menu dispatcher
+│   │   ├── auth.go            # Login, Register, Logout, OAuth, Avatar proxy
+│   │   ├── education.go       # LMS: Course, Quiz, Certificate
+│   │   ├── upload.go          # File upload (avatar, media, document)
+│   │   ├── activity.go        # CRUD kegiatan
+│   │   ├── volunteer.go       # CRUD relawan
+│   │   ├── announcement.go    # CRUD berita
+│   │   ├── gallery.go         # CRUD galeri
+│   │   └── ...                # contact, document, complaint, survey, dll
+│   ├── services/              # Business logic layer
+│   │   ├── auth.go            # Auth flows, OAuth
+│   │   ├── education.go       # Quiz scoring, certificate, course detail
+│   │   ├── inertia.go         # Inertia.js render helpers (HTML/JSON)
+│   │   └── ...                # Activity, Volunteer, Dashboard, dll
+│   ├── middlewares/           # Request middleware
+│   │   ├── auth.go            # AuthRequired, Guest, AdminRequired
+│   │   └── csrf.go            # CSRF protection
+│   ├── session/               # Database-backed session store
+│   ├── queries/               # Generated sqlc code (do not edit)
+│   ├── cache/                 # In-memory LRU session cache
+│   └── models/                # Data structures & DTOs
+├── frontend/
+│   └── src/
+│       ├── pages/
+│       │   ├── app/           # SPA pages (Dashboard, Profile, Edukasi, dll)
+│       │   └── auth/          # Auth pages (Login, Register, ForgotPassword, dll)
+│       ├── components/
+│       │   ├── dashboard/     # RenjanaSidebar, TopBar
+│       │   └── AppLayout.svelte # Main layout wrapper
+│       └── lib/
+│           └── utils/         # Toast, helpers
+├── queries/                   # SQL source files (write here, then sqlc generate)
+├── routes/web.go              # Route definitions & setup
+├── migrations/                # Database migrations (Goose)
+├── templates/                 # templ templates (Inertia HTML shell)
+├── storage/                   # Uploaded files (avatars/, media/, documents/)
+├── docs/                      # Documentation
+├── AGENTS.md                  # Agent instructions
+├── PRD.md                     # Product Requirements Document
+├── PLAN.md                    # Implementation plan
+└── design.jpeg                # Design reference
 ```
 
 ---
 
-## 🗄️ Database Migrations
+## 📸 Screenshots
 
-Migrations run automatically on startup.
+> Screenshots coming soon — semua halaman sudah responsif dengan dark mode.
 
-```bash
-# Install goose
-go install github.com/pressly/goose/v3/cmd/goose@latest
-
-# Run all migrations
-goose -dir migrations sqlite3 data/app.db up
-
-# Check status
-goose -dir migrations sqlite3 data/app.db status
-```
-
----
-
-## 📝 SQL Queries (sqlc)
-
-```bash
-# Install sqlc
-go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
-
-# Generate Go code from SQL files
-npm run db:generate
-```
-
-| Directory | Purpose |
-|-----------|---------|
-| `queries/` | SQL source files — **write your queries here** |
-| `app/queries/` | Generated Go code — **do not edit manually** |
-
----
-
-## 📊 Performance Optimizations
-
-### SQLite Production Settings (tuned for 1-2GB RAM)
-
-| Setting | Value | Benefit |
-|---------|-------|---------|
-| `journal_mode` | WAL | Better write concurrency |
-| `synchronous` | NORMAL | Faster writes with safety |
-| `cache_size` | 16MB | Reduced disk I/O |
-| `mmap_size` | 256MB | NVMe memory-mapped I/O |
-| `temp_store` | MEMORY | Faster temp table operations |
-| `busy_timeout` | 5000ms | Automatic retry on locks |
-| Connection Pool | 15 max | Efficient connection reuse |
-
-> 📖 Full guide: [SQLite Configuration Guide](docs/deployment/sqlite-configuration.md)
-
----
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+| Halaman | Status |
+|---------|--------|
+| Dashboard | ✅ Selesai |
+| Login / Register | ✅ Selesai |
+| Profil RENJANA | ✅ Selesai |
+| Kegiatan | ✅ Selesai |
+| Data Relawan | ✅ Selesai |
+| Peta Sebaran | ✅ Selesai |
+| Edukasi Bencana | ✅ Selesai (termasuk kursus, kuis, sertifikat) |
+| Galeri | ✅ Selesai |
+| Berita | ✅ Selesai (dengan editor) |
+| Dokumen | ✅ Selesai |
+| Pengaduan | ✅ Selesai |
+| Survey Pelayanan | ✅ Selesai |
+| Kontak | ✅ Selesai |
+| Profil Saya | ✅ Selesai (avatar upload, password, dll) |
 
 ---
 
 ## 📄 License
 
-MIT License — see [LICENSE](LICENSE) for details.
+MIT License — see [LICENSE](LICENSE).
 
 ---
 
 ## 🙏 Acknowledgments
 
-- [Laju Go](https://github.com/maulanashalihin/laju-go) — High-performance SaaS boilerplate yang menjadi fondasi proyek ini
+- [Laju Go](https://github.com/maulanashalihin/laju-go) — SaaS boilerplate foundation
 - [Go Fiber](https://gofiber.io/) — Fast web framework
-- [Svelte](https://svelte.dev/) — Cybernetically enhanced web apps
+- [Svelte](https://svelte.dev/) — Reactive UI framework
 - [Inertia.js](https://inertiajs.com/) — Server-driven SPA
 - [Tailwind CSS](https://tailwindcss.com/) — Utility-first CSS
-- [Lucide Icons](https://lucide.dev/) — Beautiful, consistent icons
-- **BPBD Kabupaten Tanah Bumbu** — Mitra program RENJANA
-
----
-
-## 📞 Support
-
-- **Dokumentasi**: [docs/](docs/) folder
-- **Issues**: [GitHub Issues](https://github.com/maulanashalihin/renjana/issues)
-- **PRD**: [PRD.md](PRD.md) — Product Requirements Document lengkap
+- [Lucide Icons](https://lucide.dev/) — Beautiful icons
+- **BPBD Kabupaten Tanah Bumbu** — Program mitra
