@@ -591,3 +591,12 @@ MIT License — see [LICENSE](LICENSE).
 - [Tailwind CSS](https://tailwindcss.com/) — Utility-first CSS
 - [Lucide Icons](https://lucide.dev/) — Beautiful icons
 - **BPBD Kabupaten Tanah Bumbu** — Program mitra
+
+---
+
+## 👨‍💻 Author
+
+**Maulana Shalihin** — Banjarbaru, Kalimantan Selatan
+
+- Website: [drip.id](https://drip.id)
+- GitHub: [@maulanashalihin](https://github.com/maulanashalihin)
