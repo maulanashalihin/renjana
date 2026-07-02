@@ -110,7 +110,7 @@ func (h *StaticHandler) Dokumen(c *fiber.Ctx) error {
 	})
 }
 
-// Peta — map of districts with volunteer counts.
+// Peta — map of districts with per-district enrichment data.
 func (h *StaticHandler) Peta(c *fiber.Ctx) error {
 	user := h.getUser(c)
 
@@ -133,10 +133,81 @@ func (h *StaticHandler) Peta(c *fiber.Ctx) error {
 		totalVolunteers += d.VolunteerCount
 	}
 
+	// --- Per-district enrichment data ---
+
+	// Schools per district
+	schoolRows, _ := h.querier.CountSchoolsByDistrict(c.Context())
+	schoolMap := make(map[string]int64, len(schoolRows))
+	for _, s := range schoolRows {
+		schoolMap[s.DistrictName] = s.SchoolCount
+	}
+
+	// Activity counts per district
+	activityRows, _ := h.querier.CountActivitiesByDistrict(c.Context())
+	activityMap := make(map[string]int64, len(activityRows))
+	for _, a := range activityRows {
+		activityMap[a.DistrictName] = a.ActivityCount
+	}
+
+	// Activity type breakdown per district
+	typeRows, _ := h.querier.CountActivityTypesByDistrict(c.Context())
+	typeBreakdown := make(map[string][]fiber.Map) // district_name -> [{type_name, type_color, count}]
+	for _, t := range typeRows {
+		typeBreakdown[t.DistrictName] = append(typeBreakdown[t.DistrictName], fiber.Map{
+			"type_name":  t.TypeName,
+			"type_color": t.TypeColor,
+			"count":      t.ActivityCount,
+		})
+	}
+
+	// Volunteer status breakdown per district
+	statusRows, _ := h.querier.CountVolunteerStatusByDistrict(c.Context())
+	statusBreakdown := make(map[string]fiber.Map)
+	for _, s := range statusRows {
+		name := s.DistrictName
+		entry, ok := statusBreakdown[name]
+		if !ok {
+			entry = fiber.Map{"aktif": int64(0), "nonaktif": int64(0)}
+		}
+		status := "nonaktif"
+		if s.Status.Valid && s.Status.String == "aktif" {
+			status = "aktif"
+		}
+		entry[status] = s.VolunteerCount
+		statusBreakdown[name] = entry
+	}
+
+	// Build district_detail map keyed by district name
+	districtDetail := make([]fiber.Map, 0, len(distribution))
+	for _, d := range distribution {
+		name := d["name"].(string)
+		schools := schoolMap[name]
+		activities := activityMap[name]
+		types := typeBreakdown[name]
+		if types == nil {
+			types = []fiber.Map{}
+		}
+		statuses, _ := statusBreakdown[name]
+		if statuses == nil {
+			statuses = fiber.Map{"aktif": int64(0), "nonaktif": int64(0)}
+		}
+
+		districtDetail = append(districtDetail, fiber.Map{
+			"id":                d["id"],
+			"name":              name,
+			"volunteer_count":   d["volunteer_count"],
+			"school_count":      schools,
+			"activity_count":    activities,
+			"activity_breakdown": types,
+			"volunteer_status":  statuses,
+		})
+	}
+
 	return h.inertiaService.Render(c, "app/Peta", fiber.Map{
 		"user":             user,
 		"districts":        districts,
 		"distribution":     distribution,
 		"total_volunteers": totalVolunteers,
+		"district_detail":  districtDetail,
 	})
 }

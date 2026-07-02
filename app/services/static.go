@@ -32,6 +32,10 @@ type EducationItem struct {
 	AgeGroup        string    `json:"age_group"`
 	DurationMinutes int64     `json:"duration_minutes"`
 	IsPublished     bool      `json:"is_published"`
+	CoverImage      string    `json:"cover_image"`
+	PassingScore    int64     `json:"passing_score"`
+	TotalModules    int64     `json:"total_modules"`
+	IsCourse        bool      `json:"is_course"`
 	CreatedAt       time.Time `json:"created_at"`
 	UpdatedAt       time.Time `json:"updated_at"`
 }
@@ -70,6 +74,10 @@ func (s *StaticService) ListEducation(ctx context.Context, category string, page
 		if r.AgeGroup.Valid {
 			age = r.AgeGroup.String
 		}
+		cover := ""
+		if r.CoverImage.Valid {
+			cover = r.CoverImage.String
+		}
 		items = append(items, EducationItem{
 			ID:              r.ID,
 			Title:           r.Title,
@@ -78,6 +86,10 @@ func (s *StaticService) ListEducation(ctx context.Context, category string, page
 			AgeGroup:        age,
 			DurationMinutes: nullToInt64(r.DurationMinutes),
 			IsPublished:     r.IsPublished,
+			CoverImage:      cover,
+			PassingScore:    r.PassingScore,
+			TotalModules:    r.TotalModules,
+			IsCourse:        r.IsCourse,
 			CreatedAt:       r.CreatedAt,
 			UpdatedAt:       r.UpdatedAt,
 		})
@@ -106,6 +118,10 @@ func (s *StaticService) GetEducation(ctx context.Context, id int64) (*EducationI
 	if r.AgeGroup.Valid {
 		age = r.AgeGroup.String
 	}
+	cover := ""
+	if r.CoverImage.Valid {
+		cover = r.CoverImage.String
+	}
 	return &EducationItem{
 		ID:              r.ID,
 		Title:           r.Title,
@@ -114,6 +130,10 @@ func (s *StaticService) GetEducation(ctx context.Context, id int64) (*EducationI
 		AgeGroup:        age,
 		DurationMinutes: nullToInt64(r.DurationMinutes),
 		IsPublished:     r.IsPublished,
+		CoverImage:      cover,
+		PassingScore:    r.PassingScore,
+		TotalModules:    r.TotalModules,
+		IsCourse:        r.IsCourse,
 		CreatedAt:       r.CreatedAt,
 		UpdatedAt:       r.UpdatedAt,
 	}, nil

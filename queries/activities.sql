@@ -31,6 +31,21 @@ LEFT JOIN renjana_activities a ON a.district_id = d.id
 GROUP BY d.id, d.name
 ORDER BY activity_count DESC, d.name;
 
+-- name: CountActivityTypesByDistrict :many
+SELECT
+    d.id AS district_id,
+    d.name AS district_name,
+    t.id AS type_id,
+    t.name AS type_name,
+    t.color AS type_color,
+    COUNT(a.id) AS activity_count
+FROM renjana_districts d
+CROSS JOIN renjana_activity_types t
+LEFT JOIN renjana_activities a ON a.district_id = d.id AND a.type_id = t.id
+WHERE d.is_active = 1 AND t.is_active = 1
+GROUP BY d.id, d.name, t.id, t.name, t.color
+ORDER BY d.name, t.display_order;
+
 -- name: GetUpcomingActivities :many
 SELECT
     a.id,

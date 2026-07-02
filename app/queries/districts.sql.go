@@ -7,7 +7,95 @@ package queries
 
 import (
 	"context"
+	"database/sql"
 )
+
+const countSchoolsByDistrict = `-- name: CountSchoolsByDistrict :many
+SELECT
+    d.id AS district_id,
+    d.name AS district_name,
+    COUNT(DISTINCT v.school) AS school_count
+FROM renjana_districts d
+LEFT JOIN renjana_volunteers v ON v.district_id = d.id AND v.is_active = 1
+GROUP BY d.id, d.name
+ORDER BY d.name
+`
+
+type CountSchoolsByDistrictRow struct {
+	DistrictID   int64  `json:"district_id"`
+	DistrictName string `json:"district_name"`
+	SchoolCount  int64  `json:"school_count"`
+}
+
+func (q *Queries) CountSchoolsByDistrict(ctx context.Context) ([]CountSchoolsByDistrictRow, error) {
+	rows, err := q.db.QueryContext(ctx, countSchoolsByDistrict)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []CountSchoolsByDistrictRow
+	for rows.Next() {
+		var i CountSchoolsByDistrictRow
+		if err := rows.Scan(&i.DistrictID, &i.DistrictName, &i.SchoolCount); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const countVolunteerStatusByDistrict = `-- name: CountVolunteerStatusByDistrict :many
+SELECT
+    d.id AS district_id,
+    d.name AS district_name,
+    v.status,
+    COUNT(v.id) AS volunteer_count
+FROM renjana_districts d
+LEFT JOIN renjana_volunteers v ON v.district_id = d.id AND v.is_active = 1
+GROUP BY d.id, d.name, v.status
+ORDER BY d.name, v.status
+`
+
+type CountVolunteerStatusByDistrictRow struct {
+	DistrictID     int64          `json:"district_id"`
+	DistrictName   string         `json:"district_name"`
+	Status         sql.NullString `json:"status"`
+	VolunteerCount int64          `json:"volunteer_count"`
+}
+
+func (q *Queries) CountVolunteerStatusByDistrict(ctx context.Context) ([]CountVolunteerStatusByDistrictRow, error) {
+	rows, err := q.db.QueryContext(ctx, countVolunteerStatusByDistrict)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []CountVolunteerStatusByDistrictRow
+	for rows.Next() {
+		var i CountVolunteerStatusByDistrictRow
+		if err := rows.Scan(
+			&i.DistrictID,
+			&i.DistrictName,
+			&i.Status,
+			&i.VolunteerCount,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
 
 const getActiveDistricts = `-- name: GetActiveDistricts :many
 SELECT id, name, is_active, created_at

@@ -35,14 +35,14 @@
         isMobileMenuOpen = false;
     }
 
-    // Normalize user so TopBar gets the strict shape it requires
-    let safeUser = $derived({
-        id: user?.id ?? 0,
-        name: user?.name ?? "Admin RENJANA",
-        email: user?.email ?? "admin@renjana.id",
-        avatar: user?.avatar ?? "https://i.pravatar.cc/100?u=admin-renjana",
-        role: user?.role ?? "Admin",
-    });
+    // Determine if user is logged in — pass undefined to hide user section in TopBar
+    let safeUser = $derived(user ? {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        avatar: user.avatar ?? "https://i.pravatar.cc/100?u=admin-renjana",
+        role: user.role ?? "Admin",
+    } : undefined);
 </script>
 
 <svelte:head>

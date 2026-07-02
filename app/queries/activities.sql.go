@@ -155,6 +155,61 @@ func (q *Queries) CountActivitiesFilteredScoped(ctx context.Context, arg CountAc
 	return total, err
 }
 
+const countActivityTypesByDistrict = `-- name: CountActivityTypesByDistrict :many
+SELECT
+    d.id AS district_id,
+    d.name AS district_name,
+    t.id AS type_id,
+    t.name AS type_name,
+    t.color AS type_color,
+    COUNT(a.id) AS activity_count
+FROM renjana_districts d
+CROSS JOIN renjana_activity_types t
+LEFT JOIN renjana_activities a ON a.district_id = d.id AND a.type_id = t.id
+WHERE d.is_active = 1 AND t.is_active = 1
+GROUP BY d.id, d.name, t.id, t.name, t.color
+ORDER BY d.name, t.display_order
+`
+
+type CountActivityTypesByDistrictRow struct {
+	DistrictID    int64  `json:"district_id"`
+	DistrictName  string `json:"district_name"`
+	TypeID        int64  `json:"type_id"`
+	TypeName      string `json:"type_name"`
+	TypeColor     string `json:"type_color"`
+	ActivityCount int64  `json:"activity_count"`
+}
+
+func (q *Queries) CountActivityTypesByDistrict(ctx context.Context) ([]CountActivityTypesByDistrictRow, error) {
+	rows, err := q.db.QueryContext(ctx, countActivityTypesByDistrict)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []CountActivityTypesByDistrictRow
+	for rows.Next() {
+		var i CountActivityTypesByDistrictRow
+		if err := rows.Scan(
+			&i.DistrictID,
+			&i.DistrictName,
+			&i.TypeID,
+			&i.TypeName,
+			&i.TypeColor,
+			&i.ActivityCount,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const countAllActivities = `-- name: CountAllActivities :one
 SELECT COUNT(*) AS total
 FROM renjana_activities

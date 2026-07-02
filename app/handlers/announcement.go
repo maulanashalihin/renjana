@@ -50,10 +50,13 @@ func (h *AnnouncementHandler) authUser(c *fiber.Ctx) (int64, *models.User, error
 
 // Index — list with search, filter, pagination. Public GET.
 func (h *AnnouncementHandler) Index(c *fiber.Ctx) error {
-	_, user, err := h.authUser(c)
-	if err != nil {
-		// Public access — render without user data
-		user = nil
+	// Detect user from session (works without AuthRequired middleware)
+	var user *models.User
+	sess, sessErr := h.store.Get(c)
+	if sessErr == nil {
+		if uid := sess.Get("user_id"); uid != nil {
+			user, _ = h.querier.GetUserByID(c.Context(), uid.(int64))
+		}
 	}
 
 	page, _ := strconv.Atoi(c.Query("page", "1"))

@@ -19,7 +19,7 @@ func setupStaticTestDB(t *testing.T) *queries.Querier {
 	t.Cleanup(func() { db.Close() })
 
 	_, err = db.Exec(`
-		CREATE TABLE renjana_education (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, category TEXT NOT NULL, body TEXT NOT NULL, age_group TEXT DEFAULT 'Umum', duration_minutes INTEGER DEFAULT 30, is_published BOOLEAN NOT NULL DEFAULT 0, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP);
+		CREATE TABLE renjana_education (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, category TEXT NOT NULL, body TEXT NOT NULL, age_group TEXT DEFAULT 'Umum', duration_minutes INTEGER DEFAULT 30, is_published BOOLEAN NOT NULL DEFAULT 0, cover_image TEXT, passing_score INTEGER DEFAULT 70, total_modules INTEGER DEFAULT 0, is_course BOOLEAN NOT NULL DEFAULT 0, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP);
 		CREATE INDEX idx_renjana_education_category ON renjana_education(category, is_published);
 		CREATE TABLE renjana_media (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, file_url TEXT NOT NULL, media_type TEXT NOT NULL DEFAULT 'image', activity_id INTEGER, district_id INTEGER, caption TEXT, uploaded_by INTEGER, uploaded_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, is_published BOOLEAN NOT NULL DEFAULT 1);
 		CREATE INDEX idx_renjana_media_type ON renjana_media(media_type, is_published);
