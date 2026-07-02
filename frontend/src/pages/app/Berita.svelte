@@ -2,7 +2,7 @@
     import AppLayout from "../../components/AppLayout.svelte";
     import PageHeader from "../../lib/components/PageHeader.svelte";
     import EmptyState from "../../lib/components/EmptyState.svelte";
-    import { Newspaper, Search, Calendar, Sparkles, Plus, Pencil, Trash2, X } from "lucide-svelte";
+    import { Newspaper, Search, Calendar, Sparkles, Plus, Pencil, Trash2 } from "lucide-svelte";
 
     interface User {
         id: number;
@@ -68,8 +68,6 @@
 
     let search = $state(current_search);
     let activeCategory = $state<string | null>(current_category || null);
-    let actionType = $state<"create" | "edit" | "">("");
-    let editTarget = $state<Announcement | null>(null);
 
     function dateLong(dateStr: string): string {
         if (!dateStr) return "";
