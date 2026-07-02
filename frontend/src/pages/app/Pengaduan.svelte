@@ -60,6 +60,52 @@
     let activeTab = $state<string>("pending");
     let respondModal = $state<Complaint | null>(null);
     let respondText = $state("");
+    let loading = $state<number | null>(null);
+
+    function getCSRFToken(): string {
+        const name = "XSRF-TOKEN";
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return decodeURIComponent(parts.pop()?.split(";").shift() ?? "");
+        return "";
+    }
+
+    async function markResolved(id: number) {
+        loading = id;
+        try {
+            await fetch(`/pengaduan/${id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "X-XSRF-TOKEN": getCSRFToken(),
+                    "X-Requested-With": "XMLHttpRequest",
+                },
+                body: new URLSearchParams({ status: "resolved", response: "" }),
+            });
+            window.location.reload();
+        } catch {
+            loading = null;
+        }
+    }
+
+    async function submitResponse(id: number) {
+        loading = id;
+        try {
+            await fetch(`/pengaduan/${id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "X-XSRF-TOKEN": getCSRFToken(),
+                    "X-Requested-With": "XMLHttpRequest",
+                },
+                body: new URLSearchParams({ status: "processed", response: respondText }),
+            });
+            respondModal = null;
+            window.location.reload();
+        } catch {
+            loading = null;
+        }
+    }
 
     const categories = ["Sarana", "Pelayanan", "Program", "Lainnya"];
     const statusColors: Record<string, { bg: string; text: string }> = {
@@ -135,11 +181,9 @@
                         {#if complaint.status !== "resolved"}
                             <div class="mt-3 flex gap-2">
                                 <button onclick={() => { respondModal = complaint; respondText = complaint.response ?? ""; }} class="px-3 py-1.5 rounded-lg bg-renjana-500 hover:bg-renjana-600 text-white text-xs font-medium transition">Respon</button>
-                                <form method="POST" action={`/pengaduan/${complaint.id}?_method=PUT`} class="inline">
-                                    <input type="hidden" name="status" value="resolved" />
-                                    <input type="hidden" name="response" value={complaint.response ?? ""} />
-                                    <button type="submit" class="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-medium transition">Tandai Selesai</button>
-                                </form>
+                                <button onclick={() => markResolved(complaint.id)} disabled={loading === complaint.id} class="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 disabled:bg-neutral-400 text-white text-xs font-medium transition">
+                                    {loading === complaint.id ? "Memproses..." : "Tandai Selesai"}
+                                </button>
                             </div>
                         {/if}
                     </div>
@@ -151,21 +195,22 @@
 
         <!-- Respond Modal -->
         {#if respondModal}
-            <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onclick={() => respondModal = null}>
+            <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onclick={() => { if (loading === null) respondModal = null; }}>
                 <div class="bg-white dark:bg-neutral-900 rounded-2xl p-6 max-w-lg w-full mx-4 shadow-2xl" onclick={(e) => e.stopPropagation()}>
                     <h3 class="text-lg font-bold text-neutral-900 dark:text-white mb-4">Respon Pengaduan</h3>
                     <p class="text-sm text-neutral-500 dark:text-neutral-400 mb-4">
                         Dari: <strong>{respondModal.name}</strong> · {respondModal.category}
                     </p>
                     <p class="text-sm text-neutral-700 dark:text-neutral-300 mb-4 bg-neutral-50 dark:bg-neutral-800 p-3 rounded-lg">{respondModal.message}</p>
-                    <form method="POST" action={`/pengaduan/${respondModal.id}?_method=PUT`}>
-                        <input type="hidden" name="status" value="processed" />
-                        <textarea name="response" bind:value={respondText} rows={4} class="w-full px-3 py-2.5 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none mb-4" placeholder="Tulis respon..."></textarea>
+                    <div>
+                        <textarea bind:value={respondText} rows={4} disabled={loading !== null} class="w-full px-3 py-2.5 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none mb-4" placeholder="Tulis respon..."></textarea>
                         <div class="flex gap-2 justify-end">
-                            <button type="button" onclick={() => respondModal = null} class="px-4 py-2 rounded-lg text-sm font-medium border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition">Batal</button>
-                            <button type="submit" class="px-4 py-2 rounded-lg bg-renjana-500 hover:bg-renjana-600 text-white text-sm font-semibold transition">Kirim Respon</button>
+                            <button onclick={() => { if (loading === null) respondModal = null; }} disabled={loading !== null} class="px-4 py-2 rounded-lg text-sm font-medium border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition">Batal</button>
+                            <button onclick={() => submitResponse(respondModal!.id)} disabled={loading !== null} class="px-4 py-2 rounded-lg bg-renjana-500 hover:bg-renjana-600 disabled:bg-neutral-400 text-white text-sm font-semibold transition">
+                                {loading === respondModal!.id ? "Mengirim..." : "Kirim Respon"}
+                            </button>
                         </div>
-                    </form>
+                    </div>
                 </div>
             </div>
         {/if}

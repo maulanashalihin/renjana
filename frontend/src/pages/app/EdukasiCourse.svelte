@@ -280,33 +280,51 @@
 
 <style>
     :global(.education-content h2) {
-        @apply text-xl font-bold mb-4 text-neutral-900 dark:text-white;
+        font-size: 1.25rem; line-height: 1.75rem; font-weight: 700; margin-bottom: 1rem;
     }
     :global(.education-content h3) {
-        @apply text-lg font-semibold mb-3 text-neutral-800 dark:text-neutral-200;
+        font-size: 1.125rem; line-height: 1.75rem; font-weight: 600; margin-bottom: 0.75rem;
     }
     :global(.education-content h4) {
-        @apply text-base font-semibold mb-2 text-neutral-800 dark:text-neutral-200;
+        font-size: 1rem; line-height: 1.5rem; font-weight: 600; margin-bottom: 0.5rem;
     }
     :global(.education-content p) {
-        @apply mb-4 leading-relaxed text-neutral-700 dark:text-neutral-300;
+        margin-bottom: 1rem; line-height: 1.625; color: #404040;
     }
     :global(.education-content ul) {
-        @apply mb-4 space-y-1.5;
+        margin-bottom: 1rem;
+    }
+    :global(.education-content ul > li) {
+        margin-bottom: 0.375rem;
     }
     :global(.education-content li) {
-        @apply text-neutral-700 dark:text-neutral-300 leading-relaxed;
+        color: #404040;
+        line-height: 1.625;
+    }
+    :global(.dark .education-content li) {
+        color: #d4d4d4;
     }
     :global(.education-content table) {
-        @apply mb-4 text-sm;
+        margin-bottom: 1rem;
+        font-size: 0.875rem;
     }
     :global(.education-content th) {
-        @apply text-neutral-800 dark:text-neutral-200 font-semibold;
+        color: #262626;
+        font-weight: 600;
+    }
+    :global(.dark .education-content th) {
+        color: #e5e5e5;
     }
     :global(.education-content td) {
-        @apply text-neutral-700 dark:text-neutral-300;
+        color: #404040;
+    }
+    :global(.dark .education-content td) {
+        color: #d4d4d4;
     }
     :global(.education-content strong) {
-        @apply text-neutral-900 dark:text-white;
+        color: #171717;
+    }
+    :global(.dark .education-content strong) {
+        color: #fff;
     }
 </style>
