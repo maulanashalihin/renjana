@@ -2,7 +2,7 @@
     import AppLayout from "../../components/AppLayout.svelte";
     import PageHeader from "../../lib/components/PageHeader.svelte";
     import EmptyState from "../../lib/components/EmptyState.svelte";
-    import { MessageSquareWarning, Send, Search, CheckCircle2, Clock, XCircle } from "lucide-svelte";
+    import { MessageSquareWarning, Send, CheckCircle2 } from "lucide-svelte";
 
     interface AppUser {
         id: number;

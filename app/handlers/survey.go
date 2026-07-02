@@ -105,7 +105,7 @@ func (h *SurveyHandler) adminIndex(c *fiber.Ctx, user *fiber.Map) error {
 // Store — public submission.
 func (h *SurveyHandler) Store(c *fiber.Ctx) error {
 	name := c.FormValue("name")
-	email := c.FormValue("email")
+	phone := c.FormValue("phone")
 	serviceType := c.FormValue("service_type")
 	ratingStr := c.FormValue("rating")
 	feedback := c.FormValue("feedback")
@@ -123,7 +123,7 @@ func (h *SurveyHandler) Store(c *fiber.Ctx) error {
 		})
 	}
 
-	_, err = h.surveySvc.Create(c.Context(), name, email, serviceType, rating, feedback)
+	_, err = h.surveySvc.Create(c.Context(), name, phone, serviceType, rating, feedback)
 	if err != nil {
 		slog.Error("survey create error", "err", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{

@@ -52,8 +52,10 @@ func SetupRoutes(app *fiber.App, h Handlers, store *session.Store, mailerService
 	setupAppRoutes(app, h.App, h.Upload, h.Volunteer, h.Activity, h.Announcement, h.Contact, h.Organization, h.Onboarding, h.Static, h.UserAdmin, h.Complaint, h.Survey, h.Education, store, csrfMiddleware)
 }
 
+// setupRegistrationRoutes is deprecated — /daftar flow removed.
+// Users now register via /register then complete onboarding at /onboarding.
 func setupRegistrationRoutes(app *fiber.App) {
-	// Intentionally left blank — /daftar flow removed (replaced by /register → /onboarding).
+	// Intentionally left blank — /daftar flow removed.
 }
 
 func setupStaticRoutes(app *fiber.App) {
@@ -167,6 +169,10 @@ func setupAppRoutes(app *fiber.App, appHandler *handlers.AppHandler, uploadHandl
 	// CSRF for state-changing methods (skip GET/HEAD/OPTIONS)
 	app.Use(csrfMiddleware.Protect())
 
+	// Onboarding — new users (relawan) without volunteer record
+	app.Get("/onboarding", onboardingHandler.Show)
+	app.Post("/onboarding", onboardingHandler.Store)
+
 	// Profile — mutation only (GET is public)
 	app.Put("/profile", appHandler.UpdateProfile)
 	app.Put("/profile/password", appHandler.UpdatePassword)
@@ -205,9 +211,7 @@ func setupAppRoutes(app *fiber.App, appHandler *handlers.AppHandler, uploadHandl
 	app.Put("/relawan/:id", middlewares.AdminRequired(store), volunteerHandler.Update)
 	app.Delete("/relawan/:id", middlewares.AdminRequired(store), volunteerHandler.Destroy)
 
-	// Pendaftaran — approve/reject for admin (GET/POST /daftar is public)
-	app.Post("/daftar/:id/approve", middlewares.AdminRequired(store), registrationHandler.Approve)
-	app.Post("/daftar/:id/reject", middlewares.AdminRequired(store), registrationHandler.Reject)	// Pengaduan — admin manage (public submit is in setupPublicFormRoutes)
+	// Pengaduan — admin manage (public submit is in setupPublicFormRoutes)	// Pengaduan — admin manage (public submit is in setupPublicFormRoutes)
 	app.Put("/pengaduan/:id", middlewares.AdminRequired(store), complaintHandler.UpdateStatus)
 	app.Delete("/pengaduan/:id", middlewares.AdminRequired(store), complaintHandler.Destroy)
 

@@ -109,18 +109,17 @@ func (h *ComplaintHandler) adminIndex(c *fiber.Ctx, user *fiber.Map) error {
 // Store — public submission.
 func (h *ComplaintHandler) Store(c *fiber.Ctx) error {
 	name := c.FormValue("name")
-	email := c.FormValue("email")
 	phone := c.FormValue("phone")
 	category := c.FormValue("category")
 	message := c.FormValue("message")
 
-	if name == "" || email == "" || message == "" {
+	if name == "" || message == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Nama, email, dan pesan harus diisi",
+			"error": "Nama dan pesan harus diisi",
 		})
 	}
 
-	_, err := h.complaintSvc.Create(c.Context(), name, email, phone, category, message)
+	_, err := h.complaintSvc.Create(c.Context(), name, "", phone, category, message)
 	if err != nil {
 		slog.Error("complaint create error", "err", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
