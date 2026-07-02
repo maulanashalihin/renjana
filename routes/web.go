@@ -39,6 +39,9 @@ func SetupRoutes(app *fiber.App, h Handlers, store *session.Store, mailerService
 	// Setup registration routes (public + protected)
 	setupRegistrationRoutes(app, h.Registration, store, csrfMiddleware)
 
+	// Setup public content routes — no auth required
+	setupPublicRoutes(app, h.Announcement, h.Contact, h.Static)
+
 	// Setup app routes (protected) — semua di root path
 	setupAppRoutes(app, h.App, h.Upload, h.Volunteer, h.Activity, h.Announcement, h.Contact, h.Organization, h.Registration, h.Static, h.UserAdmin, store, csrfMiddleware)
 }
@@ -74,6 +77,19 @@ func setupStaticRoutes(app *fiber.App) {
 		CacheDuration: 24 * time.Hour,
 		MaxAge:        86400,
 	})
+}
+
+func setupPublicRoutes(app *fiber.App, announcementHandler *handlers.AnnouncementHandler, contactHandler *handlers.ContactHandler, staticHandler *handlers.StaticHandler) {
+	// Static content pages — public, no auth required
+	app.Get("/peta", staticHandler.Peta)
+	app.Get("/edukasi", staticHandler.Edukasi)
+	app.Get("/galeri", staticHandler.Galeri)
+	app.Get("/dokumen", staticHandler.Dokumen)
+	app.Get("/inovasi", staticHandler.Inovasi)
+
+	// Read-only public listing
+	app.Get("/berita", announcementHandler.Index)
+	app.Get("/kontak", contactHandler.Index)
 }
 
 func setupAuthRoutes(app *fiber.App, authHandler *handlers.AuthHandler, passwordResetHandler *handlers.PasswordResetHandler, store *session.Store, mailerService *services.MailerService) {
@@ -135,8 +151,7 @@ func setupAppRoutes(app *fiber.App, appHandler *handlers.AppHandler, uploadHandl
 	app.Put("/kegiatan/:id", middlewares.AdminRequired(store), activityHandler.Update)
 	app.Delete("/kegiatan/:id", middlewares.AdminRequired(store), activityHandler.Destroy)
 
-	// Berita — viewable by all auth users, CRUD for admin only
-	app.Get("/berita", announcementHandler.Index)
+	// Berita — CRUD for admin only (GET index is public)
 	app.Get("/berita/create", announcementHandler.Create)
 	app.Post("/berita", middlewares.AdminRequired(store), announcementHandler.Store)
 	app.Get("/berita/:id", announcementHandler.Show)
@@ -144,8 +159,7 @@ func setupAppRoutes(app *fiber.App, appHandler *handlers.AppHandler, uploadHandl
 	app.Put("/berita/:id", middlewares.AdminRequired(store), announcementHandler.Update)
 	app.Delete("/berita/:id", middlewares.AdminRequired(store), announcementHandler.Destroy)
 
-	// Kontak — viewable by all auth users, CRUD for admin only
-	app.Get("/kontak", contactHandler.Index)
+	// Kontak — CRUD for admin only (GET index is public)
 	app.Get("/kontak/create", contactHandler.Create)
 	app.Post("/kontak", middlewares.AdminRequired(store), contactHandler.Store)
 	app.Get("/kontak/:id/edit", contactHandler.Edit)
@@ -161,15 +175,7 @@ func setupAppRoutes(app *fiber.App, appHandler *handlers.AppHandler, uploadHandl
 	app.Put("/relawan/:id", middlewares.AdminRequired(store), volunteerHandler.Update)
 	app.Delete("/relawan/:id", middlewares.AdminRequired(store), volunteerHandler.Destroy)
 
-	// Read-only content pages
-	app.Get("/peta", staticHandler.Peta)
-	app.Get("/edukasi", staticHandler.Edukasi)
-	app.Get("/galeri", staticHandler.Galeri)
-	app.Get("/dokumen", staticHandler.Dokumen)
-	app.Get("/inovasi", staticHandler.Inovasi)
-
-	// Pendaftaran — list for all auth users, approve/reject for admin
-	app.Get("/daftar", appHandler.Menu)
+	// Pendaftaran — approve/reject for admin (GET/POST /daftar is public)
 	app.Post("/daftar/:id/approve", middlewares.AdminRequired(store), registrationHandler.Approve)
 	app.Post("/daftar/:id/reject", middlewares.AdminRequired(store), registrationHandler.Reject)
 

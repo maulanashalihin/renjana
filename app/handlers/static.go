@@ -33,25 +33,23 @@ func NewStaticHandler(
 	}
 }
 
-func (h *StaticHandler) authUser(c *fiber.Ctx) (*models.User, error) {
+// getUser returns the authenticated user or nil for public access.
+func (h *StaticHandler) getUser(c *fiber.Ctx) *models.User {
 	userID := c.Locals("user_id")
 	if userID == nil {
-		return nil, fiber.ErrUnauthorized
+		return nil
 	}
 	id := userID.(int64)
 	u, err := h.querier.GetUserByID(c.Context(), id)
 	if err != nil {
-		return nil, err
+		return nil
 	}
-	return u, nil
+	return u
 }
 
 // Edukasi — list education articles.
 func (h *StaticHandler) Edukasi(c *fiber.Ctx) error {
-	user, err := h.authUser(c)
-	if err != nil {
-		return c.Redirect("/login")
-	}
+	user := h.getUser(c)
 	page, _ := strconv.Atoi(c.Query("page", "1"))
 	perPage, _ := strconv.Atoi(c.Query("per_page", "20"))
 	category := c.Query("category", "")
@@ -72,10 +70,7 @@ func (h *StaticHandler) Edukasi(c *fiber.Ctx) error {
 
 // Galeri — list gallery media.
 func (h *StaticHandler) Galeri(c *fiber.Ctx) error {
-	user, err := h.authUser(c)
-	if err != nil {
-		return c.Redirect("/login")
-	}
+	user := h.getUser(c)
 	page, _ := strconv.Atoi(c.Query("page", "1"))
 	perPage, _ := strconv.Atoi(c.Query("per_page", "20"))
 	mediaType := c.Query("media_type", "")
@@ -96,10 +91,7 @@ func (h *StaticHandler) Galeri(c *fiber.Ctx) error {
 
 // Dokumen — list documents.
 func (h *StaticHandler) Dokumen(c *fiber.Ctx) error {
-	user, err := h.authUser(c)
-	if err != nil {
-		return c.Redirect("/login")
-	}
+	user := h.getUser(c)
 	page, _ := strconv.Atoi(c.Query("page", "1"))
 	perPage, _ := strconv.Atoi(c.Query("per_page", "20"))
 	category := c.Query("category", "")
@@ -120,10 +112,7 @@ func (h *StaticHandler) Dokumen(c *fiber.Ctx) error {
 
 // Inovasi — list innovations.
 func (h *StaticHandler) Inovasi(c *fiber.Ctx) error {
-	user, err := h.authUser(c)
-	if err != nil {
-		return c.Redirect("/login")
-	}
+	user := h.getUser(c)
 	page, _ := strconv.Atoi(c.Query("page", "1"))
 	perPage, _ := strconv.Atoi(c.Query("per_page", "20"))
 	category := c.Query("category", "")
@@ -144,10 +133,7 @@ func (h *StaticHandler) Inovasi(c *fiber.Ctx) error {
 
 // Peta — map of districts with volunteer counts.
 func (h *StaticHandler) Peta(c *fiber.Ctx) error {
-	user, err := h.authUser(c)
-	if err != nil {
-		return c.Redirect("/login")
-	}
+	user := h.getUser(c)
 
 	districts, _ := h.querier.GetActiveDistricts(c.Context())
 	distributionRows, err := h.querier.CountVolunteersByDistrict(c.Context())

@@ -48,11 +48,12 @@ func (h *ContactHandler) authUser(c *fiber.Ctx) (int64, *models.User, error) {
 	return id, u, nil
 }
 
-// Index — list all contacts (grouped by district).
+// Index — list all contacts (grouped by district). Public GET.
 func (h *ContactHandler) Index(c *fiber.Ctx) error {
 	_, user, err := h.authUser(c)
 	if err != nil {
-		return c.Redirect("/login")
+		// Public access — render without user data
+		user = nil
 	}
 
 	page, _ := strconv.Atoi(c.Query("page", "1"))
