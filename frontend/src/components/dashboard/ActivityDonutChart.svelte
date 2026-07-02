@@ -79,7 +79,7 @@
                         fill={seg.color}
                         class="transition-all duration-500 hover:opacity-80"
                     >
-                        <title>{seg.name}: {seg.percentage}%</title>
+                        <title>{seg.name}: {seg.percentage % 1 === 0 ? seg.percentage : seg.percentage.toFixed(1)}%</title>
                     </path>
                 {/each}
                 <!-- Center text -->
@@ -120,7 +120,7 @@
                         </span>
                     </div>
                     <span class="text-xs font-bold text-slate-900 dark:text-white tabular-nums">
-                        {a.percentage}%
+                        {a.percentage % 1 === 0 ? a.percentage : a.percentage.toFixed(1)}%
                     </span>
                 </div>
             {/each}

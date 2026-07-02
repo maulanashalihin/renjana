@@ -109,6 +109,7 @@
                     {/each}
                 </div>
             </div>
+        {/if}
 
             {#if by_service.length > 0}
                 <div class="rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-5 mb-6">
@@ -217,6 +218,5 @@
                 </form>
             {/if}
         {/if}
-    {/if}
 
 </AppLayout>

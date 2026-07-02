@@ -36,13 +36,14 @@
         {formattedValue}
     </div>
     {#if delta !== undefined}
+        {@const displayDelta = delta % 1 === 0 ? delta : Number(delta.toFixed(1))}
         <div class="flex items-center gap-1 text-xs">
             {#if delta > 0}
                 <TrendingUp class="w-3.5 h-3.5 text-green-600" />
-                <span class="text-green-600 font-semibold">+{delta}%</span>
+                <span class="text-green-600 font-semibold">+{displayDelta}%</span>
             {:else if delta < 0}
                 <TrendingDown class="w-3.5 h-3.5 text-red-600" />
-                <span class="text-red-600 font-semibold">{delta}%</span>
+                <span class="text-red-600 font-semibold">{displayDelta}%</span>
             {:else}
                 <Minus class="w-3.5 h-3.5 text-slate-500" />
                 <span class="text-slate-500 font-semibold">0%</span>

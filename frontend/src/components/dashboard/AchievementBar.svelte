@@ -37,6 +37,7 @@
                 {@const color = a.color ?? "#f97316"}
                 {@const isPct = a.type === "percentage" || a.unit === "%"}
                 {@const pct = isPct ? Math.min(100, Math.max(0, a.value)) : 0}
+                {@const displayValue = a.value % 1 === 0 ? a.value : Number(a.value.toFixed(1))}
                 <div class="text-center">
                     <div
                         class="w-10 h-10 rounded-full mx-auto mb-2 flex items-center justify-center"
@@ -45,7 +46,7 @@
                         <Icon class="w-5 h-5" style="color: {color};" strokeWidth={2.5} />
                     </div>
                     <div class="text-xl font-bold text-slate-900 dark:text-white tabular-nums">
-                        {new Intl.NumberFormat("id-ID").format(a.value)}{a.unit || ""}
+                        {new Intl.NumberFormat("id-ID").format(displayValue)}{a.unit || ""}
                     </div>
                     <div class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 leading-tight">
                         {a.label}

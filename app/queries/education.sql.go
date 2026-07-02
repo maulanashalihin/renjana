@@ -31,7 +31,7 @@ func (q *Queries) CountEducationFiltered(ctx context.Context, arg CountEducation
 }
 
 const getEducationByID = `-- name: GetEducationByID :one
-SELECT id, title, category, body, age_group, duration_minutes, is_published, created_at, updated_at
+SELECT id, title, category, body, age_group, duration_minutes, is_published, cover_image, passing_score, total_modules, is_course, created_at, updated_at
 FROM renjana_education
 WHERE id = ?
 `
@@ -44,6 +44,10 @@ type GetEducationByIDRow struct {
 	AgeGroup        sql.NullString `json:"age_group"`
 	DurationMinutes sql.NullInt64  `json:"duration_minutes"`
 	IsPublished     bool           `json:"is_published"`
+	CoverImage      sql.NullString `json:"cover_image"`
+	PassingScore    int64          `json:"passing_score"`
+	TotalModules    int64          `json:"total_modules"`
+	IsCourse        bool           `json:"is_course"`
 	CreatedAt       time.Time      `json:"created_at"`
 	UpdatedAt       time.Time      `json:"updated_at"`
 }
@@ -59,6 +63,10 @@ func (q *Queries) GetEducationByID(ctx context.Context, id int64) (GetEducationB
 		&i.AgeGroup,
 		&i.DurationMinutes,
 		&i.IsPublished,
+		&i.CoverImage,
+		&i.PassingScore,
+		&i.TotalModules,
+		&i.IsCourse,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -66,7 +74,7 @@ func (q *Queries) GetEducationByID(ctx context.Context, id int64) (GetEducationB
 }
 
 const listEducationPaginated = `-- name: ListEducationPaginated :many
-SELECT id, title, category, body, age_group, duration_minutes, is_published, created_at, updated_at
+SELECT id, title, category, body, age_group, duration_minutes, is_published, cover_image, passing_score, total_modules, is_course, created_at, updated_at
 FROM renjana_education
 WHERE (?1 IS NULL OR ?1 = '' OR category = ?1)
   AND (?2 IS NULL OR is_published = ?2)
@@ -89,6 +97,10 @@ type ListEducationPaginatedRow struct {
 	AgeGroup        sql.NullString `json:"age_group"`
 	DurationMinutes sql.NullInt64  `json:"duration_minutes"`
 	IsPublished     bool           `json:"is_published"`
+	CoverImage      sql.NullString `json:"cover_image"`
+	PassingScore    int64          `json:"passing_score"`
+	TotalModules    int64          `json:"total_modules"`
+	IsCourse        bool           `json:"is_course"`
 	CreatedAt       time.Time      `json:"created_at"`
 	UpdatedAt       time.Time      `json:"updated_at"`
 }
@@ -115,6 +127,10 @@ func (q *Queries) ListEducationPaginated(ctx context.Context, arg ListEducationP
 			&i.AgeGroup,
 			&i.DurationMinutes,
 			&i.IsPublished,
+			&i.CoverImage,
+			&i.PassingScore,
+			&i.TotalModules,
+			&i.IsCourse,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
