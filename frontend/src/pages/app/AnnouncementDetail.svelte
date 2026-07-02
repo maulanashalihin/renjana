@@ -49,9 +49,7 @@
 
         {#if announcement}
             <article>
-                {#if announcement.cover_url}
-                    <div class="rounded-2xl overflow-hidden mb-8 aspect-video bg-cover bg-center" style="background-image: url('{announcement.cover_url}');"></div>
-                {/if}
+                <div class="rounded-2xl overflow-hidden mb-8 aspect-video bg-cover bg-center" style="background-image: url('{announcement.cover_url || '/public/images/berita-visual.png'}');"></div>
 
                 <div class="flex items-center gap-3 mb-4">
                     <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-renjana-100 dark:bg-renjana-900/30 text-renjana-700 dark:text-renjana-300">

@@ -6,7 +6,7 @@
         Phone,
         ArrowRight,
         Sparkles,
-        User,
+        User as UserIcon,
         Check,
     } from "lucide-svelte";
 
@@ -35,11 +35,17 @@
         user?: User;
         districts?: District[];
         volunteer?: Volunteer | null;
-        success?: string;
-        error?: string;
+        flash?: {
+            error?: string;
+            success?: string;
+        };
     }
 
-    let { user, districts = [], volunteer = null, success, error }: Props = $props();
+    let { user, districts = [], volunteer = null, flash }: Props = $props();
+
+    // Pull flash messages from Inertia props
+    let success = $derived(flash?.success);
+    let error = $derived(flash?.error);
 
     let form = $state({
         school: volunteer?.school ?? "",
@@ -213,7 +219,7 @@
                     <div class="pt-3 border-t border-slate-200 dark:border-slate-800">
                         <div class="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50">
                             <div class="flex-shrink-0 w-9 h-9 rounded-full bg-gradient-to-br from-renjana-500 to-amber-500 flex items-center justify-center text-white">
-                                <User class="w-4 h-4" />
+                                <UserIcon class="w-4 h-4" />
                             </div>
                             <div class="min-w-0 flex-1">
                                 <p class="text-sm font-semibold text-slate-900 dark:text-white truncate">{user.name}</p>

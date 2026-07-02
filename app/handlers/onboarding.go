@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"log/slog"
-	"strconv"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/maulanashalihin/laju-go/app/models"
@@ -70,20 +69,15 @@ func (h *OnboardingHandler) Store(c *fiber.Ctx) error {
 	// If user already has volunteer record, skip
 	existing, _ := h.volunteerService.GetByUserID(c.Context(), userID)
 	if existing != nil {
-		return c.Redirect("/dashboard", fiber.StatusSeeOther)
+		return c.Redirect("/", fiber.StatusSeeOther)
 	}
 
-	// Parse form
-	school := c.FormValue("school", "")
-	districtStr := c.FormValue("district_id", "0")
-	phone := c.FormValue("phone", "")
-
-	districtID, _ := strconv.ParseInt(districtStr, 10, 64)
-
-	req := services.OnboardingRequest{
-		School:     school,
-		DistrictID: districtID,
-		Phone:      phone,
+	// Parse JSON body (Inertia v3 sends as JSON)
+	var req services.OnboardingRequest
+	if err := c.BodyParser(&req); err != nil {
+		slog.Error("onboarding: parse body failed", "err", err, "user_id", userID)
+		h.store.Flash(c, "error", "Data form tidak valid. Silakan coba lagi.")
+		return c.Redirect("/onboarding", fiber.StatusSeeOther)
 	}
 
 	_, err = h.volunteerService.CreateForUser(c.Context(), userID, user.Name, req)
@@ -94,7 +88,7 @@ func (h *OnboardingHandler) Store(c *fiber.Ctx) error {
 	}
 
 	h.store.Flash(c, "success", "Selamat datang di RENJANA! Profil relawan kamu sudah lengkap.")
-	return c.Redirect("/dashboard", fiber.StatusSeeOther)
+	return c.Redirect("/", fiber.StatusSeeOther)
 }
 
 // authUser extracts the current user from the session.
