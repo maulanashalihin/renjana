@@ -91,7 +91,7 @@ Setiap file migrasi WAJIB memiliki `-- +goose Up` dan `-- +goose Down` section.
 
 ### Database driver
 
-`github.com/mattn/go-sqlite3` (CGO-based). Requires CGO for cross-compilation. Cross-compile ke Linux dari macOS menggunakan `brew install zig` lalu `make build-linux`.
+`modernc.org/sqlite` (pure Go, no CGO). Static binary tanpa toolchain C. Cross-compile cukup `GOOS=linux GOARCH=amd64 go build`. Untuk kebutuhan >50K RPS bisa beralih ke `mattn/go-sqlite3` (CGO).
 
 ## Design Standards
 
