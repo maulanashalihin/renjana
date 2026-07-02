@@ -42,7 +42,7 @@ SELECT
     END || ' ' || printf('%04d', seq),
     CASE (seq % 45)
         WHEN 0  THEN 'SMAN 1 Simpang Empat'
-        WHEN 1  THEN 'SMAN 1 Batulicin'
+        WHEN 1  THEN 'SMAN 1 Batu Licin'
         WHEN 2  THEN 'SMAN 1 Kusan Hilir'
         WHEN 3  THEN 'SMAN 1 Kusan Hulu'
         WHEN 4  THEN 'SMAN 1 Satui'
@@ -51,12 +51,12 @@ SELECT
         WHEN 7  THEN 'SMAN 1 Mantewe'
         WHEN 8  THEN 'SMAN 1 Kuranji'
         WHEN 9  THEN 'SMAN 1 Teluk Kepayang'
-        WHEN 10 THEN 'SMAN 1 Batu Putih'
+        WHEN 10 THEN 'SMAN 1 Kusan Tengah'
         WHEN 11 THEN 'SMPN 1 Simpang Empat'
         WHEN 12 THEN 'SMPN 2 Simpang Empat'
-        WHEN 13 THEN 'SMPN 1 Batulicin'
-        WHEN 14 THEN 'SMPN 2 Batulicin'
-        WHEN 15 THEN 'SMPN 3 Batulicin'
+        WHEN 13 THEN 'SMPN 1 Batu Licin'
+        WHEN 14 THEN 'SMPN 2 Batu Licin'
+        WHEN 15 THEN 'SMPN 3 Batu Licin'
         WHEN 16 THEN 'SMPN 1 Kusan Hilir'
         WHEN 17 THEN 'SMPN 1 Kusan Hulu'
         WHEN 18 THEN 'SMPN 1 Sungai Loban'
@@ -66,9 +66,9 @@ SELECT
         WHEN 22 THEN 'SMPN 1 Mantewe'
         WHEN 23 THEN 'SMPN 1 Kuranji'
         WHEN 24 THEN 'SMPN 1 Teluk Kepayang'
-        WHEN 25 THEN 'SMPN 1 Batu Putih'
+        WHEN 25 THEN 'SMPN 1 Kusan Tengah'
         WHEN 26 THEN 'SMKN 1 Simpang Empat'
-        WHEN 27 THEN 'SMKN 1 Batulicin'
+        WHEN 27 THEN 'SMKN 1 Batu Licin'
         WHEN 28 THEN 'SMKN 1 Kusan Hilir'
         WHEN 29 THEN 'SMKN 1 Kusan Hulu'
         WHEN 30 THEN 'SMKN 1 Satui'
@@ -125,7 +125,7 @@ SELECT
         WHEN 8  THEN 'Balai Desa Mantewe'
         WHEN 9  THEN 'SMPN 1 Kuranji'
         WHEN 10 THEN 'Balai Desa Teluk Kepayang'
-        ELSE 'SMPN 1 Batu Putih'
+        ELSE 'SMPN 1 Kusan Tengah'
     END,
     CASE
         WHEN seq <= 5 THEN date('now', '+' || (seq - 1) || ' days')
