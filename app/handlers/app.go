@@ -30,24 +30,23 @@ func NewAppHandler(
 	}
 }
 
-// Dashboard renders the main app dashboard using Inertia
+// Dashboard renders the main app dashboard using Inertia. Public access.
 func (h *AppHandler) Dashboard(c *fiber.Ctx) error {
-	// Get user info from locals (set by AuthRequired middleware)
-	userID := c.Locals("user_id")
-
-	if userID == nil {
-		// Should not happen as AuthRequired middleware handles this
-		return c.Redirect("/login")
-	}
-
-	slog.Info("loading dashboard", "handler", "Dashboard", "user_id", userID)
-
-	user, err := h.userService.GetProfile(userID.(int64))
-	if err != nil {
-		slog.Error("dashboard get profile error", "handler", "Dashboard", "error", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to load dashboard: " + err.Error(),
-		})
+	// Detect user from session (works without AuthRequired middleware)
+	var user *models.User
+	sess, sessErr := h.store.Get(c)
+	if sessErr == nil {
+		if uid := sess.Get("user_id"); uid != nil {
+			rawUser, _ := h.userService.GetProfile(uid.(int64))
+			if rawUser != nil {
+				user = &models.User{
+					ID:    rawUser.ID,
+					Name:  rawUser.Name,
+					Email: rawUser.Email,
+					Role:  models.UserRole(rawUser.Role),
+				}
+			}
+		}
 	}
 
 	// Aggregate dashboard data via service. Errors are non-fatal — the

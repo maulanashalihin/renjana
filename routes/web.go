@@ -43,7 +43,7 @@ func SetupRoutes(app *fiber.App, h Handlers, store *session.Store, mailerService
 	setupRegistrationRoutes(app, h.Registration, store, csrfMiddleware)
 
 	// Setup public content routes — no auth required
-	setupPublicRoutes(app, h.Announcement, h.Contact, h.Static)
+	setupPublicRoutes(app, h.App, h.Announcement, h.Contact, h.Static)
 
 	// Setup education LMS routes — course detail, quiz, certificate
 	setupEducationRoutes(app, h.Education, store)
@@ -98,7 +98,10 @@ func setupPublicFormRoutes(app *fiber.App, complaintHandler *handlers.ComplaintH
 	app.Post("/survey", surveyHandler.Store)
 }
 
-func setupPublicRoutes(app *fiber.App, announcementHandler *handlers.AnnouncementHandler, contactHandler *handlers.ContactHandler, staticHandler *handlers.StaticHandler) {
+func setupPublicRoutes(app *fiber.App, appHandler *handlers.AppHandler, announcementHandler *handlers.AnnouncementHandler, contactHandler *handlers.ContactHandler, staticHandler *handlers.StaticHandler) {
+	// Dashboard — public, no auth required
+	app.Get("/", appHandler.Dashboard)
+
 	// Static content pages — public, no auth required
 	app.Get("/peta", staticHandler.Peta)
 	app.Get("/edukasi", staticHandler.Edukasi)
@@ -161,9 +164,6 @@ func setupAppRoutes(app *fiber.App, appHandler *handlers.AppHandler, uploadHandl
 
 	// CSRF for state-changing methods (skip GET/HEAD/OPTIONS)
 	app.Use(csrfMiddleware.Protect())
-
-	// Dashboard — di root path "/"
-	app.Get("/", appHandler.Dashboard)
 
 	// Profile
 	app.Get("/profile", appHandler.Profile)
