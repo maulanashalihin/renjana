@@ -7,6 +7,7 @@ package queries
 
 import (
 	"context"
+	"database/sql"
 )
 
 const countMediaFiltered = `-- name: CountMediaFiltered :one
@@ -26,6 +27,79 @@ func (q *Queries) CountMediaFiltered(ctx context.Context, arg CountMediaFiltered
 	var total int64
 	err := row.Scan(&total)
 	return total, err
+}
+
+const createMedia = `-- name: CreateMedia :one
+INSERT INTO renjana_media (title, file_url, media_type, caption, uploaded_by, is_published)
+VALUES (?, ?, ?, ?, ?, ?)
+RETURNING id, title, file_url, media_type, activity_id, district_id, caption, uploaded_by, uploaded_at, is_published
+`
+
+type CreateMediaParams struct {
+	Title       string         `json:"title"`
+	FileUrl     string         `json:"file_url"`
+	MediaType   string         `json:"media_type"`
+	Caption     sql.NullString `json:"caption"`
+	UploadedBy  sql.NullInt64  `json:"uploaded_by"`
+	IsPublished bool           `json:"is_published"`
+}
+
+func (q *Queries) CreateMedia(ctx context.Context, arg CreateMediaParams) (RenjanaMedium, error) {
+	row := q.db.QueryRowContext(ctx, createMedia,
+		arg.Title,
+		arg.FileUrl,
+		arg.MediaType,
+		arg.Caption,
+		arg.UploadedBy,
+		arg.IsPublished,
+	)
+	var i RenjanaMedium
+	err := row.Scan(
+		&i.ID,
+		&i.Title,
+		&i.FileUrl,
+		&i.MediaType,
+		&i.ActivityID,
+		&i.DistrictID,
+		&i.Caption,
+		&i.UploadedBy,
+		&i.UploadedAt,
+		&i.IsPublished,
+	)
+	return i, err
+}
+
+const deleteMedia = `-- name: DeleteMedia :exec
+DELETE FROM renjana_media WHERE id = ?
+`
+
+func (q *Queries) DeleteMedia(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, deleteMedia, id)
+	return err
+}
+
+const getMediaByID = `-- name: GetMediaByID :one
+SELECT id, title, file_url, media_type, activity_id, district_id, caption, uploaded_by, uploaded_at, is_published
+FROM renjana_media
+WHERE id = ?
+`
+
+func (q *Queries) GetMediaByID(ctx context.Context, id int64) (RenjanaMedium, error) {
+	row := q.db.QueryRowContext(ctx, getMediaByID, id)
+	var i RenjanaMedium
+	err := row.Scan(
+		&i.ID,
+		&i.Title,
+		&i.FileUrl,
+		&i.MediaType,
+		&i.ActivityID,
+		&i.DistrictID,
+		&i.Caption,
+		&i.UploadedBy,
+		&i.UploadedAt,
+		&i.IsPublished,
+	)
+	return i, err
 }
 
 const listMediaPaginated = `-- name: ListMediaPaginated :many
@@ -81,4 +155,45 @@ func (q *Queries) ListMediaPaginated(ctx context.Context, arg ListMediaPaginated
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateMedia = `-- name: UpdateMedia :one
+UPDATE renjana_media
+SET title = ?, file_url = ?, media_type = ?, caption = ?, is_published = ?
+WHERE id = ?
+RETURNING id, title, file_url, media_type, activity_id, district_id, caption, uploaded_by, uploaded_at, is_published
+`
+
+type UpdateMediaParams struct {
+	Title       string         `json:"title"`
+	FileUrl     string         `json:"file_url"`
+	MediaType   string         `json:"media_type"`
+	Caption     sql.NullString `json:"caption"`
+	IsPublished bool           `json:"is_published"`
+	ID          int64          `json:"id"`
+}
+
+func (q *Queries) UpdateMedia(ctx context.Context, arg UpdateMediaParams) (RenjanaMedium, error) {
+	row := q.db.QueryRowContext(ctx, updateMedia,
+		arg.Title,
+		arg.FileUrl,
+		arg.MediaType,
+		arg.Caption,
+		arg.IsPublished,
+		arg.ID,
+	)
+	var i RenjanaMedium
+	err := row.Scan(
+		&i.ID,
+		&i.Title,
+		&i.FileUrl,
+		&i.MediaType,
+		&i.ActivityID,
+		&i.DistrictID,
+		&i.Caption,
+		&i.UploadedBy,
+		&i.UploadedAt,
+		&i.IsPublished,
+	)
+	return i, err
 }

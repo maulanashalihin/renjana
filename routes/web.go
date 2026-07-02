@@ -22,10 +22,12 @@ type Handlers struct {
 	Contact       *handlers.ContactHandler
 	Organization  *handlers.OrganizationHandler
 	Onboarding    *handlers.OnboardingHandler
+	Document      *handlers.DocumentHandler
 	Static        *handlers.StaticHandler
 	UserAdmin     *handlers.UserAdminHandler
 	Complaint     *handlers.ComplaintHandler
 	Survey        *handlers.SurveyHandler
+	Gallery       *handlers.GalleryHandler
 	Education     *handlers.EducationHandler
 }
 
@@ -49,7 +51,7 @@ func SetupRoutes(app *fiber.App, h Handlers, store *session.Store, mailerService
 	setupPublicFormRoutes(app, h.Complaint, h.Survey)
 
 	// Setup app routes (protected) — semua di root path
-	setupAppRoutes(app, h.App, h.Upload, h.Volunteer, h.Activity, h.Announcement, h.Contact, h.Organization, h.Onboarding, h.Static, h.UserAdmin, h.Complaint, h.Survey, h.Education, store, csrfMiddleware)
+	setupAppRoutes(app, h.App, h.Upload, h.Volunteer, h.Activity, h.Announcement, h.Contact, h.Gallery, h.Organization, h.Onboarding, h.Document, h.Static, h.UserAdmin, h.Complaint, h.Survey, h.Education, store, csrfMiddleware)
 }
 
 // setupRegistrationRoutes is deprecated — /daftar flow removed.
@@ -102,6 +104,8 @@ func setupPublicRoutes(app *fiber.App, appHandler *handlers.AppHandler, activity
 	app.Get("/peta", staticHandler.Peta)
 	app.Get("/edukasi", staticHandler.Edukasi)
 	app.Get("/galeri", staticHandler.Galeri)
+	// Static routes must come BEFORE parameterized /galeri/:id
+	app.Get("/galeri/:id", staticHandler.Galeri)
 	app.Get("/dokumen", staticHandler.Dokumen)
 
 	// Organization profile — public, no auth required
@@ -168,7 +172,7 @@ func setupAuthRoutes(app *fiber.App, authHandler *handlers.AuthHandler, password
 	app.Post("/reset-password/:token", passwordResetHandler.ResetPassword)
 }
 
-func setupAppRoutes(app *fiber.App, appHandler *handlers.AppHandler, uploadHandler *handlers.UploadHandler, volunteerHandler *handlers.VolunteerHandler, activityHandler *handlers.ActivityHandler, announcementHandler *handlers.AnnouncementHandler, contactHandler *handlers.ContactHandler, organizationHandler *handlers.OrganizationHandler, onboardingHandler *handlers.OnboardingHandler, staticHandler *handlers.StaticHandler, userAdminHandler *handlers.UserAdminHandler, complaintHandler *handlers.ComplaintHandler, surveyHandler *handlers.SurveyHandler, educationHandler *handlers.EducationHandler, store *session.Store, csrfMiddleware *middlewares.CSRFMiddleware) {
+func setupAppRoutes(app *fiber.App, appHandler *handlers.AppHandler, uploadHandler *handlers.UploadHandler, volunteerHandler *handlers.VolunteerHandler, activityHandler *handlers.ActivityHandler, announcementHandler *handlers.AnnouncementHandler, contactHandler *handlers.ContactHandler, galleryHandler *handlers.GalleryHandler, organizationHandler *handlers.OrganizationHandler, onboardingHandler *handlers.OnboardingHandler, documentHandler *handlers.DocumentHandler, staticHandler *handlers.StaticHandler, userAdminHandler *handlers.UserAdminHandler, complaintHandler *handlers.ComplaintHandler, surveyHandler *handlers.SurveyHandler, educationHandler *handlers.EducationHandler, store *session.Store, csrfMiddleware *middlewares.CSRFMiddleware) {
 	// Protected routes (semua di root path, bukan /app/* lagi)
 	// Apply AuthRequired globally — all routes below require auth
 	app.Use(middlewares.AuthRequired(store))
@@ -200,6 +204,11 @@ func setupAppRoutes(app *fiber.App, appHandler *handlers.AppHandler, uploadHandl
 	app.Put("/berita/:id", middlewares.AdminRequired(store), announcementHandler.Update)
 	app.Delete("/berita/:id", middlewares.AdminRequired(store), announcementHandler.Destroy)
 
+	// Galeri — CRUD for admin only (GET index is public)
+	app.Post("/galeri", middlewares.AdminRequired(store), galleryHandler.Store)
+	app.Put("/galeri/:id", middlewares.AdminRequired(store), galleryHandler.Update)
+	app.Delete("/galeri/:id", middlewares.AdminRequired(store), galleryHandler.Destroy)
+
 	// Kontak — CRUD for admin only (GET index is public)
 	app.Get("/kontak/create", contactHandler.Create)
 	app.Post("/kontak", middlewares.AdminRequired(store), contactHandler.Store)
@@ -220,6 +229,11 @@ func setupAppRoutes(app *fiber.App, appHandler *handlers.AppHandler, uploadHandl
 
 	// Upload — admin only (file uploads are sensitive)
 	app.Post("/upload", middlewares.AdminRequired(store), uploadHandler.Upload)
+
+	// Dokumen CRUD — admin only
+	app.Post("/dokumen", middlewares.AdminRequired(store), documentHandler.Create)
+	app.Put("/dokumen/:id", middlewares.AdminRequired(store), documentHandler.Update)
+	app.Delete("/dokumen/:id", middlewares.AdminRequired(store), documentHandler.Destroy)
 
 	// Education LMS — authenticated users
 	app.Get("/sertifikat-saya", educationHandler.MyCertificates)

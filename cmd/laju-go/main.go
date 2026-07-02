@@ -124,10 +124,12 @@ func main() {
 		Contact:      handlers.NewContactHandler(sessionStore, inertiaService, contactService, querier),
 		Organization: handlers.NewOrganizationHandler(sessionStore, inertiaService, organizationService, volunteerService, querier),
 		Onboarding:   handlers.NewOnboardingHandler(sessionStore, inertiaService, volunteerService, querier),
+		Document:     handlers.NewDocumentHandler(sessionStore, staticService),
 		Static:       handlers.NewStaticHandler(sessionStore, inertiaService, staticService, querier),
 		UserAdmin:    handlers.NewUserAdminHandler(sessionStore, inertiaService, services.NewUserAdminService(querier), querier),
 		Complaint:    handlers.NewComplaintHandler(sessionStore, inertiaService, complaintService, querier),
 		Survey:       handlers.NewSurveyHandler(sessionStore, inertiaService, surveyService, querier),
+		Gallery:      handlers.NewGalleryHandler(sessionStore, inertiaService, staticService, querier),
 		Education:    handlers.NewEducationHandler(sessionStore, inertiaService, educationService, querier),
 	}
 
