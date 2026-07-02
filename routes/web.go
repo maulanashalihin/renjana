@@ -40,7 +40,7 @@ func SetupRoutes(app *fiber.App, h Handlers, store *session.Store, mailerService
 	setupAuthRoutes(app, h.Auth, h.PasswordReset, store, mailerService)
 
 	// Setup public content routes — no auth required
-	setupPublicRoutes(app, h.App, h.Activity, h.Announcement, h.Contact, h.Organization, h.Static, h.Volunteer)
+	setupPublicRoutes(app, h.App, h.Activity, h.Announcement, h.Contact, h.Organization, h.Static, h.Volunteer, store)
 
 	// Setup education LMS routes — course detail, quiz, certificate
 	setupEducationRoutes(app, h.Education, store)
@@ -93,7 +93,7 @@ func setupPublicFormRoutes(app *fiber.App, complaintHandler *handlers.ComplaintH
 	app.Post("/survey", surveyHandler.Store)
 }
 
-func setupPublicRoutes(app *fiber.App, appHandler *handlers.AppHandler, activityHandler *handlers.ActivityHandler, announcementHandler *handlers.AnnouncementHandler, contactHandler *handlers.ContactHandler, organizationHandler *handlers.OrganizationHandler, staticHandler *handlers.StaticHandler, volunteerHandler *handlers.VolunteerHandler) {
+func setupPublicRoutes(app *fiber.App, appHandler *handlers.AppHandler, activityHandler *handlers.ActivityHandler, announcementHandler *handlers.AnnouncementHandler, contactHandler *handlers.ContactHandler, organizationHandler *handlers.OrganizationHandler, staticHandler *handlers.StaticHandler, volunteerHandler *handlers.VolunteerHandler, store *session.Store) {
 	// Dashboard — public, no auth required
 	app.Get("/", appHandler.Dashboard)
 	app.Get("/profile", appHandler.Profile)
@@ -117,7 +117,10 @@ func setupPublicRoutes(app *fiber.App, appHandler *handlers.AppHandler, activity
 
 	// Read-only public listing
 	app.Get("/berita", announcementHandler.Index)
+	// Static routes must come BEFORE parameterized /berita/:id to avoid "create" being matched as id
+	app.Get("/berita/create", middlewares.AuthRequired(store), middlewares.AdminRequired(store), announcementHandler.Create)
 	app.Get("/berita/:id", announcementHandler.Show)
+	app.Get("/berita/:id/edit", middlewares.AuthRequired(store), middlewares.AdminRequired(store), announcementHandler.Edit)
 	app.Get("/kontak", contactHandler.Index)
 }
 
@@ -193,9 +196,7 @@ func setupAppRoutes(app *fiber.App, appHandler *handlers.AppHandler, uploadHandl
 	app.Delete("/kegiatan/:id", middlewares.AdminRequired(store), activityHandler.Destroy)
 
 	// Berita — CRUD for admin only (GET index & show are public)
-	app.Get("/berita/create", announcementHandler.Create)
 	app.Post("/berita", middlewares.AdminRequired(store), announcementHandler.Store)
-	app.Get("/berita/:id/edit", announcementHandler.Edit)
 	app.Put("/berita/:id", middlewares.AdminRequired(store), announcementHandler.Update)
 	app.Delete("/berita/:id", middlewares.AdminRequired(store), announcementHandler.Destroy)
 
