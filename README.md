@@ -11,6 +11,8 @@
 
 Dibangun di atas [Laju Go](https://github.com/maulanashalihin/laju-go) — arsitektur **Go Fiber + Svelte 5 + Inertia.js 3 + SQLite + templ** yang teruji performanya.
 
+> **🌐 Live Demo:** [renjana.maulanabuilds.com](https://renjana.maulanabuilds.com)
+
 ---
 
 ## 📋 Daftar Isi
@@ -603,7 +605,3 @@ MIT License — see [LICENSE](LICENSE).
 - WhatsApp: [0859106956390](https://wa.me/62859106956390)
 
 ---
-
-## 🌐 Live Demo
-
-[https://renjana.maulanabuilds.com](https://renjana.maulanabuilds.com)
