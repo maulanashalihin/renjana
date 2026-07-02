@@ -78,19 +78,33 @@ func (h *StaticHandler) Galeri(c *fiber.Ctx) error {
 	user := h.getUser(c)
 	page, _ := strconv.Atoi(c.Query("page", "1"))
 	perPage, _ := strconv.Atoi(c.Query("per_page", "20"))
-	mediaType := c.Query("media_type", "")
 
-	result, err := h.staticSvc.ListMedia(c.Context(), mediaType, page, perPage)
+	// Check if we're viewing an album detail
+	if albumID := c.Params("id"); albumID != "" && albumID != "create" {
+		items, err := h.staticSvc.GetMediaByAlbumID(c.Context(), albumID)
+		if err != nil || len(items) == 0 {
+			return c.Redirect("/galeri")
+		}
+		return h.inertiaService.Render(c, "app/GaleriAlbum", fiber.Map{
+			"user":  user,
+			"media": items,
+			"album": fiber.Map{
+				"title": items[0].Title,
+				"count": len(items),
+			},
+		})
+	}
+
+	result, err := h.staticSvc.ListAlbums(c.Context(), page, perPage)
 	if err != nil {
-		slog.Error("media list error", "err", err)
+		slog.Error("album list error", "err", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to load media: " + err.Error(),
+			"error": "Failed to load albums: " + err.Error(),
 		})
 	}
 	return h.inertiaService.Render(c, "app/Galeri", fiber.Map{
-		"user":         user,
-		"media":        result,
-		"current_type": mediaType,
+		"user":   user,
+		"albums": result,
 	})
 }
 

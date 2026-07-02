@@ -1,6 +1,7 @@
 <script lang="ts">
     import AppLayout from "../../components/AppLayout.svelte";
-    import { ArrowLeft, Calendar, Clock, User } from "lucide-svelte";
+    import { ArrowLeft, Calendar, Share2, Check } from "lucide-svelte";
+    import { inertia } from "@inertiajs/svelte";
 
     interface AppUser {
         id: number;
@@ -31,6 +32,8 @@
 
     let { user, announcement }: Props = $props();
 
+    let shared = $state(false);
+
     function dateLong(dateStr: string): string {
         if (!dateStr) return "";
         const d = new Date(dateStr);
@@ -38,12 +41,24 @@
         const months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
         return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
     }
+
+    async function share() {
+        const url = window.location.href;
+        const title = announcement?.title || "Berita";
+        if (navigator.share) {
+            await navigator.share({ title, url });
+        } else {
+            await navigator.clipboard.writeText(url);
+            shared = true;
+            setTimeout(() => shared = false, 2000);
+        }
+    }
 </script>
 
 <AppLayout {user} pageTitle={announcement?.title || "Berita"} pageSubtitle="Baca berita selengkapnya" activeMenu="Berita">
 
     <div class="max-w-3xl mx-auto">
-        <a href="/berita" class="inline-flex items-center gap-1.5 text-sm text-renjana-600 dark:text-renjana-400 hover:underline mb-6">
+        <a href="/berita" use:inertia class="inline-flex items-center gap-1.5 text-sm text-renjana-600 dark:text-renjana-400 hover:underline mb-6">
             <ArrowLeft class="w-4 h-4" /> Kembali ke Berita
         </a>
 
@@ -71,6 +86,21 @@
                         <Calendar class="w-4 h-4" />
                         {dateLong(announcement.published_at)}
                     </span>
+                    <button
+                        onclick={share}
+                        class="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition
+                            {shared
+                                ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+                                : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'}"
+                    >
+                        {#if shared}
+                            <Check class="w-3.5 h-3.5" />
+                            Tersalin
+                        {:else}
+                            <Share2 class="w-3.5 h-3.5" />
+                            Bagikan
+                        {/if}
+                    </button>
                 </div>
 
                 {#if announcement.content}

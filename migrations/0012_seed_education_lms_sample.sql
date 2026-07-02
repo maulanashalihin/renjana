@@ -11,7 +11,7 @@ VALUES (
     'SMA',
     45,
     1,
-    '/public/images/edukasi-visual.png',
+    '/public/images/edukasi-gempa.jpg',
     70,
     4,
     1,

@@ -63,8 +63,8 @@ func (h *DocumentHandler) authUserID(c *fiber.Ctx) (int64, error) {
 	return id, nil
 }
 
-// saveFile saves the uploaded file to storage and returns the URL + size.
-func (h *DocumentHandler) saveFile(c *fiber.Ctx, file *multipart.FileHeader, userID int64) (string, int64, error) {
+// saveFile saves the uploaded file to storage and returns the URL + size + original name.
+func (h *DocumentHandler) saveFile(c *fiber.Ctx, file *multipart.FileHeader, userID int64) (string, int64, string, error) {
 	contentType := file.Header.Get("Content-Type")
 	isAllowed := false
 	for _, allowed := range h.uploadCfg.allowedTypes {
@@ -74,22 +74,23 @@ func (h *DocumentHandler) saveFile(c *fiber.Ctx, file *multipart.FileHeader, use
 		}
 	}
 	if !isAllowed {
-		return "", 0, fmt.Errorf("invalid file type. Allowed: PDF, DOCX, XLS, XLSX, PPT, PPTX, TXT")
+		return "", 0, "", fmt.Errorf("invalid file type. Allowed: PDF, DOCX, XLS, XLSX, PPT, PPTX, TXT")
 	}
 	if file.Size > h.uploadCfg.maxSize {
-		return "", 0, fmt.Errorf("file too large. Max: %d MB", h.uploadCfg.maxSize/1024/1024)
+		return "", 0, "", fmt.Errorf("file too large. Max: %d MB", h.uploadCfg.maxSize/1024/1024)
 	}
 
-	ext := filepath.Ext(file.Filename)
+	originalName := file.Filename
+	ext := filepath.Ext(originalName)
 	filename := fmt.Sprintf("%d_%d%s", userID, time.Now().UnixNano(), ext)
 	uploadPath := filepath.Join("storage", h.uploadCfg.folder, filename)
 
 	if err := c.SaveFile(file, uploadPath); err != nil {
-		return "", 0, fmt.Errorf("gagal menyimpan file: %w", err)
+		return "", 0, "", fmt.Errorf("gagal menyimpan file: %w", err)
 	}
 
 	url := fmt.Sprintf("/storage/%s/%s", h.uploadCfg.folder, filename)
-	return url, file.Size, nil
+	return url, file.Size, originalName, nil
 }
 
 // Create — POST /dokumen (admin only)
@@ -112,7 +113,7 @@ func (h *DocumentHandler) Create(c *fiber.Ctx) error {
 		return c.Redirect("/dokumen", fiber.StatusSeeOther)
 	}
 
-	fileURL, fileSize, err := h.saveFile(c, file, userID)
+	fileURL, fileSize, originalName, err := h.saveFile(c, file, userID)
 	if err != nil {
 		slog.Error("document: upload failed", "err", err)
 		h.store.Flash(c, "error", err.Error())
@@ -120,13 +121,14 @@ func (h *DocumentHandler) Create(c *fiber.Ctx) error {
 	}
 
 	_, err = h.staticSvc.CreateDocument(c.Context(), services.CreateDocumentRequest{
-		Title:       title,
-		FileURL:     fileURL,
-		Category:    category,
-		Version:     version,
-		FileSize:    fileSize,
-		Description: description,
-		UploadedBy:  userID,
+		Title:        title,
+		FileURL:      fileURL,
+		Category:     category,
+		Version:      version,
+		FileSize:     fileSize,
+		Description:  description,
+		OriginalName: originalName,
+		UploadedBy:   userID,
 	})
 	if err != nil {
 		slog.Error("document: create failed", "err", err, "user_id", userID)
@@ -139,6 +141,7 @@ func (h *DocumentHandler) Create(c *fiber.Ctx) error {
 }
 
 // Update — PUT /dokumen/:id (admin only)
+// Accepts both multipart/form-data (with optional file) and JSON (metadata only).
 func (h *DocumentHandler) Update(c *fiber.Ctx) error {
 	_, err := h.authUserID(c)
 	if err != nil {
@@ -146,13 +149,62 @@ func (h *DocumentHandler) Update(c *fiber.Ctx) error {
 	}
 	id, _ := strconv.ParseInt(c.Params("id"), 10, 64)
 
-	var req services.UpdateDocumentRequest
-	if err := c.BodyParser(&req); err != nil {
-		return c.Redirect(fmt.Sprintf("/dokumen?error=invalid&edit=%d", id), fiber.StatusSeeOther)
+	// Read form values (works for both multipart and URL-encoded)
+	title := c.FormValue("title", "")
+	category := c.FormValue("category", "")
+	description := c.FormValue("description", "")
+	versionStr := c.FormValue("version", "1")
+	version, _ := strconv.ParseInt(versionStr, 10, 64)
+
+	if title == "" {
+		h.store.Flash(c, "error", "Judul dokumen wajib diisi.")
+		return c.Redirect("/dokumen", fiber.StatusSeeOther)
+	}
+
+	// Get the existing document to preserve file_url if no new file
+	existing, err := h.staticSvc.GetDocumentByID(c.Context(), id)
+	if err != nil || existing == nil {
+		h.store.Flash(c, "error", "Dokumen tidak ditemukan.")
+		return c.Redirect("/dokumen", fiber.StatusSeeOther)
+	}
+
+	fileURL := existing.FileURL
+	fileSize := existing.FileSize
+	originalName := existing.OriginalName
+
+	// Check if a new file was uploaded
+	file, fileErr := c.FormFile("file")
+	if fileErr == nil && file != nil {
+		var newFileURL string
+		var newFileSize int64
+		var newOriginalName string
+		newFileURL, newFileSize, newOriginalName, err = h.saveFile(c, file, existing.UploadedBy)
+		if err != nil {
+			slog.Error("document: file upload failed on update", "err", err)
+			h.store.Flash(c, "error", err.Error())
+			return c.Redirect("/dokumen", fiber.StatusSeeOther)
+		}
+		fileURL = newFileURL
+		fileSize = newFileSize
+		originalName = newOriginalName
+
+		// TODO: delete old file from storage
+	}
+
+	req := services.UpdateDocumentRequest{
+		Title:        title,
+		FileURL:      fileURL,
+		Category:     category,
+		Version:      version,
+		FileSize:     fileSize,
+		Description:  description,
+		OriginalName: originalName,
 	}
 
 	if err := h.staticSvc.UpdateDocument(c.Context(), id, req); err != nil {
-		return c.Redirect(fmt.Sprintf("/dokumen?error=%s&edit=%d", err.Error(), id), fiber.StatusSeeOther)
+		slog.Error("document: update failed", "err", err, "id", id)
+		h.store.Flash(c, "error", err.Error())
+		return c.Redirect("/dokumen", fiber.StatusSeeOther)
 	}
 
 	h.store.Flash(c, "success", "Dokumen berhasil diperbarui.")

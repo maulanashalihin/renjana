@@ -123,15 +123,16 @@ type RenjanaDistrict struct {
 }
 
 type RenjanaDocument struct {
-	ID          int64          `json:"id"`
-	Title       string         `json:"title"`
-	FileUrl     string         `json:"file_url"`
-	Category    string         `json:"category"`
-	Version     int64          `json:"version"`
-	FileSize    sql.NullInt64  `json:"file_size"`
-	Description sql.NullString `json:"description"`
-	UploadedBy  sql.NullInt64  `json:"uploaded_by"`
-	UploadedAt  time.Time      `json:"uploaded_at"`
+	ID           int64          `json:"id"`
+	Title        string         `json:"title"`
+	FileUrl      string         `json:"file_url"`
+	Category     string         `json:"category"`
+	Version      int64          `json:"version"`
+	FileSize     sql.NullInt64  `json:"file_size"`
+	Description  sql.NullString `json:"description"`
+	UploadedBy   sql.NullInt64  `json:"uploaded_by"`
+	UploadedAt   time.Time      `json:"uploaded_at"`
+	OriginalName string         `json:"original_name"`
 }
 
 type RenjanaEducation struct {
@@ -172,6 +173,7 @@ type RenjanaMedium struct {
 	UploadedBy  sql.NullInt64  `json:"uploaded_by"`
 	UploadedAt  time.Time      `json:"uploaded_at"`
 	IsPublished bool           `json:"is_published"`
+	AlbumID     sql.NullString `json:"album_id"`
 }
 
 type RenjanaOrganization struct {

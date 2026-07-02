@@ -19,7 +19,6 @@ import (
 	"github.com/maulanashalihin/laju-go/app/session"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"golang.org/x/crypto/bcrypt"
 )
 
 func setupTestApp(t *testing.T) (*fiber.App, *queries.Querier) {
@@ -60,7 +59,7 @@ func setupTestApp(t *testing.T) (*fiber.App, *queries.Querier) {
 	inertiaSvc := services.NewInertiaService(services.NewAssetService("", "", false), store)
 
 	app := fiber.New()
-	h := NewAuthHandler(authSvc, userSvc, store, inertiaSvc)
+	h := NewAuthHandler(authSvc, userSvc, store, inertiaSvc, querier)
 	app.Get("/login", h.ShowLoginForm)
 	app.Get("/register", h.ShowRegisterForm)
 	app.Post("/register", h.Register)
@@ -73,9 +72,9 @@ func setupTestApp(t *testing.T) (*fiber.App, *queries.Querier) {
 
 func hashPW(t *testing.T, pw string) string {
 	t.Helper()
-	h, err := bcrypt.GenerateFromPassword([]byte(pw), bcrypt.DefaultCost)
+	h, err := services.HashPassword(pw)
 	require.NoError(t, err)
-	return string(h)
+	return h
 }
 
 func TestShowForms(t *testing.T) {

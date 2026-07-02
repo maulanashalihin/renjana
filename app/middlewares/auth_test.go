@@ -16,10 +16,10 @@ import (
 	"github.com/maulanashalihin/laju-go/app/cache"
 	"github.com/maulanashalihin/laju-go/app/models"
 	"github.com/maulanashalihin/laju-go/app/queries"
+	"github.com/maulanashalihin/laju-go/app/services"
 	"github.com/maulanashalihin/laju-go/app/session"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"golang.org/x/crypto/bcrypt"
 )
 
 // setupRBACTestDB creates an in-memory SQLite DB with users + sessions tables
@@ -41,14 +41,15 @@ func setupRBACTestDB(t *testing.T) *queries.Querier {
 
 func createRBACUser(t *testing.T, q *queries.Querier, email, name string, role models.UserRole) *models.User {
 	t.Helper()
-	hash, _ := bcrypt.GenerateFromPassword([]byte("password123"), bcrypt.DefaultCost)
+	hash, err := services.HashPassword("password123")
+	require.NoError(t, err)
 	user := &models.User{
 		Email:    email,
 		Name:     name,
 		Password: sql.NullString{String: string(hash), Valid: true},
 		Role:     role,
 	}
-	err := q.CreateUser(context.Background(), user)
+	err = q.CreateUser(context.Background(), user)
 	require.NoError(t, err)
 	return user
 }

@@ -20,7 +20,6 @@ import (
 	"github.com/maulanashalihin/laju-go/app/session"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"golang.org/x/crypto/bcrypt"
 )
 
 // ---------- Shared test helpers ----------
@@ -46,7 +45,7 @@ func setupHandlerTestDB(t *testing.T, extraSchema string) (*sql.DB, *queries.Que
 
 func seedHandlerUser(t *testing.T, q *queries.Querier, email, name string) *models.User {
 	t.Helper()
-	hash, err := bcrypt.GenerateFromPassword([]byte("password123"), bcrypt.DefaultCost)
+	hash, err := services.HashPassword("password123")
 	require.NoError(t, err)
 	user := &models.User{
 		Email:    email,

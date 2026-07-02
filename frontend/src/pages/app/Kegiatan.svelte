@@ -3,6 +3,7 @@
     import PageHeader from "../../lib/components/PageHeader.svelte";
     import EmptyState from "../../lib/components/EmptyState.svelte";
     import { CalendarDays, Calendar, Clock, MapPin, Sparkles, Plus, Pencil, Trash2, X } from "lucide-svelte";
+    import { inertia } from "@inertiajs/svelte";
 
     interface User {
         id: number;
@@ -343,13 +344,13 @@
     <!-- Pagination -->
     {#if activities && activities.total_pages > 1}
         <div class="mt-8 flex items-center justify-center gap-2">
-            <a href="/kegiatan?{buildQuery()}&page={activities.current_page - 1}" class="inline-flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 {activities.has_prev ? 'hover:border-renjana-500' : 'opacity-50 pointer-events-none'} transition">
+            <a href="/kegiatan?{buildQuery()}&page={activities.current_page - 1}" use:inertia class="inline-flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 {activities.has_prev ? 'hover:border-renjana-500' : 'opacity-50 pointer-events-none'} transition">
                 Sebelumnya
             </a>
             <span class="px-3 py-2 text-sm text-neutral-700 dark:text-neutral-300">
                 Halaman {activities.current_page} dari {activities.total_pages}
             </span>
-            <a href="/kegiatan?{buildQuery()}&page={activities.current_page + 1}" class="inline-flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 {activities.has_next ? 'hover:border-renjana-500' : 'opacity-50 pointer-events-none'} transition">
+            <a href="/kegiatan?{buildQuery()}&page={activities.current_page + 1}" use:inertia class="inline-flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 {activities.has_next ? 'hover:border-renjana-500' : 'opacity-50 pointer-events-none'} transition">
                 Selanjutnya
             </a>
         </div>

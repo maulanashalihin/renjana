@@ -23,7 +23,7 @@ func setupStaticTestDB(t *testing.T) *queries.Querier {
 		CREATE INDEX idx_renjana_education_category ON renjana_education(category, is_published);
 		CREATE TABLE renjana_media (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, file_url TEXT NOT NULL, media_type TEXT NOT NULL DEFAULT 'image', activity_id INTEGER, district_id INTEGER, caption TEXT, uploaded_by INTEGER, uploaded_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, is_published BOOLEAN NOT NULL DEFAULT 1);
 		CREATE INDEX idx_renjana_media_type ON renjana_media(media_type, is_published);
-		CREATE TABLE renjana_documents (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, file_url TEXT NOT NULL, category TEXT NOT NULL DEFAULT 'SOP', version INTEGER NOT NULL DEFAULT 1, file_size INTEGER, description TEXT, uploaded_by INTEGER, uploaded_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP);
+		CREATE TABLE renjana_documents (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, file_url TEXT NOT NULL, category TEXT NOT NULL DEFAULT 'SOP', version INTEGER NOT NULL DEFAULT 1, file_size INTEGER, description TEXT, original_name TEXT NOT NULL DEFAULT '', uploaded_by INTEGER, uploaded_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP);
 		CREATE INDEX idx_renjana_documents_category ON renjana_documents(category, uploaded_at DESC);
 		
 	`)

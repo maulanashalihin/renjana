@@ -93,7 +93,13 @@ func main() {
 		GoogleClientID:     cfg.GoogleClientID,
 		GoogleClientSecret: cfg.GoogleClientSecret,
 		GoogleRedirectURL:  cfg.GoogleRedirectURL,
-		BcryptCost:         cfg.BcryptCost,
+		Argon2Params: services.Argon2Params{
+			Memory:      cfg.Argon2Memory,
+			Iterations:  cfg.Argon2Iterations,
+			Parallelism: cfg.Argon2Threads,
+			SaltLength:  16,
+			KeyLength:   32,
+		},
 	})
 	userService := services.NewUserService(querier, userCache)
 	dashboardService := services.NewDashboardService(querier)

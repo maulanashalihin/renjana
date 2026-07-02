@@ -102,25 +102,22 @@ func (h *AnnouncementHandler) Create(c *fiber.Ctx) error {
 func (h *AnnouncementHandler) Store(c *fiber.Ctx) error {
 	userID, _, err := h.authUser(c)
 	if err != nil {
-		return c.Redirect("/login")
+		return c.Redirect("/login", fiber.StatusSeeOther)
 	}
 
-	req := services.CreateAnnouncementRequest{
-		Title:       c.FormValue("title"),
-		Content:     c.FormValue("content"),
-		Category:    c.FormValue("category"),
-		Body:        c.FormValue("body"),
-		CoverURL:    c.FormValue("cover_url"),
-		AuthorID:    userID,
-		IsPublished: c.FormValue("is_published") == "true",
+	var req services.CreateAnnouncementRequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Redirect("/berita?error=invalid_body", fiber.StatusSeeOther)
 	}
+
+	req.AuthorID = userID
 
 	_, err = h.announcementSvc.Create(c.Context(), req)
 	if err != nil {
-		return c.Redirect("/berita?error=" + err.Error())
+		return c.Redirect("/berita?error="+err.Error(), fiber.StatusSeeOther)
 	}
 
-	return c.Redirect("/berita?success=created")
+	return c.Redirect("/berita?success=created", fiber.StatusSeeOther)
 }
 
 // Edit — render with edit modal opened.
@@ -146,20 +143,20 @@ func (h *AnnouncementHandler) Edit(c *fiber.Ctx) error {
 func (h *AnnouncementHandler) Update(c *fiber.Ctx) error {
 	_, _, err := h.authUser(c)
 	if err != nil {
-		return c.Redirect("/login")
+		return c.Redirect("/login", fiber.StatusSeeOther)
 	}
 	id, _ := strconv.ParseInt(c.Params("id"), 10, 64)
 
 	var req services.UpdateAnnouncementRequest
 	if err := c.BodyParser(&req); err != nil {
-		return c.Redirect(fmt.Sprintf("/berita?action=edit&id=%d&error=invalid", id))
+		return c.Redirect(fmt.Sprintf("/berita?action=edit&id=%d&error=invalid", id), fiber.StatusSeeOther)
 	}
 
 	if err := h.announcementSvc.Update(c.Context(), id, req); err != nil {
-		return c.Redirect(fmt.Sprintf("/berita?action=edit&id=%d&error=%s", id, err.Error()))
+		return c.Redirect(fmt.Sprintf("/berita?action=edit&id=%d&error=%s", id, err.Error()), fiber.StatusSeeOther)
 	}
 
-	return c.Redirect("/berita?success=updated")
+	return c.Redirect("/berita?success=updated", fiber.StatusSeeOther)
 }
 
 // Destroy — handle DELETE /berita/:id.
@@ -175,7 +172,7 @@ func (h *AnnouncementHandler) Destroy(c *fiber.Ctx) error {
 			"error": err.Error(),
 		})
 	}
-	return c.Redirect("/berita?success=deleted")
+	return c.Redirect("/berita?success=deleted", fiber.StatusSeeOther)
 }
 
 // Show — view detail.

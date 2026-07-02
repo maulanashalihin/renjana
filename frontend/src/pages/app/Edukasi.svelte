@@ -3,6 +3,7 @@
     import PageHeader from "../../lib/components/PageHeader.svelte";
     import EmptyState from "../../lib/components/EmptyState.svelte";
     import { BookOpen, Clock, User, Search, GraduationCap, ArrowRight, Award, Layers, Sparkles } from "lucide-svelte";
+    import { inertia } from "@inertiajs/svelte";
 
     interface AppUser {
         id: number;
@@ -100,23 +101,31 @@
 
     {#if featured}
         {@const e = featured}
-        <a href={courseUrl(e.id)} class="block mb-8 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 overflow-hidden hover:shadow-xl transition group">
+        <a href={courseUrl(e.id)} use:inertia class="block mb-8 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 overflow-hidden hover:shadow-xl transition group">
             <div class="grid grid-cols-1 lg:grid-cols-2">
-                <div class="relative aspect-video lg:aspect-auto p-8 lg:p-12 flex flex-col justify-between min-h-[280px] bg-gradient-to-br from-renjana-500 to-amber-500 text-white">
-                    <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/20 backdrop-blur text-xs font-semibold w-fit">
-                        <Sparkles class="w-3 h-3" />
-                        Kursus Unggulan
-                    </div>
-                    <div class="space-y-2">
-                        {#if e.total_modules}
-                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-white/20 backdrop-blur">
-                                <Layers class="w-3 h-3" />
-                                {e.total_modules} Modul
+                <div class="relative aspect-video lg:aspect-auto min-h-[280px] overflow-hidden">
+                    {#if e.cover_image}
+                        <img src={e.cover_image} alt={e.title} class="absolute inset-0 w-full h-full object-cover" />
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
+                    {:else}
+                        <div class="absolute inset-0 bg-gradient-to-br from-renjana-500 to-amber-500"></div>
+                    {/if}
+                    <div class="relative h-full p-8 lg:p-12 flex flex-col justify-between text-white">
+                        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/20 backdrop-blur text-xs font-semibold w-fit">
+                            <Sparkles class="w-3 h-3" />
+                            Kursus Unggulan
+                        </div>
+                        <div class="space-y-2">
+                            {#if e.total_modules}
+                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-white/20 backdrop-blur">
+                                    <Layers class="w-3 h-3" />
+                                    {e.total_modules} Modul
+                                </span>
+                            {/if}
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-white/95 text-neutral-900 ml-2">
+                                {e.category}
                             </span>
-                        {/if}
-                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-white/95 text-neutral-900 ml-2">
-                            {e.category}
-                        </span>
+                        </div>
                     </div>
                 </div>
                 <div class="p-6 lg:p-8 flex flex-col justify-center">
@@ -144,9 +153,16 @@
     {#if rest.length > 0}
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {#each rest as e}
-                <a href={courseUrl(e.id)} class="group rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 overflow-hidden hover:shadow-lg hover:-translate-y-0.5 transition flex flex-col">
-                    <div class="relative aspect-video bg-gradient-to-br from-renjana-100 to-amber-100 dark:from-renjana-900/40 dark:to-amber-900/40 flex items-center justify-center">
-                        <GraduationCap class="w-12 h-12 text-renjana-500 opacity-50" />
+                <a href={courseUrl(e.id)} use:inertia class="group rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 overflow-hidden hover:shadow-lg hover:-translate-y-0.5 transition flex flex-col">
+                    <div class="relative aspect-video overflow-hidden">
+                        {#if e.cover_image}
+                            <img src={e.cover_image} alt={e.title} class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
+                        {:else}
+                            <div class="absolute inset-0 bg-gradient-to-br from-renjana-100 to-amber-100 dark:from-renjana-900/40 dark:to-amber-900/40 flex items-center justify-center">
+                                <GraduationCap class="w-12 h-12 text-renjana-500 opacity-50" />
+                            </div>
+                        {/if}
                         <span class="absolute top-3 left-3 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold {categoryColors[e.category] || 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700'}">
                             {e.category}
                         </span>

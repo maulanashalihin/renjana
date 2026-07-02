@@ -2,7 +2,8 @@
     import AppLayout from "../../components/AppLayout.svelte";
     import PageHeader from "../../lib/components/PageHeader.svelte";
     import EmptyState from "../../lib/components/EmptyState.svelte";
-    import { Award, Download, ArrowRight, Calendar, Trophy } from "lucide-svelte";
+    import { Award, ArrowRight, Calendar, Trophy } from "lucide-svelte";
+    import { inertia } from "@inertiajs/svelte";
 
     interface AppUser {
         id: number;
@@ -61,7 +62,7 @@
             icon={Award}
         />
         <div class="flex justify-center">
-            <a href="/edukasi" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-renjana-500 hover:bg-renjana-600 text-white text-sm font-semibold transition">
+            <a href="/edukasi" use:inertia class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-renjana-500 hover:bg-renjana-600 text-white text-sm font-semibold transition">
                 Lihat Kursus
                 <ArrowRight class="w-4 h-4" />
             </a>
@@ -69,7 +70,7 @@
     {:else}
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {#each certificates as cert}
-                <a href="/edukasi/sertifikat/{cert.certificate_code}" class="group rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 overflow-hidden hover:shadow-lg hover:-translate-y-0.5 transition flex flex-col">
+                <a href="/edukasi/sertifikat/{cert.certificate_code}" use:inertia class="group rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 overflow-hidden hover:shadow-lg hover:-translate-y-0.5 transition flex flex-col">
                     <div class="bg-gradient-to-r from-renjana-500 to-amber-500 p-6 text-white text-center relative">
                         <div class="absolute inset-0 opacity-10">
                             <div class="absolute top-3 left-5 w-16 h-16 rounded-full bg-white"></div>

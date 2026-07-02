@@ -8,7 +8,6 @@ import (
 
 	"github.com/maulanashalihin/laju-go/app/models"
 	"github.com/maulanashalihin/laju-go/app/queries"
-	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 )
@@ -21,7 +20,7 @@ var (
 type AuthService struct {
 	querier       *queries.Querier
 	sessionSecret string
-	bcryptCost    int
+	argon2Params  Argon2Params
 	oauthConfig   *oauth2.Config
 }
 
@@ -30,18 +29,30 @@ type AuthServiceConfig struct {
 	GoogleClientID     string
 	GoogleClientSecret string
 	GoogleRedirectURL  string
-	BcryptCost         int
+	Argon2Params       Argon2Params
 }
 
 func NewAuthService(querier *queries.Querier, cfg AuthServiceConfig) *AuthService {
-	bcryptCost := cfg.BcryptCost
-	if bcryptCost < bcrypt.MinCost || bcryptCost > bcrypt.MaxCost {
-		bcryptCost = bcrypt.DefaultCost
+	argonParams := cfg.Argon2Params
+	if argonParams.Memory == 0 {
+		argonParams.Memory = DefaultArgon2Params.Memory
+	}
+	if argonParams.Iterations == 0 {
+		argonParams.Iterations = DefaultArgon2Params.Iterations
+	}
+	if argonParams.Parallelism == 0 {
+		argonParams.Parallelism = DefaultArgon2Params.Parallelism
+	}
+	if argonParams.SaltLength == 0 {
+		argonParams.SaltLength = DefaultArgon2Params.SaltLength
+	}
+	if argonParams.KeyLength == 0 {
+		argonParams.KeyLength = DefaultArgon2Params.KeyLength
 	}
 	return &AuthService{
 		querier:       querier,
 		sessionSecret: cfg.SessionSecret,
-		bcryptCost:    bcryptCost,
+		argon2Params:  argonParams,
 		oauthConfig: &oauth2.Config{
 			ClientID:     cfg.GoogleClientID,
 			ClientSecret: cfg.GoogleClientSecret,
@@ -136,7 +147,7 @@ func (s *AuthService) Register(name, email, password string) (*models.User, erro
 		return nil, err
 	}
 
-	// Hash password with configured bcrypt cost
+	// Hash password with configured argon2id params
 	hashedPassword, err := s.hashPassword(password)
 	if err != nil {
 		return nil, err
@@ -188,25 +199,9 @@ func (s *AuthService) GetUserByID(id int64) (*models.User, error) {
 	return s.querier.GetUserByID(context.Background(), id)
 }
 
-// hashPassword hashes a password using bcrypt with the configured cost.
-// When called as a method on AuthService, uses the service's bcryptCost.
-// When called as a standalone function (legacy), uses bcrypt.DefaultCost.
+// hashPassword hashes a password using argon2id with the configured params.
 func (s *AuthService) hashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), s.bcryptCost)
-	return string(bytes), err
-}
-
-// hashPassword is a package-level function for backward compatibility.
-// Prefer using the AuthService method when possible.
-func hashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	return string(bytes), err
-}
-
-// checkPassword checks if a password matches a hash
-func checkPassword(hash, password string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-	return err == nil
+	return generateFromPassword(password, s.argon2Params)
 }
 
 // GetOAuthURL returns the OAuth URL for Google login

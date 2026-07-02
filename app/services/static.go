@@ -207,11 +207,91 @@ func (s *StaticService) ListMedia(ctx context.Context, mediaType string, page, p
 	return BuildPagination(items, page, perPage, total), nil
 }
 
+// AlbumItem represents one album (grouped gallery) for the listing page.
+type AlbumItem struct {
+	AlbumID     string    `json:"album_id"`
+	Title       string    `json:"title"`
+	Caption     string    `json:"caption"`
+	IsPublished bool      `json:"is_published"`
+	UploadedAt  time.Time `json:"uploaded_at"`
+	CoverURL    string    `json:"cover_url"`
+	ItemCount   int64     `json:"item_count"`
+}
+
+// ListAlbums returns paginated albums (grouped by album_id).
+func (s *StaticService) ListAlbums(ctx context.Context, page, perPage int) (*PaginationResult, error) {
+	page, perPage, offset := NormalizePagination(page, perPage)
+
+	rows, err := s.querier.ListAlbumsPaginated(ctx, queries.ListAlbumsPaginatedParams{
+		Column1: int64(1),
+		Limit:   int64(perPage),
+		Offset:  int64(offset),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	items := make([]AlbumItem, 0, len(rows))
+	for _, r := range rows {
+		caption := ""
+		if r.Caption.Valid {
+			caption = r.Caption.String
+		}
+		items = append(items, AlbumItem{
+			AlbumID:     r.AlbumID.String,
+			Title:       r.Title,
+			Caption:     caption,
+			IsPublished: r.IsPublished,
+			UploadedAt:  r.UploadedAt,
+			CoverURL:    r.CoverUrl,
+			ItemCount:   r.ItemCount,
+		})
+	}
+
+	total, err := s.querier.CountAlbums(ctx, int64(1))
+	if err != nil {
+		return nil, err
+	}
+	return BuildPagination(items, page, perPage, total), nil
+}
+
+// GetMediaByAlbumID returns all media items in an album.
+func (s *StaticService) GetMediaByAlbumID(ctx context.Context, albumID string) ([]MediaItem, error) {
+	rows, err := s.querier.GetMediaByAlbumID(ctx, sql.NullString{String: albumID, Valid: true})
+	if err != nil {
+		return nil, err
+	}
+	items := make([]MediaItem, 0, len(rows))
+	for _, r := range rows {
+		caption := ""
+		if r.Caption.Valid {
+			caption = r.Caption.String
+		}
+		items = append(items, MediaItem{
+			ID:          r.ID,
+			Title:       r.Title,
+			FileURL:     r.FileUrl,
+			MediaType:   r.MediaType,
+			ActivityID:  r.ActivityID.Int64,
+			DistrictID:  r.DistrictID.Int64,
+			Caption:     caption,
+			UploadedBy:  r.UploadedBy.Int64,
+			UploadedAt:  r.UploadedAt,
+			IsPublished: r.IsPublished,
+		})
+	}
+	return items, nil
+}
+
 // CreateMedia inserts a new gallery item.
-func (s *StaticService) CreateMedia(ctx context.Context, title, fileURL, mediaType, caption string, uploadedBy int64, isPublished bool) (*MediaItem, error) {
+func (s *StaticService) CreateMedia(ctx context.Context, title, fileURL, mediaType, caption string, uploadedBy int64, isPublished bool, albumID string) (*MediaItem, error) {
 	var uploader sql.NullInt64
 	if uploadedBy > 0 {
 		uploader = sql.NullInt64{Int64: uploadedBy, Valid: true}
+	}
+	var album sql.NullString
+	if albumID != "" {
+		album = sql.NullString{String: albumID, Valid: true}
 	}
 	r, err := s.querier.CreateMedia(ctx, queries.CreateMediaParams{
 		Title:       title,
@@ -220,6 +300,7 @@ func (s *StaticService) CreateMedia(ctx context.Context, title, fileURL, mediaTy
 		Caption:     sql.NullString{String: caption, Valid: caption != ""},
 		UploadedBy:  uploader,
 		IsPublished: isPublished,
+		AlbumID:     album,
 	})
 	if err != nil {
 		return nil, err
@@ -278,20 +359,26 @@ func (s *StaticService) DeleteMedia(ctx context.Context, id int64) error {
 	return s.querier.DeleteMedia(ctx, id)
 }
 
+// DeleteMediaByAlbumID deletes all media items in an album.
+func (s *StaticService) DeleteMediaByAlbumID(ctx context.Context, albumID string) error {
+	return s.querier.DeleteMediaByAlbumID(ctx, sql.NullString{String: albumID, Valid: true})
+}
+
 // ---------------------------------------------------------------------------
 // Documents
 // ---------------------------------------------------------------------------
 
 type DocumentItem struct {
-	ID          int64     `json:"id"`
-	Title       string    `json:"title"`
-	FileURL     string    `json:"file_url"`
-	Category    string    `json:"category"`
-	Version     int64     `json:"version"`
-	FileSize    int64     `json:"file_size"`
-	Description string    `json:"description"`
-	UploadedBy  int64     `json:"uploaded_by"`
-	UploadedAt  time.Time `json:"uploaded_at"`
+	ID           int64     `json:"id"`
+	Title        string    `json:"title"`
+	FileURL      string    `json:"file_url"`
+	Category     string    `json:"category"`
+	Version      int64     `json:"version"`
+	FileSize     int64     `json:"file_size"`
+	Description  string    `json:"description"`
+	OriginalName string    `json:"original_name"`
+	UploadedBy   int64     `json:"uploaded_by"`
+	UploadedAt   time.Time `json:"uploaded_at"`
 }
 
 // ListDocuments returns paginated documents.
@@ -321,15 +408,16 @@ func (s *StaticService) ListDocuments(ctx context.Context, category string, page
 			desc = r.Description.String
 		}
 		items = append(items, DocumentItem{
-			ID:          r.ID,
-			Title:       r.Title,
-			FileURL:     r.FileUrl,
-			Category:    r.Category,
-			Version:     r.Version,
-			FileSize:    nullToInt64(r.FileSize),
-			Description: desc,
-			UploadedBy:  r.UploadedBy.Int64,
-			UploadedAt:  r.UploadedAt,
+			ID:           r.ID,
+			Title:        r.Title,
+			FileURL:      r.FileUrl,
+			Category:     r.Category,
+			Version:      r.Version,
+			FileSize:     nullToInt64(r.FileSize),
+			Description:  desc,
+			OriginalName: r.OriginalName,
+			UploadedBy:   r.UploadedBy.Int64,
+			UploadedAt:   r.UploadedAt,
 		})
 	}
 
@@ -342,23 +430,25 @@ func (s *StaticService) ListDocuments(ctx context.Context, category string, page
 
 // CreateDocumentRequest — input for creating a document.
 type CreateDocumentRequest struct {
-	Title       string `json:"title"`
-	FileURL     string `json:"file_url"`
-	Category    string `json:"category"`
-	Version     int64  `json:"version"`
-	FileSize    int64  `json:"file_size"`
-	Description string `json:"description"`
-	UploadedBy  int64  `json:"uploaded_by"`
+	Title        string `json:"title"`
+	FileURL      string `json:"file_url"`
+	Category     string `json:"category"`
+	Version      int64  `json:"version"`
+	FileSize     int64  `json:"file_size"`
+	Description  string `json:"description"`
+	OriginalName string `json:"original_name"`
+	UploadedBy   int64  `json:"uploaded_by"`
 }
 
 // UpdateDocumentRequest — input for updating a document.
 type UpdateDocumentRequest struct {
-	Title       string `json:"title"`
-	FileURL     string `json:"file_url"`
-	Category    string `json:"category"`
-	Version     int64  `json:"version"`
-	FileSize    int64  `json:"file_size"`
-	Description string `json:"description"`
+	Title        string `json:"title"`
+	FileURL      string `json:"file_url"`
+	Category     string `json:"category"`
+	Version      int64  `json:"version"`
+	FileSize     int64  `json:"file_size"`
+	Description  string `json:"description"`
+	OriginalName string `json:"original_name"`
 }
 
 // CreateDocument creates a new document record.
@@ -377,13 +467,14 @@ func (s *StaticService) CreateDocument(ctx context.Context, req CreateDocumentRe
 	}
 
 	id, err := s.querier.CreateDocument(ctx, queries.CreateDocumentParams{
-		Title:       req.Title,
-		FileUrl:     req.FileURL,
-		Category:    req.Category,
-		Version:     req.Version,
-		FileSize:    sql.NullInt64{Int64: req.FileSize, Valid: req.FileSize > 0},
-		Description: sql.NullString{String: req.Description, Valid: strings.TrimSpace(req.Description) != ""},
-		UploadedBy:  sql.NullInt64{Int64: req.UploadedBy, Valid: req.UploadedBy > 0},
+		Title:        req.Title,
+		FileUrl:      req.FileURL,
+		Category:     req.Category,
+		Version:      req.Version,
+		FileSize:     sql.NullInt64{Int64: req.FileSize, Valid: req.FileSize > 0},
+		Description:  sql.NullString{String: req.Description, Valid: strings.TrimSpace(req.Description) != ""},
+		OriginalName: req.OriginalName,
+		UploadedBy:   sql.NullInt64{Int64: req.UploadedBy, Valid: req.UploadedBy > 0},
 	})
 	if err != nil {
 		return nil, err
@@ -400,13 +491,14 @@ func (s *StaticService) UpdateDocument(ctx context.Context, id int64, req Update
 		return errors.New("file wajib diupload")
 	}
 	_, err := s.querier.UpdateDocument(ctx, queries.UpdateDocumentParams{
-		Title:       req.Title,
-		FileUrl:     req.FileURL,
-		Category:    req.Category,
-		Version:     req.Version,
-		FileSize:    sql.NullInt64{Int64: req.FileSize, Valid: req.FileSize > 0},
-		Description: sql.NullString{String: req.Description, Valid: strings.TrimSpace(req.Description) != ""},
-		ID:          id,
+		Title:        req.Title,
+		FileUrl:      req.FileURL,
+		Category:     req.Category,
+		Version:      req.Version,
+		FileSize:     sql.NullInt64{Int64: req.FileSize, Valid: req.FileSize > 0},
+		Description:  sql.NullString{String: req.Description, Valid: strings.TrimSpace(req.Description) != ""},
+		OriginalName: req.OriginalName,
+		ID:           id,
 	})
 	return err
 }
@@ -431,14 +523,15 @@ func (s *StaticService) GetDocumentByID(ctx context.Context, id int64) (*Documen
 		desc = r.Description.String
 	}
 	return &DocumentItem{
-		ID:          r.ID,
-		Title:       r.Title,
-		FileURL:     r.FileUrl,
-		Category:    r.Category,
-		Version:     r.Version,
-		FileSize:    nullToInt64(r.FileSize),
-		Description: desc,
-		UploadedBy:  r.UploadedBy.Int64,
-		UploadedAt:  r.UploadedAt,
+		ID:           r.ID,
+		Title:        r.Title,
+		FileURL:      r.FileUrl,
+		Category:     r.Category,
+		Version:      r.Version,
+		FileSize:     nullToInt64(r.FileSize),
+		Description:  desc,
+		OriginalName: r.OriginalName,
+		UploadedBy:   r.UploadedBy.Int64,
+		UploadedAt:   r.UploadedAt,
 	}, nil
 }

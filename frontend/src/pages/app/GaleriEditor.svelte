@@ -1,6 +1,7 @@
 <script lang="ts">
     import AppLayout from "../../components/AppLayout.svelte";
-    import { ArrowLeft, Save, Upload, Image as ImageIcon, Video, FileWarning, X } from "lucide-svelte";
+    import { ArrowLeft, Save, Upload, Image as ImageIcon, Video, X, Loader2 } from "lucide-svelte";
+    import { inertia } from "@inertiajs/svelte";
 
     interface AppUser {
         id: number;
@@ -8,6 +9,14 @@
         email: string;
         avatar?: string;
         role?: string;
+    }
+
+    interface UploadedFile {
+        url: string;
+        name: string;
+        type: "image" | "video";
+        status: "uploading" | "done" | "error";
+        error?: string;
     }
 
     interface MediaItem {
@@ -22,19 +31,25 @@
     interface Props {
         user?: AppUser;
         edit?: boolean;
-        media?: MediaItem;
+        album_id?: string;
+        media?: MediaItem | MediaItem[];
     }
 
-    let { user, edit = false, media }: Props = $props();
+    let { user, edit = false, album_id, media }: Props = $props();
 
-    let title = $state(media?.title ?? "");
-    let fileUrl = $state(media?.file_url ?? "");
-    let mediaType = $state(media?.media_type ?? "image");
-    let caption = $state(media?.caption ?? "");
-    let isPublished = $state(media?.is_published ?? true);
+    let isAlbumEdit = $derived(edit && album_id && Array.isArray(media) && (media as MediaItem[]).length > 0);
+    let firstItem = $derived(Array.isArray(media) ? media[0] : media);
+
+    let title = $state(firstItem?.title ?? "");
+    let caption = $state(Array.isArray(media) ? (media[0]?.caption ?? "") : (firstItem?.caption ?? ""));
+    let isPublished = $state(firstItem?.is_published ?? true);
     let saving = $state(false);
-    let uploading = $state(false);
     let dragging = $state(false);
+    let uploadedFiles = $state<UploadedFile[]>([]);
+    let uploadCount = $state(0);
+    let uploadTotal = $state(0);
+
+    let isValid = $derived(title.trim() && uploadedFiles.some(f => f.status === "done"));
 
     function getCSRFToken(): string {
         const name = "XSRF-TOKEN";
@@ -44,13 +59,23 @@
         return "";
     }
 
-    async function uploadFile(file: File) {
-        // Image: up to 20MB. Video: also up to 20MB (handled by purpose=media)
+    async function uploadFile(file: File): Promise<void> {
+        const idx = uploadedFiles.length;
+        // Add placeholder — Svelte 5 $state proxies this entry
+        uploadedFiles = [...uploadedFiles, {
+            url: "",
+            name: file.name,
+            type: file.type.startsWith("video/") ? "video" : "image",
+            status: "uploading" as const,
+        }];
+
         if (file.size > 20 * 1024 * 1024) {
-            alert("Ukuran file terlalu besar (maks 20MB).");
+            const arr = [...uploadedFiles];
+            arr[idx] = { ...arr[idx], status: "error" as const, error: "Maks 20MB" };
+            uploadedFiles = arr;
             return;
         }
-        uploading = true;
+
         try {
             const form = new FormData();
             form.append("file", file);
@@ -65,179 +90,219 @@
                 body: form,
             });
             const data = await res.json();
+            const arr = [...uploadedFiles];
             if (data.success) {
-                fileUrl = data.url;
-                // Auto-detect media type from MIME
-                if (file.type.startsWith("video/")) {
-                    mediaType = "video";
-                } else if (file.type.startsWith("image/")) {
-                    mediaType = "image";
-                }
+                arr[idx] = {
+                    url: data.url,
+                    name: file.name,
+                    type: file.type.startsWith("video/") ? "video" as const : "image" as const,
+                    status: "done" as const,
+                };
             } else {
-                alert("Upload gagal: " + (data.error || "unknown"));
+                arr[idx] = { ...arr[idx], status: "error" as const, error: data.error || "Gagal upload" };
             }
+            uploadedFiles = arr;
         } catch {
-            alert("Upload gagal.");
-        } finally {
-            uploading = false;
+            const arr = [...uploadedFiles];
+            arr[idx] = { ...arr[idx], status: "error" as const, error: "Gagal upload" };
+            uploadedFiles = arr;
+        }
+    }
+
+    async function processFiles(files: FileList | File[]) {
+        const arr = Array.from(files).filter(f => f.type.startsWith("image/") || f.type.startsWith("video/"));
+        if (arr.length === 0) return;
+
+        uploadTotal = arr.length;
+        uploadCount = 0;
+
+        // Upload sequentially so we don't hammer the server
+        for (const file of arr) {
+            await uploadFile(file);
+            uploadCount++;
         }
     }
 
     async function handleDrop(e: DragEvent) {
         e.preventDefault();
         dragging = false;
-        const files = e.dataTransfer?.files;
-        if (!files?.length) return;
-        await uploadFile(files[0]);
+        if (e.dataTransfer?.files) {
+            await processFiles(e.dataTransfer.files);
+        }
     }
 
     async function handleFileSelect(e: Event) {
         const input = e.target as HTMLInputElement;
-        if (!input.files?.length) return;
-        await uploadFile(input.files[0]);
+        if (input.files?.length) {
+            await processFiles(input.files);
+        }
+        input.value = "";
+    }
+
+    function removeFile(index: number) {
+        uploadedFiles = uploadedFiles.filter((_, i) => i !== index);
     }
 
     async function handleSubmit(e: Event) {
         e.preventDefault();
-        if (!title.trim() || !fileUrl.trim()) {
-            alert("Judul dan file wajib diisi.");
-            return;
-        }
+        const doneFiles = uploadedFiles.filter(f => f.status === "done");
+        if (!title.trim() || doneFiles.length === 0) return;
+
         saving = true;
-        const url = edit ? `/galeri/${media!.id}` : "/galeri";
+        const isAlbum = isAlbumEdit;
+        const url = isAlbum ? `/galeri/album/${album_id}` : (edit ? `/galeri/${!Array.isArray(media) ? media!.id : firstItem?.id}` : "/galeri");
         const method = edit ? "PUT" : "POST";
         try {
-            const res = await fetch(url, {
+            const body = new URLSearchParams({
+                title: title.trim(),
+                caption,
+                is_published: String(isPublished),
+                file_urls: doneFiles.map(f => f.url).join(","),
+            });
+
+            await fetch(url, {
                 method,
                 headers: {
                     "Content-Type": "application/x-www-form-urlencoded",
                     "X-XSRF-TOKEN": getCSRFToken(),
                     "X-Requested-With": "XMLHttpRequest",
                 },
-                body: new URLSearchParams({
-                    title,
-                    file_url: fileUrl,
-                    media_type: mediaType,
-                    caption,
-                    is_published: String(isPublished),
-                }),
+                body,
                 redirect: "manual",
             });
-            // Fiber redirects with 303; handle both
             window.location.href = "/galeri?success=" + (edit ? "updated" : "created");
         } catch {
             saving = false;
             alert("Gagal menyimpan.");
         }
     }
+
+    // For edit mode, initialize from existing media
+    if (edit && media) {
+        const items = Array.isArray(media) ? media : [media];
+        uploadedFiles = items.map(m => ({
+            url: m.file_url,
+            name: m.title,
+            type: m.media_type as "image" | "video",
+            status: "done" as const,
+        }));
+    }
 </script>
 
 <AppLayout {user} pageTitle={edit ? "Edit Galeri" : "Tambah Galeri"} pageSubtitle="Upload dokumentasi foto atau video" activeMenu="Galeri">
 
-<form onsubmit={handleSubmit} class="max-w-3xl mx-auto">
-    <div class="flex items-center justify-between mb-6">
-        <div>
-            <a href="/galeri" class="inline-flex items-center gap-1.5 text-sm text-renjana-600 dark:text-renjana-400 hover:underline mb-2">
-                <ArrowLeft class="w-4 h-4" /> Kembali
-            </a>
-            <h1 class="text-2xl font-bold text-neutral-900 dark:text-white">
-                {edit ? "Edit Galeri" : "Tambah Galeri"}
-            </h1>
-            <p class="text-sm text-neutral-500 dark:text-neutral-400">Foto dan video dokumentasi kegiatan</p>
-        </div>
-        <div class="flex items-center gap-3">
-            <label class="flex items-center gap-2 text-sm cursor-pointer">
-                <input type="checkbox" bind:checked={isPublished} class="w-4 h-4 rounded text-renjana-500" />
-                <span class="text-neutral-700 dark:text-neutral-300 font-medium">Publikasikan</span>
-            </label>
-            <button type="submit" disabled={saving || !title.trim() || !fileUrl.trim()} class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-renjana-500 hover:bg-renjana-600 disabled:bg-neutral-300 dark:disabled:bg-neutral-700 text-white text-sm font-semibold transition">
-                <Save class="w-4 h-4" />
-                {saving ? "Menyimpan..." : edit ? "Simpan" : "Terbitkan"}
-            </button>
+<form onsubmit={handleSubmit} class="w-full max-w-3xl mx-auto px-4 sm:px-0">
+    <!-- Mobile: stacked header -->
+    <div class="mb-6 sm:mb-8">
+        <a href="/galeri" use:inertia class="inline-flex items-center gap-1.5 text-sm text-renjana-600 dark:text-renjana-400 hover:underline mb-3">
+            <ArrowLeft class="w-4 h-4" /> Kembali
+        </a>
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+                <h1 class="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-white">
+                    {edit ? "Edit Galeri" : "Tambah Galeri"}
+                </h1>
+                <p class="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">Upload foto dokumentasi kegiatan — bisa pilih banyak sekaligus</p>
+            </div>
+            <div class="flex items-center gap-3 shrink-0">
+                <label class="flex items-center gap-2 text-sm cursor-pointer whitespace-nowrap">
+                    <input type="checkbox" bind:checked={isPublished} class="w-4 h-4 rounded text-renjana-500" />
+                    <span class="text-neutral-700 dark:text-neutral-300 font-medium">Publikasikan</span>
+                </label>
+                <button type="submit" disabled={saving || !isValid} class="inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-lg bg-renjana-500 hover:bg-renjana-600 disabled:bg-neutral-300 dark:disabled:bg-neutral-700 text-white text-sm font-semibold transition whitespace-nowrap">
+                    <Save class="w-4 h-4" />
+                    {saving ? "Menyimpan..." : edit ? "Simpan" : `Terbitkan (${uploadedFiles.filter(f => f.status === 'done').length})`}
+                </button>
+            </div>
         </div>
     </div>
 
-    <div class="space-y-5">
+    <div class="space-y-6 sm:space-y-8">
         <!-- Title -->
         <div>
-            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Judul <span class="text-red-500">*</span></label>
-            <input type="text" bind:value={title} required class="w-full px-4 py-3 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-base font-semibold focus:border-renjana-500 outline-none" placeholder="Judul foto/video..." />
+            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Judul Kegiatan <span class="text-red-500">*</span></label>
+            <input type="text" bind:value={title} required class="w-full px-4 py-3 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-base font-semibold focus:border-renjana-500 outline-none transition" placeholder="Nama kegiatan, misal: Pelatihan Tanggap Bencana" />
         </div>
 
-        <!-- File URL (filled by drag & drop or manual input) -->
+        <!-- Upload area -->
         <div>
-            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">File <span class="text-red-500">*</span></label>
+            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Foto Dokumentasi <span class="text-red-500">*</span></label>
 
-            {#if fileUrl}
-                <div class="relative rounded-xl overflow-hidden mb-3 border border-neutral-200 dark:border-neutral-700">
-                    {#if mediaType === "image"}
-                        <img src={fileUrl} alt="Preview" class="w-full max-h-80 object-cover bg-neutral-100" />
-                    {:else}
-                        <video src={fileUrl} controls class="w-full max-h-80 bg-neutral-100">
-                            <track kind="captions" />
-                        </video>
-                    {/if}
-                    <button type="button" onclick={() => { fileUrl = ""; }} class="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80 text-base">×</button>
+            <!-- Preview grid -->
+            {#if uploadedFiles.length > 0}
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-3 mb-4">
+                    {#each uploadedFiles as file, i}
+                        <div class="relative aspect-square rounded-xl overflow-hidden border border-neutral-200 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800 group">
+                            {#if file.status === "uploading"}
+                                <div class="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-white/80 dark:bg-neutral-900/80">
+                                    <Loader2 class="w-5 h-5 text-renjana-500 animate-spin" />
+                                    <span class="text-[10px] text-neutral-500">Uploading...</span>
+                                </div>
+                            {:else if file.status === "error"}
+                                <div class="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-rose-50 dark:bg-rose-900/20 p-2">
+                                    <X class="w-5 h-5 text-rose-500" />
+                                    <span class="text-[10px] text-rose-600 text-center leading-tight">{file.error || "Gagal"}</span>
+                                </div>
+                            {:else}
+                                <img src={file.url} alt={file.name} class="w-full h-full object-cover" />
+                                <div class="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition flex items-center justify-center opacity-0 group-hover:opacity-100">
+                                    <button type="button" onclick={() => removeFile(i)} class="w-8 h-8 rounded-full bg-white/90 text-neutral-800 flex items-center justify-center hover:bg-white shadow">
+                                        <X class="w-4 h-4" />
+                                    </button>
+                                </div>
+                            {/if}
+                            <span class="absolute bottom-1 left-1 px-1.5 py-0.5 rounded bg-black/50 text-white text-[9px] font-medium">
+                                {file.type === "image" ? "FOTO" : "VIDEO"}
+                            </span>
+                        </div>
+                    {/each}
                 </div>
             {/if}
 
+            <!-- Upload progress bar -->
+            {#if uploadTotal > 0 && uploadCount < uploadTotal}
+                <div class="mb-4">
+                    <div class="flex justify-between text-xs text-neutral-500 mb-1">
+                        <span>Uploading... {uploadCount}/{uploadTotal}</span>
+                        <span>{Math.round(uploadCount / uploadTotal * 100)}%</span>
+                    </div>
+                    <div class="w-full h-1.5 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden">
+                        <div class="h-full bg-renjana-500 rounded-full transition-all" style="width: {uploadCount / uploadTotal * 100}%"></div>
+                    </div>
+                </div>
+            {/if}
+
+            <!-- Drop zone -->
             <div
-                class="border-2 border-dashed rounded-xl p-8 text-center transition {dragging ? 'border-renjana-500 bg-renjana-50 dark:bg-renjana-900/20' : 'border-neutral-300 dark:border-neutral-600 hover:border-renjana-400'} {uploading ? 'opacity-50 pointer-events-none' : ''}"
+                class="border-2 border-dashed rounded-xl p-6 sm:p-8 text-center transition {dragging ? 'border-renjana-500 bg-renjana-50 dark:bg-renjana-900/20' : 'border-neutral-300 dark:border-neutral-600 hover:border-renjana-400'} {uploadTotal > 0 && uploadCount < uploadTotal ? 'opacity-50 pointer-events-none' : ''}"
                 ondragover={(e) => { e.preventDefault(); dragging = true; }}
                 ondragleave={() => dragging = false}
                 ondrop={handleDrop}
             >
-                {#if uploading}
-                    <div class="flex flex-col items-center gap-3">
-                        <div class="w-10 h-10 border-3 border-renjana-500 border-t-transparent rounded-full animate-spin"></div>
-                        <p class="text-sm text-neutral-500">Mengupload...</p>
+                <div class="flex flex-col items-center gap-2">
+                    <div class="flex items-center gap-2 text-neutral-400">
+                        <ImageIcon class="w-6 h-6" />
+                        <Video class="w-6 h-6" />
                     </div>
-                {:else}
-                    <div class="flex flex-col items-center gap-2">
-                        <div class="flex items-center gap-2 text-neutral-400">
-                            <ImageIcon class="w-6 h-6" />
-                            <Video class="w-6 h-6" />
-                        </div>
-                        <p class="text-sm text-neutral-600 dark:text-neutral-400 font-medium">Seret gambar/video ke sini</p>
-                        <p class="text-xs text-neutral-400">atau</p>
-                        <label class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-renjana-500 hover:bg-renjana-600 text-white text-sm font-semibold cursor-pointer transition">
-                            <Upload class="w-4 h-4" />
-                            Pilih File
-                            <input type="file" accept="image/*,video/mp4,video/webm" onchange={handleFileSelect} class="hidden" />
-                        </label>
-                        <p class="text-xs text-neutral-400 mt-2">JPG, PNG, MP4, WEBM (maks 20MB)</p>
-                    </div>
-                {/if}
-            </div>
-
-            <details class="mt-2">
-                <summary class="text-xs text-neutral-500 dark:text-neutral-400 cursor-pointer hover:text-renjana-600">Atau masukkan URL manual</summary>
-                <input type="url" bind:value={fileUrl} onchange={() => { if (fileUrl) mediaType = fileUrl.match(/\.(mp4|webm)/i) ? "video" : "image"; }} placeholder="https://..." class="mt-2 w-full px-3 py-2 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
-            </details>
-        </div>
-
-        <!-- Media Type -->
-        <div>
-            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Tipe Media</label>
-            <div class="grid grid-cols-2 gap-3">
-                <label class="flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition {mediaType === 'image' ? 'border-renjana-500 bg-renjana-50 dark:bg-renjana-900/20' : 'border-neutral-200 dark:border-neutral-700'}">
-                    <input type="radio" bind:group={mediaType} value="image" class="text-renjana-500" />
-                    <ImageIcon class="w-4 h-4" />
-                    <span class="text-sm font-medium">Foto</span>
-                </label>
-                <label class="flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition {mediaType === 'video' ? 'border-renjana-500 bg-renjana-50 dark:bg-renjana-900/20' : 'border-neutral-200 dark:border-neutral-700'}">
-                    <input type="radio" bind:group={mediaType} value="video" class="text-renjana-500" />
-                    <Video class="w-4 h-4" />
-                    <span class="text-sm font-medium">Video</span>
-                </label>
+                    <p class="text-sm text-neutral-600 dark:text-neutral-400 font-medium">Seret foto ke sini</p>
+                    <p class="text-xs text-neutral-400">atau</p>
+                    <label class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-renjana-500 hover:bg-renjana-600 text-white text-sm font-semibold cursor-pointer transition">
+                        <Upload class="w-4 h-4" />
+                        Pilih File
+                        <input type="file" accept="image/*,video/mp4,video/webm" multiple onchange={handleFileSelect} class="hidden" />
+                    </label>
+                    <p class="text-xs text-neutral-400 mt-1">JPG, PNG, MP4, WEBM (maks 20MB per file)</p>
+                </div>
             </div>
         </div>
 
         <!-- Caption -->
-        <div>
-            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Caption</label>
-            <textarea bind:value={caption} rows={3} class="w-full px-4 py-3 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none resize-none" placeholder="Deskripsi singkat foto/video..."></textarea>
-        </div>
+        {#if !edit}
+            <div>
+                <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Caption (opsional)</label>
+                <textarea bind:value={caption} rows={2} class="w-full px-4 py-3 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none resize-none transition" placeholder="Deskripsi singkat untuk semua foto..."></textarea>
+            </div>
+        {/if}
     </div>
 </form>
 

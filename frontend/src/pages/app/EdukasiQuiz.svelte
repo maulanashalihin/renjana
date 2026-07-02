@@ -1,6 +1,7 @@
 <script lang="ts">
     import AppLayout from "../../components/AppLayout.svelte";
     import { ArrowLeft, HelpCircle, CheckCircle2, XCircle, AlertTriangle } from "lucide-svelte";
+    import { inertia } from "@inertiajs/svelte";
 
     interface AppUser {
         id: number;
@@ -119,7 +120,7 @@
 {#if result}
     <!-- Result View -->
     <AppLayout {user} pageTitle="Hasil Kuis" pageSubtitle={result.passed ? "Selamat, kamu lulus!" : "Coba lagi"} activeMenu="Edukasi Bencana">
-        <a href="/edukasi/course/{course_id}" class="inline-flex items-center gap-1.5 text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 transition mb-4">
+        <a href="/edukasi/course/{course_id}" use:inertia class="inline-flex items-center gap-1.5 text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 transition mb-4">
             <ArrowLeft class="w-4 h-4" />
             Kembali ke Kursus
         </a>
@@ -174,7 +175,7 @@
 
                 <div class="flex items-center justify-center gap-3">
                     {#if result.passed}
-                        <a href="/edukasi/course/{course_id}/certificate" class="px-6 py-2.5 rounded-lg bg-green-500 hover:bg-green-600 text-white text-sm font-semibold transition inline-flex items-center gap-2">
+                        <a href="/edukasi/course/{course_id}/certificate" use:inertia class="px-6 py-2.5 rounded-lg bg-green-500 hover:bg-green-600 text-white text-sm font-semibold transition inline-flex items-center gap-2">
                             <CheckCircle2 class="w-4 h-4" />
                             Lihat Sertifikat
                         </a>
@@ -182,7 +183,7 @@
                         <button onclick={retryQuiz} class="px-6 py-2.5 rounded-lg bg-renjana-500 hover:bg-renjana-600 text-white text-sm font-semibold transition">
                             Coba Lagi
                         </button>
-                        <a href="/edukasi/course/{course_id}" class="px-6 py-2.5 rounded-lg border border-neutral-300 dark:border-neutral-600 text-sm font-medium hover:border-renjana-500 transition">
+                        <a href="/edukasi/course/{course_id}" use:inertia class="px-6 py-2.5 rounded-lg border border-neutral-300 dark:border-neutral-600 text-sm font-medium hover:border-renjana-500 transition">
                             Pelajari Ulang
                         </a>
                     {/if}
@@ -194,7 +195,7 @@
 {:else}
     <!-- Quiz View -->
     <AppLayout {user} pageTitle="Kuis" pageSubtitle="Uji pemahamanmu" activeMenu="Edukasi Bencana">
-        <a href="/edukasi/course/{course_id}" class="inline-flex items-center gap-1.5 text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 transition mb-4">
+        <a href="/edukasi/course/{course_id}" use:inertia class="inline-flex items-center gap-1.5 text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 transition mb-4">
             <ArrowLeft class="w-4 h-4" />
             Kembali ke Kursus
         </a>

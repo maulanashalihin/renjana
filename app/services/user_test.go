@@ -13,7 +13,6 @@ import (
 	"github.com/maulanashalihin/laju-go/app/queries"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"golang.org/x/crypto/bcrypt"
 )
 
 func setupUserTestDB(t *testing.T) (*queries.Querier, *cache.UserCache, *UserService) {
@@ -37,13 +36,13 @@ func setupUserTestDB(t *testing.T) (*queries.Querier, *cache.UserCache, *UserSer
 
 func createTestUser(t *testing.T, q *queries.Querier, email, name string) *models.User {
 	t.Helper()
-	hash, err := bcrypt.GenerateFromPassword([]byte("password123"), bcrypt.DefaultCost)
+	hash, err := hashPassword("password123")
 	require.NoError(t, err)
 
 	user := &models.User{
 		Email:    email,
 		Name:     name,
-		Password: sql.NullString{String: string(hash), Valid: true},
+		Password: sql.NullString{String: hash, Valid: true},
 		Role:     models.RoleUser,
 	}
 	err = q.CreateUser(context.Background(), user)
@@ -77,10 +76,10 @@ func TestUserServiceUpdatePassword(t *testing.T) {
 	q, _, svc := setupUserTestDB(t)
 	user := createTestUser(t, q, "pass@example.com", "Pass User")
 
-	newHash, err := bcrypt.GenerateFromPassword([]byte("newpassword"), bcrypt.DefaultCost)
+	newHash, err := hashPassword("newpassword")
 	require.NoError(t, err)
 
-	err = svc.UpdatePassword(user.ID, string(newHash))
+	err = svc.UpdatePassword(user.ID, newHash)
 	require.NoError(t, err)
 
 	// Verify by trying to login-like check

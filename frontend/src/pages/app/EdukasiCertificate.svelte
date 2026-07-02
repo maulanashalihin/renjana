@@ -1,5 +1,6 @@
 <script lang="ts">
     import { ArrowLeft, Award, Download, Share2, CheckCircle } from "lucide-svelte";
+    import { inertia } from "@inertiajs/svelte";
 
     interface AppUser {
         id: number;
@@ -62,7 +63,7 @@
 <div class="min-h-screen bg-slate-50 dark:bg-slate-950 p-4 sm:p-8">
     {#if user}
         <div class="max-w-4xl mx-auto mb-6 print:hidden">
-            <a href="/edukasi/course/{certificate.course_id}" class="inline-flex items-center gap-1.5 text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 transition">
+            <a href="/edukasi/course/{certificate.course_id}" use:inertia class="inline-flex items-center gap-1.5 text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 transition">
                 <ArrowLeft class="w-4 h-4" />
                 Kembali ke Kursus
             </a>
@@ -151,7 +152,7 @@
                         <Download class="w-4 h-4" />
                         Cetak / Simpan PDF
                     </button>
-                    <a href="/sertifikat-saya" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg border border-neutral-300 dark:border-neutral-600 text-sm font-medium hover:border-renjana-500 transition">
+                    <a href="/sertifikat-saya" use:inertia class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg border border-neutral-300 dark:border-neutral-600 text-sm font-medium hover:border-renjana-500 transition">
                         <Share2 class="w-4 h-4" />
                         Semua Sertifikat
                     </a>

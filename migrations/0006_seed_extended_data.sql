@@ -49,7 +49,7 @@ INSERT INTO renjana_organization (
     1,
     'Mewujudkan generasi muda yang tangguh, peduli, dan siaga dalam menghadapi bencana di Kabupaten Tanah Bumbu.',
     '1. Meningkatkan kapasitas remaja dalam kesiapsiagaan bencana.
-2. Membangun jaringan志愿者 RENJANA yang solid di seluruh kecamatan.
+2. Membangun jaringan volunteer RENJANA yang solid di seluruh kecamatan.
 3. Berkolaborasi dengan BPBD, Basarnas, dan lembaga terkait.
 4. Melakukan edukasi dan simulasi rutin di sekolah dan masyarakat.',
     'RENJANA (Relawan Remaja Aman Bencana) dibentuk pada tahun 2022 oleh Badan Penanggulangan Bencana Daerah (BPBD) Kabupaten Tanah Bumbu, bekerja sama dengan Dinas Pendidikan dan organisasi pemuda. Program ini dimulai dari 3 kecamatan pionir dan berkembang hingga mencakup 12 kecamatan di tahun 2024.',

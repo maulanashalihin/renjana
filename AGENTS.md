@@ -32,6 +32,8 @@ routes/web.go     → app/handlers/     → app/services/     → app/queries/  
 | Reset DB | `npm run db:refresh` | `make db-refresh` |
 | Docker | `docker build .` | `make docker` |
 
+> **goose vs Goose AI**: Semua command migrasi pake `go run github.com/pressly/goose/v3/cmd/goose@latest` (bukan binary `goose`) supaya tidak ambigu dengan [Goose AI agent](https://block.github.io/goose/).
+
 **Build order matters**: `vite build` must run before `go build` in production because the Go binary reads `dist/.vite/manifest.json`.
 
 **Windows users**: Scripts via `npm run` work natively. For `make`, use **WSL** (`wsl make build`).
@@ -41,6 +43,7 @@ routes/web.go     → app/handlers/     → app/services/     → app/queries/  
 - Edit `.templ` files → run `templ generate` → commit both `.templ` and `*_templ.go`.
 - **Air does NOT watch `.templ` files** by default. Add `"templ"` to `.air.toml` `include_ext` or regenerate manually.
 - Rendering: `templates.ComponentName(args...).Render(ctx, writer)` instead of `c.Render("name", data)`.
+- **SVG icons in templ**: String params di-escape (HTML entities). Jangan pass string SVG langsung ke parameter. Buat Go helper function (`func foo() string`) yang return SVG, lalu pake `@templ.Raw(helper(key))` di markup. Contoh: `@templ.Raw(featureIcon("auth"))`.
 
 ## Inertia.js Pattern
 
@@ -50,10 +53,45 @@ routes/web.go     → app/handlers/     → app/services/     → app/queries/  
 
 ## Database & Migrations
 
-- SQLite via `github.com/mattn/go-sqlite3` (CGO-based, 2x throughput vs pure-Go drivers).
+- SQLite via modernc.org/sqlite (pure-Go, CGO-free).
 - Migrations run **automatically on startup** via Goose.
 - Write SQL in `queries/*.sql`, then `npm run db:generate` to create typed Go code.
 - `sqlc.yaml` configures the generation. Schema source is `migrations/`.
+
+### Migration Convention — One Table Per File
+
+Setiap file migrasi harus berisi **satu tabel saja**. Jangan menggabungkan beberapa tabel dalam satu file migrasi.
+
+✅ **Benar:**
+
+```
+migrations/
+├── 0001_create_users_table.sql       -- hanya CREATE TABLE users
+├── 0002_create_sessions_table.sql     -- hanya CREATE TABLE sessions
+└── 0003_create_password_resets_table.sql -- hanya CREATE TABLE password_resets
+```
+
+❌ **Salah (jangan lakukan ini):**
+
+```sql
+-- 0001_initial.sql — ❌ multiple tables in one file
+CREATE TABLE users (...);
+CREATE TABLE sessions (...);
+CREATE TABLE password_resets (...);
+```
+
+Alasan:
+
+1. **Isolasi migrasi** — Jika migrasi `sessions` gagal, tabel `users` tetap ter-migrasi. Dengan satu file besar, semua gagal.
+2. **Rollback granular** — `goose down` bisa rollback tabel spesifik.
+3. **History jelas** — Setiap tabel punya timestamp migrasi sendiri.
+4. **sqlc schema source** — sqlc membaca `migrations/` untuk schema. File terpisah = lebih mudah di-debug.
+
+Setiap file migrasi WAJIB memiliki `-- +goose Up` dan `-- +goose Down` section.
+
+### Database driver
+
+`github.com/mattn/go-sqlite3` (CGO-based). Requires CGO for cross-compilation. Cross-compile ke Linux dari macOS menggunakan `brew install zig` lalu `make build-linux`.
 
 ## Design Standards
 
@@ -106,6 +144,19 @@ Kalau ragu dengan visual, minta screenshot via agent_browser — saya review dan
 
 ## Conventions
 
+### Svelte / Inertia
+
+- **Internal navigation links WAJIB pake `use:inertia`** — tanpanya, `<a href="...">` melakukan full page reload, bukan navigasi SPA. Import: `import { inertia } from "@inertiajs/svelte"` lalu `<a href="/path" use:inertia>`. Jangan lupa.
+- **OAuth links (`/auth/google`, `/auth/github`)** tetap pake `<a>` biasa tanpa `use:inertia` karena harus redirect ke provider eksternal.
+- **Form submission** pake `router.post()` / `router.put()` dari `@inertiajs/svelte`, bukan `<form>` biasa.
+- **File upload** WAJIB pake `fetch()` (kirim `FormData`), lalu simpan URL hasilnya via `router.put()`. Inertia tidak bisa kirim binary file.
+- **`$effect`** hanya untuk side effects ke luar sistem (document.title, localStorage). Jangan untuk inisialisasi state dari props — pake `$state` langsung atau bungkus dalam function closure.
+
+### Handlers
+
+- **🔴 CRITICAL: Handlers must NEVER call queries directly.** Semua akses database harus melalui services. Handler → Service → Query. Tidak ada shortcut dari handler ke query. Ini adalah aturan paling penting di project ini — jangan pernah dilanggar.
+- **Pengecualian**: File test (`*_test.go`) BOLEH panggil queries langsung untuk setup data test.
+- **Handler hanya**: Parse request → Panggil service → Return response. Tidak ada business logic. All database access goes through services. Handler → Service → Query. No shortcut from handler to query.
 - **POST/PUT handlers that redirect**: Use `c.Redirect(path, fiber.StatusSeeOther)` (303). Inertia does not follow 302 correctly for form submissions — it needs 303 to change POST/PUT to GET on redirect.
 - **PUT/PATCH**: Return JSON for `fetch()` calls, redirect for `router.put()` calls. If redirecting, always 303.
 - Sessions are database-backed (SQLite table). Auth middleware checks `session.Store`.
@@ -127,38 +178,72 @@ Copy `.env.example` → `.env`. Minimum required:
 - Cross-compile for Linux: `make build-linux` (requires `brew install zig` for CGO cross-compile via `zig cc`).
 - Air's `include_ext` does not include `.templ` — regenerate templ components manually when editing templates.
 
+## Testing Strategy
+
+| Approach | For | How |
+|----------|-----|-----|
+| Go unit/integration | Services, queries, handlers, cache | `go test ./...` — in-memory SQLite, no external dependencies |
+| E2E / browser | Auth flows, form submission, page load, visual regression | `agent_browser` via pi — real browser, no mock |
+
+### Agent Browser Testing
+
+Gunakan `agent_browser` untuk E2E testing selama development.
+
+#### Test Auth Flow (Login via Form)
+
+```
+# 1. Open register page
+agent_browser args=["open", "http://localhost:8080/register"]
+→ snapshot — verify form muncul
+
+# 2. Fill and submit
+agent_browser args=["fill", "input[name='name']", "Test User"]
+agent_browser args=["fill", "input[name='email']", "test@test.com"]
+agent_browser args=["fill", "input[name='password']", "test1234"]
+agent_browser args=["click", "button[type='submit']"]
+→ snapshot — verify redirect ke /app (session otomatis) 
+```
+
+#### Inject Session Langsung (Skip Login)
+
+Untuk test halaman protected tanpa login manual, inject session cookie langsung:
+
+```bash
+# 1. Buat session di database (via sqlite3 CLI)
+sqlite3 data/app.db "INSERT INTO sessions (id, user_id, data, expires_at, created_at, updated_at)
+VALUES (
+  '$(openssl rand -hex 32)',
+  1,
+  '{\"user_id\":1,\"email\":\"test@test.com\",\"role\":\"user\"}',
+  datetime('now', '+24 hours'),
+  datetime('now'),
+  datetime('now')
+);"
+
+# 2. Set cookie via agent_browser eval
+agent_browser args=["eval", "--stdin", "document.cookie = 'session_id=ID_DARI_ATAS; path=/; max-age=86400'"]
+
+# 3. Buka halaman protected — sudah ter-autentikasi
+agent_browser args=["open", "http://localhost:8080/app"]
+→ snapshot — dashboard muncul dengan data user
+```
+
+#### Verify Tanpa Autentikasi
+
+```
+agent_browser args=["open", "http://localhost:8080/app/profile"]
+→ snapshot — harus redirect ke /login (Guest middleware)
+```
+
+**Keuntungan**:
+
+- ✅ Real browser — test actual redirect, cookie, session
+- ✅ No mock — backend asli (Go + SQLite), frontend asli (Svelte)
+- ✅ No Cypress/Playwright — 0 dependency tambahan
+- ✅ Visual — bisa screenshot layout, verify responsive
+
 ## Deployment
 
-- One-click: `./scripts/deploy.sh` (reads `.deploy` config file).
-- Docker: multi-stage build in `docs/deployment/docker.md`.
-- Systemd: service setup in `docs/deployment/production.md`.
-
-<!-- gortex:communities:start -->
-<!-- gortex:skills:start -->
-## Community Skills
-
-| Area | Description | Skill |
-|------|-------------|-------|
-| Queries 3 Dirs Int64 | 313 symbols | `/gortex-queries-3-dirs-int64` |
-| Cache 8 Dirs | 230 symbols | `/gortex-cache-8-dirs` |
-| Services 8 Dirs | 229 symbols | `/gortex-services-8-dirs` |
-| Services Mosque 6 Dirs | 218 symbols | `/gortex-services-mosque-6-dirs` |
-| Handlers Mosque 7 Dirs Main | 176 symbols | `/gortex-handlers-mosque-7-dirs-main` |
-| Queries 5 Dirs | 170 symbols | `/gortex-queries-5-dirs` |
-| Handlers Mosque 7 Dirs Flash | 164 symbols | `/gortex-handlers-mosque-7-dirs-flash` |
-| Middlewares 4 Dirs | 125 symbols | `/gortex-middlewares-4-dirs` |
-| Handlers 2 Dirs Render | 113 symbols | `/gortex-handlers-2-dirs-render` |
-| 5 Dirs | 105 symbols | `/gortex-5-dirs` |
-| Queries 4 Dirs | 101 symbols | `/gortex-queries-4-dirs` |
-| Handlers Mosque 3 Dirs Fetchandstoremonth | 91 symbols | `/gortex-handlers-mosque-3-dirs-fetchandstoremonth` |
-| Services 2 Dirs | 83 symbols | `/gortex-services-2-dirs` |
-| Services Mosque 4 Dirs Format | 74 symbols | `/gortex-services-mosque-4-dirs-format` |
-| Queries 1 Dirs Jamaah | 71 symbols | `/gortex-queries-1-dirs-jamaah` |
-| Queries 3 Dirs Changepassword | 71 symbols | `/gortex-queries-3-dirs-changepassword` |
-| Services Mosque 4 Dirs Createmosque | 67 symbols | `/gortex-services-mosque-4-dirs-createmosque` |
-| Handlers 2 Dirs Upload | 66 symbols | `/gortex-handlers-2-dirs-upload` |
-| Queries Mosque | 65 symbols | `/gortex-queries-mosque` |
-| Handlers Mosque 3 Dirs Updatemosque | 65 symbols | `/gortex-handlers-mosque-3-dirs-updatemosque` |
-<!-- gortex:skills:end -->
-
-<!-- gortex:communities:end -->
+- Git-based: `git pull → make build → sudo systemctl restart laju-go`
+- Docker: multi-stage build di `Dockerfile`
+- Systemd: service setup di `systemd/laju-go.service`

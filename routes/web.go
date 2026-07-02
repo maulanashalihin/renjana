@@ -41,8 +41,13 @@ func SetupRoutes(app *fiber.App, h Handlers, store *session.Store, mailerService
 	// Setup auth routes
 	setupAuthRoutes(app, h.Auth, h.PasswordReset, store, mailerService)
 
+	// CSRF middleware — sets XSRF-TOKEN cookie on GET responses, validates on
+	// POST/PUT/DELETE. Applied globally so public routes like /galeri/create also
+	// get the cookie set. Skip paths are for auth & API routes that don't use CSRF.
+	app.Use(csrfMiddleware.Protect())
+
 	// Setup public content routes — no auth required
-	setupPublicRoutes(app, h.App, h.Activity, h.Announcement, h.Contact, h.Organization, h.Static, h.Volunteer, store)
+	setupPublicRoutes(app, h.App, h.Activity, h.Announcement, h.Contact, h.Organization, h.Static, h.Volunteer, h.Gallery, h.Document, store)
 
 	// Setup education LMS routes — course detail, quiz, certificate
 	setupEducationRoutes(app, h.Education, store)
@@ -95,7 +100,7 @@ func setupPublicFormRoutes(app *fiber.App, complaintHandler *handlers.ComplaintH
 	app.Post("/survey", surveyHandler.Store)
 }
 
-func setupPublicRoutes(app *fiber.App, appHandler *handlers.AppHandler, activityHandler *handlers.ActivityHandler, announcementHandler *handlers.AnnouncementHandler, contactHandler *handlers.ContactHandler, organizationHandler *handlers.OrganizationHandler, staticHandler *handlers.StaticHandler, volunteerHandler *handlers.VolunteerHandler, store *session.Store) {
+func setupPublicRoutes(app *fiber.App, appHandler *handlers.AppHandler, activityHandler *handlers.ActivityHandler, announcementHandler *handlers.AnnouncementHandler, contactHandler *handlers.ContactHandler, organizationHandler *handlers.OrganizationHandler, staticHandler *handlers.StaticHandler, volunteerHandler *handlers.VolunteerHandler, galleryHandler *handlers.GalleryHandler, documentHandler *handlers.DocumentHandler, store *session.Store) {
 	// Dashboard — public, no auth required
 	app.Get("/", appHandler.Dashboard)
 	app.Get("/profile", appHandler.Profile)
@@ -105,6 +110,7 @@ func setupPublicRoutes(app *fiber.App, appHandler *handlers.AppHandler, activity
 	app.Get("/edukasi", staticHandler.Edukasi)
 	app.Get("/galeri", staticHandler.Galeri)
 	// Static routes must come BEFORE parameterized /galeri/:id
+	app.Get("/galeri/create", middlewares.AuthRequired(store), middlewares.AdminRequired(store), galleryHandler.Create)
 	app.Get("/galeri/:id", staticHandler.Galeri)
 	app.Get("/dokumen", staticHandler.Dokumen)
 
@@ -177,9 +183,6 @@ func setupAppRoutes(app *fiber.App, appHandler *handlers.AppHandler, uploadHandl
 	// Apply AuthRequired globally — all routes below require auth
 	app.Use(middlewares.AuthRequired(store))
 
-	// CSRF for state-changing methods (skip GET/HEAD/OPTIONS)
-	app.Use(csrfMiddleware.Protect())
-
 	// Onboarding — new users (relawan) without volunteer record
 	app.Get("/onboarding", onboardingHandler.Show)
 	app.Post("/onboarding", onboardingHandler.Store)
@@ -206,7 +209,10 @@ func setupAppRoutes(app *fiber.App, appHandler *handlers.AppHandler, uploadHandl
 
 	// Galeri — CRUD for admin only (GET index is public)
 	app.Post("/galeri", middlewares.AdminRequired(store), galleryHandler.Store)
+	app.Get("/galeri/:id/edit", middlewares.AdminRequired(store), galleryHandler.EditAlbum)
+	app.Put("/galeri/album/:albumId", middlewares.AdminRequired(store), galleryHandler.UpdateAlbum)
 	app.Put("/galeri/:id", middlewares.AdminRequired(store), galleryHandler.Update)
+	app.Delete("/galeri/album/:albumId", middlewares.AdminRequired(store), galleryHandler.DestroyAlbum)
 	app.Delete("/galeri/:id", middlewares.AdminRequired(store), galleryHandler.Destroy)
 
 	// Kontak — CRUD for admin only (GET index is public)
@@ -228,7 +234,9 @@ func setupAppRoutes(app *fiber.App, appHandler *handlers.AppHandler, uploadHandl
 	app.Delete("/pengaduan/:id", middlewares.AdminRequired(store), complaintHandler.Destroy)
 
 	// Upload — admin only (file uploads are sensitive)
-	app.Post("/upload", middlewares.AdminRequired(store), uploadHandler.Upload)
+	// Upload — admin only (file uploads are sensitive). Uses UploadByPurpose so
+	// clients can specify purpose=avatar|media|document (defaults to avatar).
+	app.Post("/upload", middlewares.AdminRequired(store), uploadHandler.UploadByPurpose)
 
 	// Dokumen CRUD — admin only
 	app.Post("/dokumen", middlewares.AdminRequired(store), documentHandler.Create)
@@ -254,6 +262,16 @@ func SetupCSRFMiddleware(store *session.Store, secret string) *middlewares.CSRFM
 	config := middlewares.DefaultCSRFConfig(secret)
 	config.Secure = false // Set to true in production with HTTPS
 	config.SameSite = "Lax"
+	// Skip paths that don't use CSRF: auth routes, OAuth, and API endpoints.
+	// Public form routes (/pengaduan, /survey) already send X-XSRF-TOKEN.
+	config.SkipPaths = []string{
+		"/login",
+		"/register",
+		"/forgot-password",
+		"/reset-password/",
+		"/auth/",
+		"/api/",
+	}
 	return middlewares.NewCSRFMiddleware(store, config)
 }
 

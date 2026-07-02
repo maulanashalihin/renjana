@@ -34,12 +34,17 @@ func NewEducationHandler(
 }
 
 // getUser returns the authenticated user or nil for public access.
+// Uses session directly (works without AuthRequired middleware).
 func (h *EducationHandler) getUser(c *fiber.Ctx) *models.User {
-	userID := c.Locals("user_id")
-	if userID == nil {
+	sess, err := h.store.Get(c)
+	if err != nil {
 		return nil
 	}
-	id := userID.(int64)
+	uid := sess.Get("user_id")
+	if uid == nil {
+		return nil
+	}
+	id := uid.(int64)
 	u, err := h.querier.GetUserByID(c.Context(), id)
 	if err != nil {
 		return nil
@@ -48,12 +53,17 @@ func (h *EducationHandler) getUser(c *fiber.Ctx) *models.User {
 }
 
 // getUserID returns the authenticated user ID or 0.
+// Uses session directly (works without AuthRequired middleware).
 func (h *EducationHandler) getUserID(c *fiber.Ctx) int64 {
-	userID := c.Locals("user_id")
-	if userID == nil {
+	sess, err := h.store.Get(c)
+	if err != nil {
 		return 0
 	}
-	return userID.(int64)
+	uid := sess.Get("user_id")
+	if uid == nil {
+		return 0
+	}
+	return uid.(int64)
 }
 
 // CourseShow displays a course with its modules.

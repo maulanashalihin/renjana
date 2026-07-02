@@ -1,5 +1,5 @@
 <script lang="ts">
-    import {
+import {
         Home,
         Info,
         CalendarDays,
@@ -13,7 +13,8 @@
         PhoneCall,
         MessageSquareWarning,
         BarChart3,
-    } from "lucide-svelte";
+} from "lucide-svelte";
+import { inertia } from "@inertiajs/svelte";
 
     interface MenuItem {
         href: string;
@@ -62,6 +63,7 @@
             {@const isActive = item.label === active}
             <a
                 href={item.href}
+                use:inertia
                 class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 group {isActive
                     ? 'bg-renjana-sidebar-active dark:bg-renjana-500 text-white shadow-md'
                     : 'text-renjana-nav-text dark:text-slate-400 hover:bg-renjana-sidebar-hover dark:hover:bg-slate-800 hover:text-white dark:hover:text-white'}"

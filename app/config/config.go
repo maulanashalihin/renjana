@@ -23,19 +23,21 @@ type Config struct {
 	// CORS
 	AllowedOrigins []string
 	// Email configuration
-	SMTPHost string
-	SMTPPort int
-	SMTPUser string
-	SMTPPass string
+	SMTPHost  string
+	SMTPPort  int
+	SMTPUser  string
+	SMTPPass  string
 	FromEmail string
 	FromName  string
 	// Session
 	SessionTTL time.Duration
 	// Cache
-	UserCacheTTL   time.Duration
+	UserCacheTTL    time.Duration
 	SessionCacheTTL time.Duration
-	// Bcrypt
-	BcryptCost int
+	// Argon2id
+	Argon2Memory     uint32 // KiB
+	Argon2Iterations uint32
+	Argon2Threads    uint8
 }
 
 var AppConfig *Config
@@ -67,8 +69,10 @@ func Load() *Config {
 		SessionTTL: getSessionTTL(),
 		// Cache
 		SessionCacheTTL: getSessionCacheTTL(),
-		// Bcrypt
-		BcryptCost: getBcryptCost(),
+		// Argon2id
+		Argon2Memory:     getArgon2Memory(),
+		Argon2Iterations: getArgon2Iterations(),
+		Argon2Threads:    getArgon2Threads(),
 	}
 
 	return AppConfig
@@ -139,23 +143,38 @@ func getSessionCacheTTL() time.Duration {
 	return d
 }
 
-// getBcryptCost returns the bcrypt cost from env.
-// Default: 10 (bcrypt.DefaultCost). Range: 4-31.
-// Higher = more secure but slower. For tests/CI use 4.
-func getBcryptCost() int {
-	val := getEnv("BCRYPT_COST", "10")
-	cost, err := strconv.Atoi(val)
-	if err != nil || cost < bcryptMinCost || cost > bcryptMaxCost {
-		return bcryptDefaultCost
+// getArgon2Memory returns the argon2id memory cost (KiB) from env.
+// Default: 65536 (64MB). Min: 1024 (1MB). Max: 1048576 (1GB).
+func getArgon2Memory() uint32 {
+	val := getEnv("ARGON2_MEMORY", "65536")
+	v, err := strconv.ParseUint(val, 10, 32)
+	if err != nil || v < 1024 || v > 1048576 {
+		return 65536
 	}
-	return cost
+	return uint32(v)
 }
 
-const (
-	bcryptMinCost    = 4
-	bcryptMaxCost    = 31
-	bcryptDefaultCost = 10
-)
+// getArgon2Iterations returns the argon2id time cost from env.
+// Default: 3. Min: 1. Max: 100.
+func getArgon2Iterations() uint32 {
+	val := getEnv("ARGON2_TIME", "3")
+	v, err := strconv.ParseUint(val, 10, 32)
+	if err != nil || v < 1 || v > 100 {
+		return 3
+	}
+	return uint32(v)
+}
+
+// getArgon2Threads returns the argon2id parallelism from env.
+// Default: 4. Min: 1. Max: 256.
+func getArgon2Threads() uint8 {
+	val := getEnv("ARGON2_THREADS", "4")
+	v, err := strconv.ParseUint(val, 10, 8)
+	if err != nil || v < 1 || v > 256 {
+		return 4
+	}
+	return uint8(v)
+}
 
 // getUserCacheTTL returns the user profile cache TTL from env.
 // Default: 15 minutes. Set to 0 to disable caching.

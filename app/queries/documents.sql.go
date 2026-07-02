@@ -8,6 +8,7 @@ package queries
 import (
 	"context"
 	"database/sql"
+	"time"
 )
 
 const countDocumentsFiltered = `-- name: CountDocumentsFiltered :one
@@ -25,20 +26,21 @@ func (q *Queries) CountDocumentsFiltered(ctx context.Context, dollar_1 interface
 
 const createDocument = `-- name: CreateDocument :one
 INSERT INTO renjana_documents (
-    title, file_url, category, version, file_size, description, uploaded_by
+    title, file_url, category, version, file_size, description, original_name, uploaded_by
 )
-VALUES (?, ?, ?, ?, ?, ?, ?)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 RETURNING id
 `
 
 type CreateDocumentParams struct {
-	Title       string         `json:"title"`
-	FileUrl     string         `json:"file_url"`
-	Category    string         `json:"category"`
-	Version     int64          `json:"version"`
-	FileSize    sql.NullInt64  `json:"file_size"`
-	Description sql.NullString `json:"description"`
-	UploadedBy  sql.NullInt64  `json:"uploaded_by"`
+	Title        string         `json:"title"`
+	FileUrl      string         `json:"file_url"`
+	Category     string         `json:"category"`
+	Version      int64          `json:"version"`
+	FileSize     sql.NullInt64  `json:"file_size"`
+	Description  sql.NullString `json:"description"`
+	OriginalName string         `json:"original_name"`
+	UploadedBy   sql.NullInt64  `json:"uploaded_by"`
 }
 
 func (q *Queries) CreateDocument(ctx context.Context, arg CreateDocumentParams) (int64, error) {
@@ -49,6 +51,7 @@ func (q *Queries) CreateDocument(ctx context.Context, arg CreateDocumentParams) 
 		arg.Version,
 		arg.FileSize,
 		arg.Description,
+		arg.OriginalName,
 		arg.UploadedBy,
 	)
 	var id int64
@@ -70,17 +73,30 @@ func (q *Queries) DeleteDocument(ctx context.Context, id int64) (int64, error) {
 
 const getDocumentByID = `-- name: GetDocumentByID :one
 
-SELECT id, title, file_url, category, version, file_size, description, uploaded_by, uploaded_at
+SELECT id, title, file_url, category, version, file_size, description, original_name, uploaded_by, uploaded_at
 FROM renjana_documents
 WHERE id = ?
 `
 
+type GetDocumentByIDRow struct {
+	ID           int64          `json:"id"`
+	Title        string         `json:"title"`
+	FileUrl      string         `json:"file_url"`
+	Category     string         `json:"category"`
+	Version      int64          `json:"version"`
+	FileSize     sql.NullInt64  `json:"file_size"`
+	Description  sql.NullString `json:"description"`
+	OriginalName string         `json:"original_name"`
+	UploadedBy   sql.NullInt64  `json:"uploaded_by"`
+	UploadedAt   time.Time      `json:"uploaded_at"`
+}
+
 // ============================================================================
 // CRUD for document management (admin only)
 // ============================================================================
-func (q *Queries) GetDocumentByID(ctx context.Context, id int64) (RenjanaDocument, error) {
+func (q *Queries) GetDocumentByID(ctx context.Context, id int64) (GetDocumentByIDRow, error) {
 	row := q.db.QueryRowContext(ctx, getDocumentByID, id)
-	var i RenjanaDocument
+	var i GetDocumentByIDRow
 	err := row.Scan(
 		&i.ID,
 		&i.Title,
@@ -89,6 +105,7 @@ func (q *Queries) GetDocumentByID(ctx context.Context, id int64) (RenjanaDocumen
 		&i.Version,
 		&i.FileSize,
 		&i.Description,
+		&i.OriginalName,
 		&i.UploadedBy,
 		&i.UploadedAt,
 	)
@@ -96,7 +113,7 @@ func (q *Queries) GetDocumentByID(ctx context.Context, id int64) (RenjanaDocumen
 }
 
 const listDocumentsPaginated = `-- name: ListDocumentsPaginated :many
-SELECT id, title, file_url, category, version, file_size, description, uploaded_by, uploaded_at
+SELECT id, title, file_url, category, version, file_size, description, original_name, uploaded_by, uploaded_at
 FROM renjana_documents
 WHERE (?1 IS NULL OR ?1 = '' OR category = ?1)
 ORDER BY uploaded_at DESC
@@ -109,15 +126,28 @@ type ListDocumentsPaginatedParams struct {
 	Offset  int64       `json:"offset"`
 }
 
-func (q *Queries) ListDocumentsPaginated(ctx context.Context, arg ListDocumentsPaginatedParams) ([]RenjanaDocument, error) {
+type ListDocumentsPaginatedRow struct {
+	ID           int64          `json:"id"`
+	Title        string         `json:"title"`
+	FileUrl      string         `json:"file_url"`
+	Category     string         `json:"category"`
+	Version      int64          `json:"version"`
+	FileSize     sql.NullInt64  `json:"file_size"`
+	Description  sql.NullString `json:"description"`
+	OriginalName string         `json:"original_name"`
+	UploadedBy   sql.NullInt64  `json:"uploaded_by"`
+	UploadedAt   time.Time      `json:"uploaded_at"`
+}
+
+func (q *Queries) ListDocumentsPaginated(ctx context.Context, arg ListDocumentsPaginatedParams) ([]ListDocumentsPaginatedRow, error) {
 	rows, err := q.db.QueryContext(ctx, listDocumentsPaginated, arg.Column1, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []RenjanaDocument
+	var items []ListDocumentsPaginatedRow
 	for rows.Next() {
-		var i RenjanaDocument
+		var i ListDocumentsPaginatedRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Title,
@@ -126,6 +156,7 @@ func (q *Queries) ListDocumentsPaginated(ctx context.Context, arg ListDocumentsP
 			&i.Version,
 			&i.FileSize,
 			&i.Description,
+			&i.OriginalName,
 			&i.UploadedBy,
 			&i.UploadedAt,
 		); err != nil {
@@ -145,18 +176,19 @@ func (q *Queries) ListDocumentsPaginated(ctx context.Context, arg ListDocumentsP
 const updateDocument = `-- name: UpdateDocument :execrows
 UPDATE renjana_documents
 SET title = ?, file_url = ?, category = ?, version = ?,
-    file_size = ?, description = ?
+    file_size = ?, description = ?, original_name = ?
 WHERE id = ?
 `
 
 type UpdateDocumentParams struct {
-	Title       string         `json:"title"`
-	FileUrl     string         `json:"file_url"`
-	Category    string         `json:"category"`
-	Version     int64          `json:"version"`
-	FileSize    sql.NullInt64  `json:"file_size"`
-	Description sql.NullString `json:"description"`
-	ID          int64          `json:"id"`
+	Title        string         `json:"title"`
+	FileUrl      string         `json:"file_url"`
+	Category     string         `json:"category"`
+	Version      int64          `json:"version"`
+	FileSize     sql.NullInt64  `json:"file_size"`
+	Description  sql.NullString `json:"description"`
+	OriginalName string         `json:"original_name"`
+	ID           int64          `json:"id"`
 }
 
 func (q *Queries) UpdateDocument(ctx context.Context, arg UpdateDocumentParams) (int64, error) {
@@ -167,6 +199,7 @@ func (q *Queries) UpdateDocument(ctx context.Context, arg UpdateDocumentParams) 
 		arg.Version,
 		arg.FileSize,
 		arg.Description,
+		arg.OriginalName,
 		arg.ID,
 	)
 	if err != nil {

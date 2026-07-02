@@ -1,6 +1,7 @@
 <script lang="ts">
     import AppLayout from "../../components/AppLayout.svelte";
     import { BookOpen, Clock, User, ArrowLeft, ChevronDown, ChevronUp, Play, FileText, Award, CheckCircle } from "lucide-svelte";
+    import { inertia } from "@inertiajs/svelte";
 
     interface AppUser {
         id: number;
@@ -97,7 +98,7 @@
 </script>
 
 <AppLayout {user} pageTitle={course.title || "Kursus"} pageSubtitle={`Modul Pembelajaran ${course.category}`} activeMenu="Edukasi Bencana">
-    <a href="/edukasi" class="inline-flex items-center gap-1.5 text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 transition mb-4">
+    <a href="/edukasi" use:inertia class="inline-flex items-center gap-1.5 text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 transition mb-4">
         <ArrowLeft class="w-4 h-4" />
         Kembali ke Edukasi
     </a>
@@ -109,8 +110,14 @@
         </div>
     {:else}
         <!-- Course Header -->
-        <div class="rounded-2xl bg-gradient-to-br from-renjana-500 to-amber-500 text-white p-6 sm:p-8 mb-8">
-            <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+        <div class="relative rounded-2xl overflow-hidden text-white p-6 sm:p-8 mb-8">
+            {#if course.cover_image}
+                <img src={course.cover_image} alt={course.title} class="absolute inset-0 w-full h-full object-cover" />
+                <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/40 to-black/30"></div>
+            {:else}
+                <div class="absolute inset-0 bg-gradient-to-br from-renjana-500 to-amber-500"></div>
+            {/if}
+            <div class="relative flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                 <div class="flex-1">
                     <div class="flex items-center gap-2 mb-3">
                         <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-white/20 backdrop-blur">
@@ -161,7 +168,7 @@
                 </div>
                 {#if progress.completed}
                     <p class="text-xs text-green-600 dark:text-green-400 mt-2 flex items-center gap-1">
-                        <CheckCircle class="w-3 h-3" /> Kursus selesai! {#if has_certificate}<a href="/edukasi/course/{course.id}/certificate" class="underline font-medium">Lihat Sertifikat</a>{/if}
+                        <CheckCircle class="w-3 h-3" /> Kursus selesai! {#if has_certificate}<a href="/edukasi/course/{course.id}/certificate" use:inertia class="underline font-medium">Lihat Sertifikat</a>{/if}
                     </p>
                 {:else}
                     <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-2">Selesaikan semua modul dan kuis untuk mendapatkan sertifikat</p>
@@ -262,12 +269,12 @@
                 </div>
                 <div class="flex items-center gap-3">
                     {#if has_certificate}
-                        <a href="/edukasi/course/{course.id}/certificate" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-green-500 hover:bg-green-600 text-white text-sm font-semibold transition">
+                        <a href="/edukasi/course/{course.id}/certificate" use:inertia class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-green-500 hover:bg-green-600 text-white text-sm font-semibold transition">
                             <Award class="w-4 h-4" />
                             Lihat Sertifikat
                         </a>
                     {:else}
-                        <a href="/edukasi/course/{course.id}/quiz" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-renjana-500 hover:bg-renjana-600 text-white text-sm font-semibold transition">
+                        <a href="/edukasi/course/{course.id}/quiz" use:inertia class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-renjana-500 hover:bg-renjana-600 text-white text-sm font-semibold transition">
                             <Play class="w-4 h-4" />
                             Mulai Kuis
                         </a>
