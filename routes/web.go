@@ -24,6 +24,8 @@ type Handlers struct {
 	Registration  *handlers.RegistrationHandler
 	Static        *handlers.StaticHandler
 	UserAdmin     *handlers.UserAdminHandler
+	Complaint     *handlers.ComplaintHandler
+	Survey        *handlers.SurveyHandler
 }
 
 func SetupRoutes(app *fiber.App, h Handlers, store *session.Store, mailerService *services.MailerService, csrfMiddleware *middlewares.CSRFMiddleware) {
@@ -42,8 +44,11 @@ func SetupRoutes(app *fiber.App, h Handlers, store *session.Store, mailerService
 	// Setup public content routes — no auth required
 	setupPublicRoutes(app, h.Announcement, h.Contact, h.Static)
 
+	// Setup public form routes — no auth required
+	setupPublicFormRoutes(app, h.Complaint, h.Survey)
+
 	// Setup app routes (protected) — semua di root path
-	setupAppRoutes(app, h.App, h.Upload, h.Volunteer, h.Activity, h.Announcement, h.Contact, h.Organization, h.Registration, h.Static, h.UserAdmin, store, csrfMiddleware)
+	setupAppRoutes(app, h.App, h.Upload, h.Volunteer, h.Activity, h.Announcement, h.Contact, h.Organization, h.Registration, h.Static, h.UserAdmin, h.Complaint, h.Survey, store, csrfMiddleware)
 }
 
 func setupRegistrationRoutes(app *fiber.App, registrationHandler *handlers.RegistrationHandler, store *session.Store, csrfMiddleware *middlewares.CSRFMiddleware) {
@@ -79,13 +84,22 @@ func setupStaticRoutes(app *fiber.App) {
 	})
 }
 
+func setupPublicFormRoutes(app *fiber.App, complaintHandler *handlers.ComplaintHandler, surveyHandler *handlers.SurveyHandler) {
+	// Pengaduan — public submit, admin manage
+	app.Get("/pengaduan", complaintHandler.Index)
+	app.Post("/pengaduan", complaintHandler.Store)
+
+	// Survey Pelayanan Publik — public submit, admin results
+	app.Get("/survey", surveyHandler.Index)
+	app.Post("/survey", surveyHandler.Store)
+}
+
 func setupPublicRoutes(app *fiber.App, announcementHandler *handlers.AnnouncementHandler, contactHandler *handlers.ContactHandler, staticHandler *handlers.StaticHandler) {
 	// Static content pages — public, no auth required
 	app.Get("/peta", staticHandler.Peta)
 	app.Get("/edukasi", staticHandler.Edukasi)
 	app.Get("/galeri", staticHandler.Galeri)
 	app.Get("/dokumen", staticHandler.Dokumen)
-	app.Get("/inovasi", staticHandler.Inovasi)
 
 	// Read-only public listing
 	app.Get("/berita", announcementHandler.Index)
@@ -121,7 +135,7 @@ func setupAuthRoutes(app *fiber.App, authHandler *handlers.AuthHandler, password
 	app.Post("/reset-password/:token", passwordResetHandler.ResetPassword)
 }
 
-func setupAppRoutes(app *fiber.App, appHandler *handlers.AppHandler, uploadHandler *handlers.UploadHandler, volunteerHandler *handlers.VolunteerHandler, activityHandler *handlers.ActivityHandler, announcementHandler *handlers.AnnouncementHandler, contactHandler *handlers.ContactHandler, organizationHandler *handlers.OrganizationHandler, registrationHandler *handlers.RegistrationHandler, staticHandler *handlers.StaticHandler, userAdminHandler *handlers.UserAdminHandler, store *session.Store, csrfMiddleware *middlewares.CSRFMiddleware) {
+func setupAppRoutes(app *fiber.App, appHandler *handlers.AppHandler, uploadHandler *handlers.UploadHandler, volunteerHandler *handlers.VolunteerHandler, activityHandler *handlers.ActivityHandler, announcementHandler *handlers.AnnouncementHandler, contactHandler *handlers.ContactHandler, organizationHandler *handlers.OrganizationHandler, registrationHandler *handlers.RegistrationHandler, staticHandler *handlers.StaticHandler, userAdminHandler *handlers.UserAdminHandler, complaintHandler *handlers.ComplaintHandler, surveyHandler *handlers.SurveyHandler, store *session.Store, csrfMiddleware *middlewares.CSRFMiddleware) {
 	// Protected routes (semua di root path, bukan /app/* lagi)
 	// Apply AuthRequired globally — all routes below require auth
 	app.Use(middlewares.AuthRequired(store))
@@ -178,6 +192,10 @@ func setupAppRoutes(app *fiber.App, appHandler *handlers.AppHandler, uploadHandl
 	// Pendaftaran — approve/reject for admin (GET/POST /daftar is public)
 	app.Post("/daftar/:id/approve", middlewares.AdminRequired(store), registrationHandler.Approve)
 	app.Post("/daftar/:id/reject", middlewares.AdminRequired(store), registrationHandler.Reject)
+
+	// Pengaduan — admin manage (public submit is in setupPublicFormRoutes)
+	app.Put("/pengaduan/:id", middlewares.AdminRequired(store), complaintHandler.UpdateStatus)
+	app.Delete("/pengaduan/:id", middlewares.AdminRequired(store), complaintHandler.Destroy)
 
 	// Upload — admin only (file uploads are sensitive)
 	app.Post("/upload", middlewares.AdminRequired(store), uploadHandler.Upload)

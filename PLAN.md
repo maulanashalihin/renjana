@@ -143,7 +143,7 @@ Semua CRUD dan manajemen terjadi langsung di halaman yang sama. Admin login, lan
 | Routes | ✅ | Public GET/POST /daftar, protected /daftar/:id/{approve,reject} |
 | `frontend/pages/app/Pendaftaran.svelte` | ✅ | Admin: stats banner + queue with approve/reject buttons. Public: 4-step form with form submit to backend. |
 
-### 3.7 Read-only Backend (Peta, Edukasi, Galeri, Dokumen, Inovasi) — DONE ✅
+### 3.7 Read-only Backend (Peta, Edukasi, Galeri, Dokumen) — DONE ✅
 
 | Page | Backend | Frontend |
 |------|---------|---------|
@@ -151,7 +151,8 @@ Semua CRUD dan manajemen terjadi langsung di halaman yang sama. Admin login, lan
 | `Edukasi.svelte` | ✅ StaticService.ListEducation | ✅ Real articles from DB |
 | `Galeri.svelte` | ✅ StaticService.ListMedia | ✅ Real media from DB |
 | `Dokumen.svelte` | ✅ StaticService.ListDocuments | ✅ Real documents from DB |
-| `Inovasi.svelte` | ✅ StaticService.ListInnovations | ✅ Real innovations from DB |
+| `Pengaduan.svelte` | ✅ ComplaintService.List + Create | ✅ Real complaints from DB |
+| `Survey.svelte` | ✅ SurveyService.List + Create + Stats | ✅ Real surveys from DB |
 
 ### 3.8 Root Path Refactor — DONE ✅
 
@@ -186,11 +187,15 @@ PUBLIC
   GET  /edukasi       → StaticHandler.Edukasi         ✅ publik
   GET  /galeri        → StaticHandler.Galeri          ✅ publik
   GET  /dokumen       → StaticHandler.Dokumen         ✅ publik
-  GET  /inovasi       → StaticHandler.Inovasi         ✅ publik
+
   GET  /berita        → AnnouncementHandler.Index     ✅ publik
   GET  /kontak        → ContactHandler.Index          ✅ publik
   GET  /daftar        → RegistrationHandler.Index     ✅ publik
   POST /daftar        → RegistrationHandler.Apply     ✅ publik
+  GET  /pengaduan     → ComplaintHandler.Index       ✅ publik
+  POST /pengaduan     → ComplaintHandler.Store       ✅ publik
+  GET  /survey        → SurveyHandler.Index          ✅ publik
+  POST /survey        → SurveyHandler.Store          ✅ publik
 
 AUTH (Authenticated)
   POST /logout       → AuthHandler.Logout
@@ -425,7 +430,7 @@ type SessionData struct {
 #### Backend
 
 - 7 module CRUD: Relawan, Kegiatan, Berita, Kontak, Profil, Pendaftaran (services + handlers + queries + routes)
-- 5 read-only module: Peta, Edukasi, Galeri, Dokumen, Inovasi (StaticService + StaticHandler)
+- 4 read-only module: Peta, Edukasi, Galeri, Dokumen (StaticService + StaticHandler)
 - 9 file service test + 5 file handler test (~65 tests) ✅ passing
 - All wired in `cmd/laju-go/main.go` dan `routes/web.go`
 

@@ -60,6 +60,29 @@ type RenjanaAnnouncement struct {
 	AuthorID    sql.NullInt64  `json:"author_id"`
 }
 
+type RenjanaCertificate struct {
+	ID              int64     `json:"id"`
+	UserID          int64     `json:"user_id"`
+	CourseID        int64     `json:"course_id"`
+	CertificateCode string    `json:"certificate_code"`
+	Score           int64     `json:"score"`
+	IssuedAt        time.Time `json:"issued_at"`
+}
+
+type RenjanaComplaint struct {
+	ID          int64          `json:"id"`
+	Name        string         `json:"name"`
+	Email       string         `json:"email"`
+	Phone       sql.NullString `json:"phone"`
+	Category    string         `json:"category"`
+	Message     string         `json:"message"`
+	Status      string         `json:"status"`
+	Response    sql.NullString `json:"response"`
+	RespondedBy sql.NullInt64  `json:"responded_by"`
+	RespondedAt sql.NullTime   `json:"responded_at"`
+	CreatedAt   time.Time      `json:"created_at"`
+}
+
 type RenjanaContact struct {
 	ID         int64          `json:"id"`
 	DistrictID int64          `json:"district_id"`
@@ -69,6 +92,27 @@ type RenjanaContact struct {
 	Email      sql.NullString `json:"email"`
 	IsActive   bool           `json:"is_active"`
 	CreatedAt  time.Time      `json:"created_at"`
+}
+
+type RenjanaCourseModule struct {
+	ID         int64          `json:"id"`
+	CourseID   int64          `json:"course_id"`
+	Title      string         `json:"title"`
+	Content    string         `json:"content"`
+	VideoUrl   sql.NullString `json:"video_url"`
+	OrderIndex int64          `json:"order_index"`
+	CreatedAt  time.Time      `json:"created_at"`
+}
+
+type RenjanaCourseProgress struct {
+	ID               int64        `json:"id"`
+	UserID           int64        `json:"user_id"`
+	CourseID         int64        `json:"course_id"`
+	CompletedModules int64        `json:"completed_modules"`
+	TotalModules     int64        `json:"total_modules"`
+	Completed        bool         `json:"completed"`
+	StartedAt        time.Time    `json:"started_at"`
+	CompletedAt      sql.NullTime `json:"completed_at"`
 }
 
 type RenjanaDistrict struct {
@@ -100,6 +144,10 @@ type RenjanaEducation struct {
 	IsPublished     bool           `json:"is_published"`
 	CreatedAt       time.Time      `json:"created_at"`
 	UpdatedAt       time.Time      `json:"updated_at"`
+	CoverImage      sql.NullString `json:"cover_image"`
+	PassingScore    int64          `json:"passing_score"`
+	TotalModules    int64          `json:"total_modules"`
+	IsCourse        bool           `json:"is_course"`
 }
 
 type RenjanaInnovation struct {
@@ -139,6 +187,38 @@ type RenjanaOrganization struct {
 	SocialTiktok    sql.NullString `json:"social_tiktok"`
 	SocialYoutube   sql.NullString `json:"social_youtube"`
 	UpdatedAt       time.Time      `json:"updated_at"`
+}
+
+type RenjanaQuizAttempt struct {
+	ID             int64          `json:"id"`
+	UserID         int64          `json:"user_id"`
+	CourseID       int64          `json:"course_id"`
+	Score          int64          `json:"score"`
+	TotalQuestions int64          `json:"total_questions"`
+	Passed         bool           `json:"passed"`
+	Answers        sql.NullString `json:"answers"`
+	StartedAt      time.Time      `json:"started_at"`
+	CompletedAt    sql.NullTime   `json:"completed_at"`
+}
+
+type RenjanaQuizQuestion struct {
+	ID            int64     `json:"id"`
+	CourseID      int64     `json:"course_id"`
+	Question      string    `json:"question"`
+	Options       string    `json:"options"`
+	CorrectOption int64     `json:"correct_option"`
+	OrderIndex    int64     `json:"order_index"`
+	CreatedAt     time.Time `json:"created_at"`
+}
+
+type RenjanaSurvey struct {
+	ID              int64          `json:"id"`
+	RespondentName  sql.NullString `json:"respondent_name"`
+	RespondentEmail sql.NullString `json:"respondent_email"`
+	ServiceType     string         `json:"service_type"`
+	Rating          int64          `json:"rating"`
+	Feedback        sql.NullString `json:"feedback"`
+	CreatedAt       time.Time      `json:"created_at"`
 }
 
 type RenjanaVolunteer struct {

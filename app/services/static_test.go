@@ -25,8 +25,7 @@ func setupStaticTestDB(t *testing.T) *queries.Querier {
 		CREATE INDEX idx_renjana_media_type ON renjana_media(media_type, is_published);
 		CREATE TABLE renjana_documents (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, file_url TEXT NOT NULL, category TEXT NOT NULL DEFAULT 'SOP', version INTEGER NOT NULL DEFAULT 1, file_size INTEGER, description TEXT, uploaded_by INTEGER, uploaded_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP);
 		CREATE INDEX idx_renjana_documents_category ON renjana_documents(category, uploaded_at DESC);
-		CREATE TABLE renjana_innovations (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, year INTEGER NOT NULL, category TEXT NOT NULL DEFAULT 'Studi Kasus', summary TEXT, body TEXT, author TEXT, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP);
-		CREATE INDEX idx_renjana_innovations_year ON renjana_innovations(year DESC);
+		
 	`)
 	require.NoError(t, err)
 
@@ -40,10 +39,6 @@ func setupStaticTestDB(t *testing.T) *queries.Querier {
 
 	// Seed documents
 	_, err = db.Exec(`INSERT INTO renjana_documents (title, file_url, category) VALUES ('Doc 1', '/storage/doc1.pdf', 'SOP'), ('Doc 2', '/storage/doc2.pdf', 'Laporan')`)
-	require.NoError(t, err)
-
-	// Seed innovations
-	_, err = db.Exec(`INSERT INTO renjana_innovations (title, year, category) VALUES ('Inovasi 1', 2024, 'Studi Kasus'), ('Inovasi 2', 2024, 'Riset')`)
 	require.NoError(t, err)
 
 	return queries.NewQuerier(db)
@@ -108,30 +103,4 @@ func TestStaticServiceDocumentsList(t *testing.T) {
 	assert.Equal(t, 1, len(result.Data.([]DocumentItem)))
 }
 
-func TestStaticServiceInnovationsList(t *testing.T) {
-	q := setupStaticTestDB(t)
-	svc := NewStaticService(q)
 
-	result, err := svc.ListInnovations(context.Background(), "", 1, 20)
-	require.NoError(t, err)
-	assert.Equal(t, 2, len(result.Data.([]InnovationItem)))
-
-	// Filter by category
-	result, err = svc.ListInnovations(context.Background(), "Riset", 1, 20)
-	require.NoError(t, err)
-	assert.Equal(t, 1, len(result.Data.([]InnovationItem)))
-}
-
-func TestStaticServiceInnovationGet(t *testing.T) {
-	q := setupStaticTestDB(t)
-	svc := NewStaticService(q)
-
-	item, err := svc.GetInnovation(context.Background(), 1)
-	require.NoError(t, err)
-	assert.NotNil(t, item)
-	assert.Equal(t, "Inovasi 1", item.Title)
-
-	item, err = svc.GetInnovation(context.Background(), 99999)
-	require.NoError(t, err)
-	assert.Nil(t, item)
-}

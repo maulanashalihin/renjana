@@ -7,6 +7,8 @@ package queries
 
 import (
 	"context"
+	"database/sql"
+	"time"
 )
 
 const countEducationFiltered = `-- name: CountEducationFiltered :one
@@ -34,9 +36,21 @@ FROM renjana_education
 WHERE id = ?
 `
 
-func (q *Queries) GetEducationByID(ctx context.Context, id int64) (RenjanaEducation, error) {
+type GetEducationByIDRow struct {
+	ID              int64          `json:"id"`
+	Title           string         `json:"title"`
+	Category        string         `json:"category"`
+	Body            string         `json:"body"`
+	AgeGroup        sql.NullString `json:"age_group"`
+	DurationMinutes sql.NullInt64  `json:"duration_minutes"`
+	IsPublished     bool           `json:"is_published"`
+	CreatedAt       time.Time      `json:"created_at"`
+	UpdatedAt       time.Time      `json:"updated_at"`
+}
+
+func (q *Queries) GetEducationByID(ctx context.Context, id int64) (GetEducationByIDRow, error) {
 	row := q.db.QueryRowContext(ctx, getEducationByID, id)
-	var i RenjanaEducation
+	var i GetEducationByIDRow
 	err := row.Scan(
 		&i.ID,
 		&i.Title,
@@ -67,7 +81,19 @@ type ListEducationPaginatedParams struct {
 	Offset  int64       `json:"offset"`
 }
 
-func (q *Queries) ListEducationPaginated(ctx context.Context, arg ListEducationPaginatedParams) ([]RenjanaEducation, error) {
+type ListEducationPaginatedRow struct {
+	ID              int64          `json:"id"`
+	Title           string         `json:"title"`
+	Category        string         `json:"category"`
+	Body            string         `json:"body"`
+	AgeGroup        sql.NullString `json:"age_group"`
+	DurationMinutes sql.NullInt64  `json:"duration_minutes"`
+	IsPublished     bool           `json:"is_published"`
+	CreatedAt       time.Time      `json:"created_at"`
+	UpdatedAt       time.Time      `json:"updated_at"`
+}
+
+func (q *Queries) ListEducationPaginated(ctx context.Context, arg ListEducationPaginatedParams) ([]ListEducationPaginatedRow, error) {
 	rows, err := q.db.QueryContext(ctx, listEducationPaginated,
 		arg.Column1,
 		arg.Column2,
@@ -78,9 +104,9 @@ func (q *Queries) ListEducationPaginated(ctx context.Context, arg ListEducationP
 		return nil, err
 	}
 	defer rows.Close()
-	var items []RenjanaEducation
+	var items []ListEducationPaginatedRow
 	for rows.Next() {
-		var i RenjanaEducation
+		var i ListEducationPaginatedRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Title,

@@ -103,7 +103,7 @@ func (h *AppHandler) Menu(c *fiber.Ctx) error {
 		"galeri":   "app/Galeri",
 		"berita":   "app/Berita",
 		"dokumen":  "app/Dokumen",
-		"inovasi":  "app/Inovasi",
+
 		"daftar":   "app/Pendaftaran",
 		"kontak":   "app/Kontak",
 	}

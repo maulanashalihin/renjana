@@ -11,7 +11,7 @@ import (
 	"github.com/maulanashalihin/laju-go/app/session"
 )
 
-// StaticHandler serves read-only content pages (Edukasi, Galeri, Dokumen, Inovasi, Peta).
+// StaticHandler serves read-only content pages (Edukasi, Galeri, Dokumen, Peta).
 type StaticHandler struct {
 	store          *session.Store
 	inertiaService *services.InertiaService
@@ -106,27 +106,6 @@ func (h *StaticHandler) Dokumen(c *fiber.Ctx) error {
 	return h.inertiaService.Render(c, "app/Dokumen", fiber.Map{
 		"user":             user,
 		"documents":        result,
-		"current_category": category,
-	})
-}
-
-// Inovasi — list innovations.
-func (h *StaticHandler) Inovasi(c *fiber.Ctx) error {
-	user := h.getUser(c)
-	page, _ := strconv.Atoi(c.Query("page", "1"))
-	perPage, _ := strconv.Atoi(c.Query("per_page", "20"))
-	category := c.Query("category", "")
-
-	result, err := h.staticSvc.ListInnovations(c.Context(), category, page, perPage)
-	if err != nil {
-		slog.Error("innovations list error", "err", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to load innovations: " + err.Error(),
-		})
-	}
-	return h.inertiaService.Render(c, "app/Inovasi", fiber.Map{
-		"user":             user,
-		"innovations":      result,
 		"current_category": category,
 	})
 }

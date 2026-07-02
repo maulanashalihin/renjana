@@ -103,6 +103,8 @@ func main() {
 	contactService := services.NewContactService(querier)
 	organizationService := services.NewOrganizationService(querier)
 	staticService := services.NewStaticService(querier)
+	complaintService := services.NewComplaintService(querier)
+	surveyService := services.NewSurveyService(querier)
 
 	// Initialize Asset service (for production builds with hashed filenames)
 	assetService := services.NewAssetService("./dist/.vite/manifest.json", ".vite-port", cfg.IsDevelopment())
@@ -123,6 +125,8 @@ func main() {
 		Registration: handlers.NewRegistrationHandler(sessionStore, inertiaService, volunteerService, querier),
 		Static:       handlers.NewStaticHandler(sessionStore, inertiaService, staticService, querier),
 		UserAdmin:    handlers.NewUserAdminHandler(sessionStore, inertiaService, services.NewUserAdminService(querier), querier),
+		Complaint:    handlers.NewComplaintHandler(sessionStore, inertiaService, complaintService, querier),
+		Survey:       handlers.NewSurveyHandler(sessionStore, inertiaService, surveyService, querier),
 	}
 
 	// Setup CSRF middleware

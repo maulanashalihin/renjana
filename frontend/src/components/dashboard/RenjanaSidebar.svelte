@@ -1,5 +1,4 @@
 <script lang="ts">
-    import { page } from "@inertiajs/svelte";
     import {
         Home,
         Info,
@@ -10,10 +9,11 @@
         Image as ImageIcon,
         Newspaper,
         FileText,
-        Lightbulb,
         ClipboardList,
         Phone,
         PhoneCall,
+        MessageSquareWarning,
+        BarChart3,
     } from "lucide-svelte";
 
     interface MenuItem {
@@ -32,7 +32,8 @@
         { href: "/galeri", label: "Galeri", icon: ImageIcon },
         { href: "/berita", label: "Berita", icon: Newspaper },
         { href: "/dokumen", label: "Dokumen", icon: FileText },
-        { href: "/inovasi", label: "Data Dukung Inovasi", icon: Lightbulb },
+        { href: "/pengaduan", label: "Pengaduan", icon: MessageSquareWarning },
+        { href: "/survey", label: "Survey Pelayanan", icon: BarChart3 },
         { href: "/daftar", label: "Pendaftaran", icon: ClipboardList },
         { href: "/kontak", label: "Kontak", icon: Phone },
     ];
