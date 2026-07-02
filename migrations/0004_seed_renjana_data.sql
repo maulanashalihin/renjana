@@ -9,7 +9,7 @@
 -- 1. Seed 12 Kecamatan Tanah Bumbu
 INSERT INTO renjana_districts (name, is_active) VALUES
     ('Simpang Empat', 1),
-    ('Batulicin', 1),
+    ('Batu Licin', 1),
     ('Kusan Hilir', 1),
     ('Kusan Hulu', 1),
     ('Sungai Loban', 1),
@@ -19,7 +19,7 @@ INSERT INTO renjana_districts (name, is_active) VALUES
     ('Mantewe', 1),
     ('Kuranji', 1),
     ('Teluk Kepayang', 1),
-    ('Batu Putih', 1);
+    ('Kusan Tengah', 1);
 
 -- 2. Seed 5 Jenis Kegiatan + warna + icon (sesuai dashboard donut)
 INSERT INTO renjana_activity_types (name, color, icon, display_order, is_active) VALUES

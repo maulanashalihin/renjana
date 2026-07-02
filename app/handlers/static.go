@@ -34,12 +34,17 @@ func NewStaticHandler(
 }
 
 // getUser returns the authenticated user or nil for public access.
+// Uses session directly (works without AuthRequired middleware).
 func (h *StaticHandler) getUser(c *fiber.Ctx) *models.User {
-	userID := c.Locals("user_id")
-	if userID == nil {
+	sess, err := h.store.Get(c)
+	if err != nil {
 		return nil
 	}
-	id := userID.(int64)
+	uid := sess.Get("user_id")
+	if uid == nil {
+		return nil
+	}
+	id := uid.(int64)
 	u, err := h.querier.GetUserByID(c.Context(), id)
 	if err != nil {
 		return nil

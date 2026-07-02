@@ -178,7 +178,7 @@
             </div>
 
             <PetaMap
-                geojsonUrl="/tanahbumbu-kecamatan.geojson"
+                geojsonUrl="/dist/tanahbumbu-kecamatan.geojson"
                 volunteerData={volunteerMap}
                 onDistrictClick={(name) => (selectedDistrict = name)}
             />

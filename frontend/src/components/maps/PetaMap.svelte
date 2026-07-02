@@ -29,7 +29,7 @@
     }
 
     let {
-        geojsonUrl = "/tanahbumbu-kecamatan.geojson",
+        geojsonUrl = "/dist/tanahbumbu-kecamatan.geojson",
         volunteerData = {},
         onDistrictClick = () => {},
     }: Props = $props();
@@ -37,7 +37,6 @@
     let mapContainer: HTMLDivElement;
     let map: LeafletMap | null = null;
     let geoLayer: LeafletGeoJSON | null = null;
-    let isLoading = $state(true);
     let error: string | null = $state(null);
 
     // Linear interpolation between two colors
@@ -71,12 +70,15 @@
             delete L.Icon.Default.prototype._getIconUrl;
             L.Icon.Default.mergeOptions({ iconUrl, iconRetinaUrl, shadowUrl });
 
-            // Initialize map centered on Tanah Bumbu
+            // Initialize map langsung menampilkan Tanah Bumbu tanpa loading overlay.
+            // maxBounds menjaga viewport tetap di area Tanah Bumbu.
             map = L.map(mapContainer, {
                 zoomControl: true,
                 scrollWheelZoom: true,
                 attributionControl: true,
-            }).setView([-3.55, 115.95], 9);
+                maxBounds: L.latLngBounds([-3.8, 115.2], [-3.0, 116.2]),
+                maxBoundsViscosity: 1.0,
+            }).setView([-3.37, 115.95], 10);
 
             // OSM base tiles
             L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -152,11 +154,9 @@
                 map.fitBounds(geoLayer.getBounds(), { padding: [20, 20] });
             }
 
-            isLoading = false;
         } catch (err) {
             console.error("Failed to initialize map:", err);
             error = err instanceof Error ? err.message : "Failed to load map";
-            isLoading = false;
         }
     });
 
@@ -183,13 +183,6 @@
 <div class="relative w-full h-full min-h-[520px] rounded-xl overflow-hidden bg-neutral-100 dark:bg-neutral-800">
     <div bind:this={mapContainer} class="absolute inset-0" data-testid="peta-map"></div>
 
-    {#if isLoading}
-        <div class="absolute inset-0 flex flex-col items-center justify-center bg-white/80 dark:bg-neutral-900/80 z-[1000]">
-            <div class="w-10 h-10 border-4 border-renjana-200 border-t-renjana-600 rounded-full animate-spin"></div>
-            <p class="mt-3 text-sm text-neutral-600 dark:text-neutral-400">Memuat peta Tanah Bumbu…</p>
-        </div>
-    {/if}
-
     {#if error}
         <div class="absolute inset-0 flex items-center justify-center bg-red-50 dark:bg-red-900/20 p-6">
             <div class="text-center">
@@ -200,7 +193,7 @@
     {/if}
 
     <!-- Color legend (bottom-left) -->
-    {#if !isLoading && !error}
+    {#if !error}
         <div class="absolute bottom-4 left-4 z-[400] bg-white/95 dark:bg-neutral-900/95 backdrop-blur rounded-lg p-3 shadow-lg border border-neutral-200 dark:border-neutral-800 text-xs">
             <p class="font-semibold text-neutral-700 dark:text-neutral-300 mb-1.5">Jumlah Volunteer</p>
             <div class="flex items-center gap-2">
