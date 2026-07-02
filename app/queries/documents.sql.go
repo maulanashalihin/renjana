@@ -7,6 +7,7 @@ package queries
 
 import (
 	"context"
+	"database/sql"
 )
 
 const countDocumentsFiltered = `-- name: CountDocumentsFiltered :one
@@ -20,6 +21,78 @@ func (q *Queries) CountDocumentsFiltered(ctx context.Context, dollar_1 interface
 	var total int64
 	err := row.Scan(&total)
 	return total, err
+}
+
+const createDocument = `-- name: CreateDocument :one
+INSERT INTO renjana_documents (
+    title, file_url, category, version, file_size, description, uploaded_by
+)
+VALUES (?, ?, ?, ?, ?, ?, ?)
+RETURNING id
+`
+
+type CreateDocumentParams struct {
+	Title       string         `json:"title"`
+	FileUrl     string         `json:"file_url"`
+	Category    string         `json:"category"`
+	Version     int64          `json:"version"`
+	FileSize    sql.NullInt64  `json:"file_size"`
+	Description sql.NullString `json:"description"`
+	UploadedBy  sql.NullInt64  `json:"uploaded_by"`
+}
+
+func (q *Queries) CreateDocument(ctx context.Context, arg CreateDocumentParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, createDocument,
+		arg.Title,
+		arg.FileUrl,
+		arg.Category,
+		arg.Version,
+		arg.FileSize,
+		arg.Description,
+		arg.UploadedBy,
+	)
+	var id int64
+	err := row.Scan(&id)
+	return id, err
+}
+
+const deleteDocument = `-- name: DeleteDocument :execrows
+DELETE FROM renjana_documents WHERE id = ?
+`
+
+func (q *Queries) DeleteDocument(ctx context.Context, id int64) (int64, error) {
+	result, err := q.db.ExecContext(ctx, deleteDocument, id)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
+}
+
+const getDocumentByID = `-- name: GetDocumentByID :one
+
+SELECT id, title, file_url, category, version, file_size, description, uploaded_by, uploaded_at
+FROM renjana_documents
+WHERE id = ?
+`
+
+// ============================================================================
+// CRUD for document management (admin only)
+// ============================================================================
+func (q *Queries) GetDocumentByID(ctx context.Context, id int64) (RenjanaDocument, error) {
+	row := q.db.QueryRowContext(ctx, getDocumentByID, id)
+	var i RenjanaDocument
+	err := row.Scan(
+		&i.ID,
+		&i.Title,
+		&i.FileUrl,
+		&i.Category,
+		&i.Version,
+		&i.FileSize,
+		&i.Description,
+		&i.UploadedBy,
+		&i.UploadedAt,
+	)
+	return i, err
 }
 
 const listDocumentsPaginated = `-- name: ListDocumentsPaginated :many
@@ -67,4 +140,37 @@ func (q *Queries) ListDocumentsPaginated(ctx context.Context, arg ListDocumentsP
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateDocument = `-- name: UpdateDocument :execrows
+UPDATE renjana_documents
+SET title = ?, file_url = ?, category = ?, version = ?,
+    file_size = ?, description = ?
+WHERE id = ?
+`
+
+type UpdateDocumentParams struct {
+	Title       string         `json:"title"`
+	FileUrl     string         `json:"file_url"`
+	Category    string         `json:"category"`
+	Version     int64          `json:"version"`
+	FileSize    sql.NullInt64  `json:"file_size"`
+	Description sql.NullString `json:"description"`
+	ID          int64          `json:"id"`
+}
+
+func (q *Queries) UpdateDocument(ctx context.Context, arg UpdateDocumentParams) (int64, error) {
+	result, err := q.db.ExecContext(ctx, updateDocument,
+		arg.Title,
+		arg.FileUrl,
+		arg.Category,
+		arg.Version,
+		arg.FileSize,
+		arg.Description,
+		arg.ID,
+	)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
 }

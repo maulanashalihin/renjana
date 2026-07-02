@@ -154,7 +154,8 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             {#each featured as b}
                 <article class="group rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 overflow-hidden hover:shadow-xl hover:-translate-y-0.5 transition">
-                    <div class="relative aspect-[16/10] bg-cover bg-center overflow-hidden" style="background-image: linear-gradient(180deg, rgba(0,0,0,0.0) 50%, rgba(0,0,0,0.4) 100%), url('{b.cover_url || "/public/images/berita-visual.png"}');">
+                    <div class="relative aspect-[16/10] overflow-hidden {b.cover_url ? 'bg-cover bg-center' : 'bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center'}" style={b.cover_url ? `background-image: linear-gradient(180deg, rgba(0,0,0,0.0) 50%, rgba(0,0,0,0.4) 100%), url('${b.cover_url}');` : ''}>
+                        {#if !b.cover_url}<Newspaper class="w-12 h-12 text-neutral-300 dark:text-neutral-600" />{/if}
                         <div class="absolute top-3 left-3 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500 text-white">
                             <Sparkles class="w-3 h-3" />
                             Utama
@@ -202,8 +203,8 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {#each regular as b}
                 <article class="group rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 overflow-hidden hover:shadow-lg hover:-translate-y-0.5 transition flex flex-col">
-                    <div class="relative aspect-video bg-cover bg-center" style="background-image: url('{b.cover_url || "/public/images/berita-visual.png"}');">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+                    <div class="relative aspect-video overflow-hidden {b.cover_url ? 'bg-cover bg-center' : 'bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center'}" style={b.cover_url ? `background-image: url('${b.cover_url}');` : ''}>
+                        {#if !b.cover_url}<Newspaper class="w-10 h-10 text-neutral-300 dark:text-neutral-600" />{:else}<div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>{/if}
                         <div class="absolute top-3 left-3 flex gap-1">
                             <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold {categoryColor[b.category] || categoryColor.Pengumuman}">
                                 {b.category}
