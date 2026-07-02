@@ -56,7 +56,7 @@
 
     // Form state (public)
     let formName = $state("");
-    let formEmail = $state("");
+    let formPhone = $state("");
     let formService = $state("Pelayanan Administrasi");
     let formRating = $state<number>(0);
     let formFeedback = $state("");
@@ -175,8 +175,8 @@
                             <input type="text" name="name" bind:value={formName} class="w-full px-3 py-2.5 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" placeholder="Nama (opsional)" />
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Email</label>
-                            <input type="email" name="email" bind:value={formEmail} class="w-full px-3 py-2.5 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" placeholder="email@example.com (opsional)" />
+                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">No. HP</label>
+                            <input type="tel" name="phone" bind:value={formPhone} class="w-full px-3 py-2.5 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" placeholder="08xxxxxxxxxx (opsional)" />
                         </div>
                     </div>
 

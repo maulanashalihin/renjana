@@ -49,11 +49,17 @@ func (h *ActivityHandler) authUser(c *fiber.Ctx) (int64, *models.User, error) {
 	return id, u, nil
 }
 
-// Index — list with search, filter, pagination.
+// Index — list with search, filter, pagination. Public access.
 func (h *ActivityHandler) Index(c *fiber.Ctx) error {
-	_, user, err := h.authUser(c)
-	if err != nil {
-		return c.Redirect("/login")
+	var user *models.User
+	sess, sessErr := h.store.Get(c)
+	if sessErr == nil {
+		if uid := sess.Get("user_id"); uid != nil {
+			u, err := h.querier.GetUserByID(c.Context(), uid.(int64))
+			if err == nil {
+				user = u
+			}
+		}
 	}
 
 	page, _ := strconv.Atoi(c.Query("page", "1"))
@@ -62,9 +68,9 @@ func (h *ActivityHandler) Index(c *fiber.Ctx) error {
 	typeID, _ := strconv.ParseInt(c.Query("type_id", "0"), 10, 64)
 	status := c.Query("status", "")
 
-	// Apply district scope for koordinator role
+	// Apply district scope for koordinator role (only when logged in)
 	scopeDistrictID := int64(0)
-	if user.Role == models.RoleKoordinator && user.DistrictID.Valid {
+	if user != nil && user.Role == models.RoleKoordinator && user.DistrictID.Valid {
 		scopeDistrictID = user.DistrictID.Int64
 	}
 
@@ -161,9 +167,15 @@ func (h *ActivityHandler) Destroy(c *fiber.Ctx) error {
 
 // Show — view detail.
 func (h *ActivityHandler) Show(c *fiber.Ctx) error {
-	_, user, err := h.authUser(c)
-	if err != nil {
-		return c.Redirect("/login")
+	var user *models.User
+	sess, sessErr := h.store.Get(c)
+	if sessErr == nil {
+		if uid := sess.Get("user_id"); uid != nil {
+			u, err := h.querier.GetUserByID(c.Context(), uid.(int64))
+			if err == nil {
+				user = u
+			}
+		}
 	}
 	id, _ := strconv.ParseInt(c.Params("id"), 10, 64)
 

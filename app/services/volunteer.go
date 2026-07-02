@@ -474,3 +474,81 @@ func nullFloatToInt(n sql.NullFloat64) int64 {
 	}
 	return int64(n.Float64)
 }
+
+// ---------------------------------------------------------------------------
+// User ↔ Volunteer linkage (1:1 onboarding flow)
+// ---------------------------------------------------------------------------
+
+// OnboardingRequest — input from onboarding form.
+type OnboardingRequest struct {
+	School     string `json:"school"`
+	DistrictID int64  `json:"district_id"`
+	Phone      string `json:"phone"`
+}
+
+// GetByUserID returns the volunteer record linked to a user.
+// Returns (nil, nil) if no record exists — that's not an error.
+func (s *VolunteerService) GetByUserID(ctx context.Context, userID int64) (*VolunteerDetail, error) {
+	r, err := s.querier.GetVolunteerByUserID(ctx, sql.NullInt64{Int64: userID, Valid: true})
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	phone := ""
+	if r.Phone.Valid {
+		phone = r.Phone.String
+	}
+	avatar := ""
+	if r.AvatarUrl.Valid {
+		avatar = r.AvatarUrl.String
+	}
+	districtName := ""
+	if r.DistrictName.Valid {
+		districtName = r.DistrictName.String
+	}
+
+	return &VolunteerDetail{
+		ID:                r.ID,
+		Name:              r.Name,
+		School:            r.School,
+		DistrictID:        r.DistrictID,
+		DistrictName:      districtName,
+		Phone:             phone,
+		Status:            r.Status,
+		AvatarURL:         avatar,
+		JoinedAt:          r.JoinedAt,
+		IsActive:          r.IsActive,
+		ApplicationStatus: r.ApplicationStatus,
+		ReviewerID:        r.ReviewerID,
+		ReviewedAt:        r.ReviewedAt,
+		RejectionReason:   r.RejectionReason,
+	}, nil
+}
+
+// CreateForUser creates a volunteer record linked to a user (1:1).
+// Called during onboarding after a user registers.
+// Sets status='aktif' and application_status='approved' — user is auto-approved.
+func (s *VolunteerService) CreateForUser(ctx context.Context, userID int64, userName string, req OnboardingRequest) (*VolunteerDetail, error) {
+	if strings.TrimSpace(req.School) == "" {
+		return nil, errors.New("sekolah wajib diisi")
+	}
+	if req.DistrictID == 0 {
+		return nil, errors.New("kecamatan wajib dipilih")
+	}
+
+	id, err := s.querier.CreateVolunteerForUser(ctx, queries.CreateVolunteerForUserParams{
+		UserID:     sql.NullInt64{Int64: userID, Valid: true},
+		Name:       userName,
+		School:     req.School,
+		DistrictID: req.DistrictID,
+		Phone:      sql.NullString{String: req.Phone, Valid: strings.TrimSpace(req.Phone) != ""},
+		JoinedAt:   time.Now(),
+	})
+	if err != nil {
+		return nil, err
+	}
+	return s.Get(ctx, id)
+}
