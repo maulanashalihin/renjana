@@ -33,20 +33,29 @@ func NewSurveyHandler(
 }
 
 func (h *SurveyHandler) getUser(c *fiber.Ctx) *fiber.Map {
-	userID := c.Locals("user_id")
-	if userID == nil {
+	// Try to get user from session (works on public routes without AuthRequired middleware)
+	sess, err := h.store.Get(c)
+	if err != nil || sess.Get("user_id") == nil {
 		return nil
 	}
-	id := userID.(int64)
-	u, err := h.querier.GetUserByID(c.Context(), id)
+	userID := sess.Get("user_id").(int64)
+	role := ""
+	if r := sess.Get("role"); r != nil {
+		role = r.(string)
+	}
+
+	u, err := h.querier.GetUserByID(c.Context(), userID)
 	if err != nil {
-		return nil
+		return &fiber.Map{
+			"id":   userID,
+			"role": role,
+		}
 	}
 	return &fiber.Map{
 		"id":    u.ID,
 		"name":  u.Name,
 		"email": u.Email,
-		"role":  u.Role,
+		"role":  string(u.Role),
 	}
 }
 

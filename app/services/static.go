@@ -248,5 +248,3 @@ func (s *StaticService) ListDocuments(ctx context.Context, category string, page
 	}
 	return BuildPagination(items, page, perPage, total), nil
 }
-
-

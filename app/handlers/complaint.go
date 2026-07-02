@@ -33,20 +33,30 @@ func NewComplaintHandler(
 }
 
 func (h *ComplaintHandler) getUser(c *fiber.Ctx) *fiber.Map {
-	userID := c.Locals("user_id")
-	if userID == nil {
+	// Try to get user from session (works on public routes without AuthRequired middleware)
+	sess, err := h.store.Get(c)
+	if err != nil || sess.Get("user_id") == nil {
 		return nil
 	}
-	id := userID.(int64)
-	u, err := h.querier.GetUserByID(c.Context(), id)
+	userID := sess.Get("user_id").(int64)
+	role := ""
+	if r := sess.Get("role"); r != nil {
+		role = r.(string)
+	}
+
+	u, err := h.querier.GetUserByID(c.Context(), userID)
 	if err != nil {
-		return nil
+		// Return basic info from session even if DB lookup fails
+		return &fiber.Map{
+			"id":   userID,
+			"role": role,
+		}
 	}
 	return &fiber.Map{
 		"id":    u.ID,
 		"name":  u.Name,
 		"email": u.Email,
-		"role":  u.Role,
+		"role":  string(u.Role),
 	}
 }
 
@@ -54,7 +64,12 @@ func (h *ComplaintHandler) getUser(c *fiber.Ctx) *fiber.Map {
 func (h *ComplaintHandler) Index(c *fiber.Ctx) error {
 	user := h.getUser(c)
 	isLoggedIn := user != nil
-	isAdmin := isLoggedIn && (*user)["role"] == "admin"
+	isAdmin := false
+	if isLoggedIn {
+		if role, ok := (*user)["role"].(string); ok {
+			isAdmin = role == "admin"
+		}
+	}
 
 	if isAdmin {
 		return h.adminIndex(c, user)
@@ -64,7 +79,7 @@ func (h *ComplaintHandler) Index(c *fiber.Ctx) error {
 
 func (h *ComplaintHandler) publicIndex(c *fiber.Ctx, user *fiber.Map) error {
 	return h.inertiaService.Render(c, "app/Pengaduan", fiber.Map{
-		"user":   user,
+		"user":    user,
 		"isAdmin": false,
 	})
 }
@@ -84,10 +99,10 @@ func (h *ComplaintHandler) adminIndex(c *fiber.Ctx, user *fiber.Map) error {
 	stats, _ := h.complaintSvc.GetStats(c.Context())
 
 	return h.inertiaService.Render(c, "app/Pengaduan", fiber.Map{
-		"user":      user,
-		"isAdmin":   true,
+		"user":       user,
+		"isAdmin":    true,
 		"complaints": result,
-		"stats":     stats,
+		"stats":      stats,
 	})
 }
 

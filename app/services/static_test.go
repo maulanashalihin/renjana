@@ -102,5 +102,3 @@ func TestStaticServiceDocumentsList(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, 1, len(result.Data.([]DocumentItem)))
 }
-
-

@@ -26,6 +26,7 @@ type Handlers struct {
 	UserAdmin     *handlers.UserAdminHandler
 	Complaint     *handlers.ComplaintHandler
 	Survey        *handlers.SurveyHandler
+	Education     *handlers.EducationHandler
 }
 
 func SetupRoutes(app *fiber.App, h Handlers, store *session.Store, mailerService *services.MailerService, csrfMiddleware *middlewares.CSRFMiddleware) {
@@ -44,11 +45,14 @@ func SetupRoutes(app *fiber.App, h Handlers, store *session.Store, mailerService
 	// Setup public content routes — no auth required
 	setupPublicRoutes(app, h.Announcement, h.Contact, h.Static)
 
+	// Setup education LMS routes — course detail, quiz, certificate
+	setupEducationRoutes(app, h.Education, store)
+
 	// Setup public form routes — no auth required
 	setupPublicFormRoutes(app, h.Complaint, h.Survey)
 
 	// Setup app routes (protected) — semua di root path
-	setupAppRoutes(app, h.App, h.Upload, h.Volunteer, h.Activity, h.Announcement, h.Contact, h.Organization, h.Registration, h.Static, h.UserAdmin, h.Complaint, h.Survey, store, csrfMiddleware)
+	setupAppRoutes(app, h.App, h.Upload, h.Volunteer, h.Activity, h.Announcement, h.Contact, h.Organization, h.Registration, h.Static, h.UserAdmin, h.Complaint, h.Survey, h.Education, store, csrfMiddleware)
 }
 
 func setupRegistrationRoutes(app *fiber.App, registrationHandler *handlers.RegistrationHandler, store *session.Store, csrfMiddleware *middlewares.CSRFMiddleware) {
@@ -106,6 +110,21 @@ func setupPublicRoutes(app *fiber.App, announcementHandler *handlers.Announcemen
 	app.Get("/kontak", contactHandler.Index)
 }
 
+func setupEducationRoutes(app *fiber.App, educationHandler *handlers.EducationHandler, store *session.Store) {
+	// Course detail — public, no auth required
+	app.Get("/edukasi/course/:id", educationHandler.CourseShow)
+
+	// Quiz page — requires auth
+	app.Get("/edukasi/course/:id/quiz", middlewares.AuthRequired(store), educationHandler.QuizShow)
+	app.Post("/edukasi/course/:id/quiz", middlewares.AuthRequired(store), educationHandler.QuizSubmit)
+
+	// Certificate page — requires auth
+	app.Get("/edukasi/course/:id/certificate", middlewares.AuthRequired(store), educationHandler.CertificateShow)
+
+	// Public certificate lookup by code
+	app.Get("/edukasi/sertifikat/:code", educationHandler.CertificatePublic)
+}
+
 func setupAuthRoutes(app *fiber.App, authHandler *handlers.AuthHandler, passwordResetHandler *handlers.PasswordResetHandler, store *session.Store, mailerService *services.MailerService) {
 	// Login routes (with Guest middleware)
 	app.Get("/login", middlewares.Guest(store), authHandler.ShowLoginForm)
@@ -135,7 +154,7 @@ func setupAuthRoutes(app *fiber.App, authHandler *handlers.AuthHandler, password
 	app.Post("/reset-password/:token", passwordResetHandler.ResetPassword)
 }
 
-func setupAppRoutes(app *fiber.App, appHandler *handlers.AppHandler, uploadHandler *handlers.UploadHandler, volunteerHandler *handlers.VolunteerHandler, activityHandler *handlers.ActivityHandler, announcementHandler *handlers.AnnouncementHandler, contactHandler *handlers.ContactHandler, organizationHandler *handlers.OrganizationHandler, registrationHandler *handlers.RegistrationHandler, staticHandler *handlers.StaticHandler, userAdminHandler *handlers.UserAdminHandler, complaintHandler *handlers.ComplaintHandler, surveyHandler *handlers.SurveyHandler, store *session.Store, csrfMiddleware *middlewares.CSRFMiddleware) {
+func setupAppRoutes(app *fiber.App, appHandler *handlers.AppHandler, uploadHandler *handlers.UploadHandler, volunteerHandler *handlers.VolunteerHandler, activityHandler *handlers.ActivityHandler, announcementHandler *handlers.AnnouncementHandler, contactHandler *handlers.ContactHandler, organizationHandler *handlers.OrganizationHandler, registrationHandler *handlers.RegistrationHandler, staticHandler *handlers.StaticHandler, userAdminHandler *handlers.UserAdminHandler, complaintHandler *handlers.ComplaintHandler, surveyHandler *handlers.SurveyHandler, educationHandler *handlers.EducationHandler, store *session.Store, csrfMiddleware *middlewares.CSRFMiddleware) {
 	// Protected routes (semua di root path, bukan /app/* lagi)
 	// Apply AuthRequired globally — all routes below require auth
 	app.Use(middlewares.AuthRequired(store))
@@ -199,6 +218,9 @@ func setupAppRoutes(app *fiber.App, appHandler *handlers.AppHandler, uploadHandl
 
 	// Upload — admin only (file uploads are sensitive)
 	app.Post("/upload", middlewares.AdminRequired(store), uploadHandler.Upload)
+
+	// Education LMS — authenticated users
+	app.Get("/sertifikat-saya", educationHandler.MyCertificates)
 
 	// User management — admin only (Iterasi 4C)
 	app.Get("/admin/users", middlewares.AdminRequired(store), userAdminHandler.Index)
