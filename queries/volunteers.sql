@@ -177,3 +177,26 @@ SELECT COUNT(*) AS total
 FROM renjana_volunteers
 WHERE application_status = 'pending'
   AND district_id = ?;
+
+-- ============================================================================
+-- 1:1 user ↔ volunteer linkage (onboarding flow)
+-- ============================================================================
+
+-- name: GetVolunteerByUserID :one
+SELECT
+    v.id, v.name, v.school, v.district_id, v.phone, v.status, v.avatar_url,
+    v.joined_at, v.is_active, v.application_status, v.reviewer_id, v.reviewed_at,
+    v.rejection_reason, v.user_id,
+    d.name AS district_name
+FROM renjana_volunteers v
+LEFT JOIN renjana_districts d ON d.id = v.district_id
+WHERE v.user_id = ?;
+
+-- name: CreateVolunteerForUser :one
+-- Buat volunteer record dan link ke user_id (1:1)
+INSERT INTO renjana_volunteers (
+    user_id, name, school, district_id, phone, status, joined_at,
+    is_active, application_status
+)
+VALUES (?, ?, ?, ?, ?, 'aktif', ?, 1, 'approved')
+RETURNING id;

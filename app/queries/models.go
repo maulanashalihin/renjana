@@ -236,6 +236,7 @@ type RenjanaVolunteer struct {
 	ReviewerID        sql.NullInt64  `json:"reviewer_id"`
 	ReviewedAt        sql.NullTime   `json:"reviewed_at"`
 	RejectionReason   sql.NullString `json:"rejection_reason"`
+	UserID            sql.NullInt64  `json:"user_id"`
 }
 
 type Session struct {
