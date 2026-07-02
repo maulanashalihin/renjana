@@ -57,7 +57,7 @@
             const formData = new FormData();
             formData.append("file", file);
             isProfileLoading = true;
-            fetch("/upload", {
+            fetch("/api/avatar/upload", {
                 method: "POST",
                 body: formData,
             })
@@ -70,10 +70,7 @@
                                 Toast("Failed to save avatar: " + (err?.message || "unknown"), "error");
                             },
                             onFinish: () => {
-                                setTimeout(() => {
-                                    isProfileLoading = false;
-                                    window.location.reload();
-                                }, 500);
+                                isProfileLoading = false;
                             },
                         });
                     } else {

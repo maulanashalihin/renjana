@@ -40,10 +40,12 @@ func (h *AppHandler) Dashboard(c *fiber.Ctx) error {
 			rawUser, _ := h.userService.GetProfile(uid.(int64))
 			if rawUser != nil {
 				user = &models.User{
-					ID:    rawUser.ID,
-					Name:  rawUser.Name,
-					Email: rawUser.Email,
-					Role:  models.UserRole(rawUser.Role),
+					ID:            rawUser.ID,
+					Name:          rawUser.Name,
+					Email:         rawUser.Email,
+					Avatar:        rawUser.Avatar,
+					Role:          models.UserRole(rawUser.Role),
+					EmailVerified: rawUser.EmailVerified,
 				}
 			}
 		}
@@ -141,10 +143,12 @@ func (h *AppHandler) Profile(c *fiber.Ctx) error {
 			rawUser, _ := h.userService.GetProfile(uid.(int64))
 			if rawUser != nil {
 				user = &models.User{
-					ID:    rawUser.ID,
-					Name:  rawUser.Name,
-					Email: rawUser.Email,
-					Role:  models.UserRole(rawUser.Role),
+					ID:            rawUser.ID,
+					Name:          rawUser.Name,
+					Email:         rawUser.Email,
+					Avatar:        rawUser.Avatar,
+					Role:          models.UserRole(rawUser.Role),
+					EmailVerified: rawUser.EmailVerified,
 				}
 			}
 		}

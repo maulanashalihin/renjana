@@ -23,15 +23,22 @@ func AuthRequired(store *session.Store) fiber.Handler {
 		userID := sess.Get("user_id")
 		slog.Info("auth user id", "user_id", userID)
 
-		if userID == nil {
+		// Check both nil AND zero value (int64(0) is non-nil in Go)
+		isAuthed := false
+		if userID != nil {
+			if id, ok := userID.(int64); ok && id != 0 {
+				isAuthed = true
+			}
+		}
+
+		if !isAuthed {
 			slog.Warn("not authenticated, redirecting to login")
-			// For Inertia requests, return redirect in JSON format
+			// For Inertia requests, return 409 Conflict with X-Inertia-Location header
+			// This tells the Inertia client to do a full page redirect to /login
 			if c.Get("X-Inertia") == "true" {
-				return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-					"component": "Login",
-					"props": fiber.Map{
-						"error": "Please login to continue",
-					},
+				c.Set("X-Inertia-Location", "/login")
+				return c.Status(fiber.StatusConflict).JSON(fiber.Map{
+					"error": "Please login to continue",
 				})
 			}
 			return c.Redirect("/login")
@@ -90,9 +97,12 @@ func Guest(store *session.Store) fiber.Handler {
 		userID := sess.Get("user_id")
 		slog.Info("guest check", "user_id", userID)
 
+		// Check both nil AND zero value (int64(0) is non-nil in Go)
 		if userID != nil {
-			slog.Info("guest already authenticated, redirecting")
-			return c.Redirect("/")
+			if id, ok := userID.(int64); ok && id != 0 {
+				slog.Info("guest already authenticated, redirecting")
+				return c.Redirect("/")
+			}
 		}
 
 		return c.Next()

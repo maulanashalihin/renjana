@@ -86,9 +86,17 @@ func (s *Store) Get(c *fiber.Ctx) (*Session, error) {
 					session.id = cookieValue
 					session.userID = cached.UserID
 					session.expiresAt = cached.ExpiresAt
-					session.values["user_id"] = cached.UserID
-					session.values["email"] = cached.Email
-					session.values["role"] = cached.Role
+					// Only set user_id when non-zero so middleware can distinguish
+					// "not logged in" (nil) from "logged in as user 0"
+					if cached.UserID != 0 {
+						session.values["user_id"] = cached.UserID
+					}
+					if cached.Email != "" {
+						session.values["email"] = cached.Email
+					}
+					if cached.Role != "" {
+						session.values["role"] = cached.Role
+					}
 					if cached.DistrictID != 0 {
 						session.values["district_id"] = cached.DistrictID
 					}
@@ -122,9 +130,17 @@ func (s *Store) Get(c *fiber.Ctx) (*Session, error) {
 				// Decode session data
 				var data SessionData
 				if err := json.Unmarshal([]byte(dbSession.Data), &data); err == nil {
-					session.values["user_id"] = data.UserID
-					session.values["email"] = data.Email
-					session.values["role"] = data.Role
+					// Only set user_id when non-zero so middleware can distinguish
+					// "not logged in" (nil) from "logged in as user 0"
+					if data.UserID != 0 {
+						session.values["user_id"] = data.UserID
+					}
+					if data.Email != "" {
+						session.values["email"] = data.Email
+					}
+					if data.Role != "" {
+						session.values["role"] = data.Role
+					}
 					if data.DistrictID != 0 {
 						session.values["district_id"] = data.DistrictID
 					}
