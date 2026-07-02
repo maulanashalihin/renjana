@@ -43,7 +43,7 @@ func SetupRoutes(app *fiber.App, h Handlers, store *session.Store, mailerService
 	setupRegistrationRoutes(app, h.Registration, store, csrfMiddleware)
 
 	// Setup public content routes — no auth required
-	setupPublicRoutes(app, h.App, h.Announcement, h.Contact, h.Static)
+	setupPublicRoutes(app, h.App, h.Announcement, h.Contact, h.Organization, h.Static)
 
 	// Setup education LMS routes — course detail, quiz, certificate
 	setupEducationRoutes(app, h.Education, store)
@@ -98,7 +98,7 @@ func setupPublicFormRoutes(app *fiber.App, complaintHandler *handlers.ComplaintH
 	app.Post("/survey", surveyHandler.Store)
 }
 
-func setupPublicRoutes(app *fiber.App, appHandler *handlers.AppHandler, announcementHandler *handlers.AnnouncementHandler, contactHandler *handlers.ContactHandler, staticHandler *handlers.StaticHandler) {
+func setupPublicRoutes(app *fiber.App, appHandler *handlers.AppHandler, announcementHandler *handlers.AnnouncementHandler, contactHandler *handlers.ContactHandler, organizationHandler *handlers.OrganizationHandler, staticHandler *handlers.StaticHandler) {
 	// Dashboard — public, no auth required
 	app.Get("/", appHandler.Dashboard)
 	app.Get("/profile", appHandler.Profile)
@@ -108,6 +108,9 @@ func setupPublicRoutes(app *fiber.App, appHandler *handlers.AppHandler, announce
 	app.Get("/edukasi", staticHandler.Edukasi)
 	app.Get("/galeri", staticHandler.Galeri)
 	app.Get("/dokumen", staticHandler.Dokumen)
+
+	// Organization profile — public, no auth required
+	app.Get("/profil", organizationHandler.Index)
 
 	// Read-only public listing
 	app.Get("/berita", announcementHandler.Index)
@@ -171,8 +174,7 @@ func setupAppRoutes(app *fiber.App, appHandler *handlers.AppHandler, uploadHandl
 	app.Put("/profile", appHandler.UpdateProfile)
 	app.Put("/profile/password", appHandler.UpdatePassword)
 
-	// Organization profile — viewable by all auth users, editable by admin
-	app.Get("/profil", organizationHandler.Index)
+	// Organization profile — edit routes only (GET is public)
 	app.Put("/profil", middlewares.AdminRequired(store), organizationHandler.Update)
 	app.Post("/profil", middlewares.AdminRequired(store), organizationHandler.Update)
 

@@ -185,7 +185,7 @@
                         <p class="text-sm text-neutral-600 dark:text-neutral-400 mb-4 line-clamp-3">{b.content}</p>
                         <div class="flex items-center justify-between pt-3 border-t border-neutral-200 dark:border-neutral-800">
                             <a href="/berita/{b.id}" class="text-xs font-semibold text-renjana-600 dark:text-renjana-400 hover:underline">Baca selengkapnya</a>
-                            {#if user?.role === "admin"},
+                            {#if user?.role === "admin"}
                                 <div class="flex items-center gap-3">
                                     <button onclick={() => openEdit(b)} class="inline-flex items-center gap-1 text-xs font-semibold text-renjana-600 dark:text-renjana-400 hover:underline">
                                         <Pencil class="w-3 h-3" />

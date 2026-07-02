@@ -48,11 +48,18 @@ func (h *OrganizationHandler) authUser(c *fiber.Ctx) (int64, *models.User, error
 	return id, u, nil
 }
 
-// Index — render Profil RENJANA page with current data + edit form.
+// Index — render Profil RENJANA page with current data + edit form. Public access.
 func (h *OrganizationHandler) Index(c *fiber.Ctx) error {
-	_, user, err := h.authUser(c)
-	if err != nil {
-		return c.Redirect("/login")
+	// Detect user from session (works without AuthRequired middleware)
+	var user *models.User
+	sess, sessErr := h.store.Get(c)
+	if sessErr == nil {
+		if uid := sess.Get("user_id"); uid != nil {
+			u, err := h.querier.GetUserByID(c.Context(), uid.(int64))
+			if err == nil {
+				user = u
+			}
+		}
 	}
 
 	org, err := h.organizationSvc.Get(c.Context())

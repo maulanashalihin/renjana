@@ -84,10 +84,12 @@
     {/if}
 
     <PageHeader title="Profil RENJANA" subtitle="Informasi organisasi dan kontak" icon={Info}>
-        <button onclick={() => editing = !editing} class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-renjana-500 hover:bg-renjana-600 text-white text-sm font-semibold transition">
-            <Pencil class="w-4 h-4" />
-            {editing ? "Batal Edit" : "Edit"}
-        </button>
+        {#if user}
+            <button onclick={() => editing = !editing} class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-renjana-500 hover:bg-renjana-600 text-white text-sm font-semibold transition">
+                <Pencil class="w-4 h-4" />
+                {editing ? "Batal Edit" : "Edit"}
+            </button>
+        {/if}
     </PageHeader>
 
     <!-- Hero banner -->
