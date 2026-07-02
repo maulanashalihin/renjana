@@ -101,6 +101,7 @@ func setupPublicFormRoutes(app *fiber.App, complaintHandler *handlers.ComplaintH
 func setupPublicRoutes(app *fiber.App, appHandler *handlers.AppHandler, announcementHandler *handlers.AnnouncementHandler, contactHandler *handlers.ContactHandler, staticHandler *handlers.StaticHandler) {
 	// Dashboard — public, no auth required
 	app.Get("/", appHandler.Dashboard)
+	app.Get("/profile", appHandler.Profile)
 
 	// Static content pages — public, no auth required
 	app.Get("/peta", staticHandler.Peta)
@@ -110,6 +111,7 @@ func setupPublicRoutes(app *fiber.App, appHandler *handlers.AppHandler, announce
 
 	// Read-only public listing
 	app.Get("/berita", announcementHandler.Index)
+	app.Get("/berita/:id", announcementHandler.Show)
 	app.Get("/kontak", contactHandler.Index)
 }
 
@@ -165,8 +167,7 @@ func setupAppRoutes(app *fiber.App, appHandler *handlers.AppHandler, uploadHandl
 	// CSRF for state-changing methods (skip GET/HEAD/OPTIONS)
 	app.Use(csrfMiddleware.Protect())
 
-	// Profile
-	app.Get("/profile", appHandler.Profile)
+	// Profile — mutation only (GET is public)
 	app.Put("/profile", appHandler.UpdateProfile)
 	app.Put("/profile/password", appHandler.UpdatePassword)
 
@@ -184,10 +185,9 @@ func setupAppRoutes(app *fiber.App, appHandler *handlers.AppHandler, uploadHandl
 	app.Put("/kegiatan/:id", middlewares.AdminRequired(store), activityHandler.Update)
 	app.Delete("/kegiatan/:id", middlewares.AdminRequired(store), activityHandler.Destroy)
 
-	// Berita — CRUD for admin only (GET index is public)
+	// Berita — CRUD for admin only (GET index & show are public)
 	app.Get("/berita/create", announcementHandler.Create)
 	app.Post("/berita", middlewares.AdminRequired(store), announcementHandler.Store)
-	app.Get("/berita/:id", announcementHandler.Show)
 	app.Get("/berita/:id/edit", announcementHandler.Edit)
 	app.Put("/berita/:id", middlewares.AdminRequired(store), announcementHandler.Update)
 	app.Delete("/berita/:id", middlewares.AdminRequired(store), announcementHandler.Destroy)

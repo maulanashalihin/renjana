@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { Bell, ChevronDown, Menu, LogOut, User as UserIcon } from "lucide-svelte";
+    import { ChevronDown, Menu, LogOut, User as UserIcon } from "lucide-svelte";
     import { router } from "@inertiajs/svelte";
 
     interface User {
@@ -14,7 +14,6 @@
         user?: User;
         title?: string;
         subtitle?: string;
-        notificationCount?: number;
         onMenuClick?: () => void;
     }
 
@@ -22,7 +21,6 @@
         user,
         title = "Selamat Datang, Admin RENJANA",
         subtitle = "Dashboard Relawan Remaja Aman Bencana",
-        notificationCount = 4,
         onMenuClick,
     }: Props = $props();
 
@@ -58,23 +56,8 @@
             </div>
         </div>
 
-        <!-- Right: Notifications + User -->
+        <!-- Right: User -->
         <div class="flex items-center gap-2 sm:gap-4">
-            <!-- Notifications -->
-            <button
-                class="relative p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                aria-label="Notifikasi"
-            >
-                <Bell class="w-5 h-5" />
-                {#if notificationCount > 0}
-                    <span
-                        class="absolute -top-0.5 -right-0.5 bg-emergency text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1"
-                    >
-                        {notificationCount}
-                    </span>
-                {/if}
-            </button>
-
             {#if user}
                 <!-- User Menu (logged in) -->
                 <div class="relative">

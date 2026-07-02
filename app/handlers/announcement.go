@@ -152,10 +152,15 @@ func (h *AnnouncementHandler) Destroy(c *fiber.Ctx) error {
 
 // Show — view detail.
 func (h *AnnouncementHandler) Show(c *fiber.Ctx) error {
-	_, user, err := h.authUser(c)
-	if err != nil {
-		return c.Redirect("/login")
+	// Detect user from session (works without AuthRequired middleware)
+	var user *models.User
+	sess, sessErr := h.store.Get(c)
+	if sessErr == nil {
+		if uid := sess.Get("user_id"); uid != nil {
+			user, _ = h.querier.GetUserByID(c.Context(), uid.(int64))
+		}
 	}
+
 	id, _ := strconv.ParseInt(c.Params("id"), 10, 64)
 
 	ann, err := h.announcementSvc.Get(c.Context(), id)

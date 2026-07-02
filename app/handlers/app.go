@@ -132,21 +132,24 @@ func lastIndex(s, substr string) int {
 	return -1
 }
 
-// Profile returns user profile (Inertia)
+// Profile returns user profile (Inertia) — public, no auth required.
+// Menampilkan profil jika user login, atau null jika publik.
 func (h *AppHandler) Profile(c *fiber.Ctx) error {
-	// Get user info from locals (set by AuthRequired middleware)
-	userID := c.Locals("user_id")
-
-	if userID == nil {
-		// Should not happen as AuthRequired middleware handles this
-		return c.Redirect("/login")
-	}
-
-	user, err := h.userService.GetProfile(userID.(int64))
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to load profile",
-		})
+	// Detect user from session (works without AuthRequired middleware)
+	var user *models.User
+	sess, sessErr := h.store.Get(c)
+	if sessErr == nil {
+		if uid := sess.Get("user_id"); uid != nil {
+			rawUser, _ := h.userService.GetProfile(uid.(int64))
+			if rawUser != nil {
+				user = &models.User{
+					ID:    rawUser.ID,
+					Name:  rawUser.Name,
+					Email: rawUser.Email,
+					Role:  models.UserRole(rawUser.Role),
+				}
+			}
+		}
 	}
 
 	return h.inertiaService.Render(c, "app/Profile", fiber.Map{
