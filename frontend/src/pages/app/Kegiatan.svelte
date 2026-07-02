@@ -236,7 +236,7 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             {#each upcomingItems as k}
                 {@const colors = typeColorMap[k.type_name] || typeColorMap.Pelatihan}
-                <div class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-white to-neutral-50 dark:from-neutral-900 dark:to-neutral-950 border border-neutral-200 dark:border-neutral-800 hover:shadow-xl transition">
+                <a href="/kegiatan/{k.id}" class="group relative block overflow-hidden rounded-2xl bg-gradient-to-br from-white to-neutral-50 dark:from-neutral-900 dark:to-neutral-950 border border-neutral-200 dark:border-neutral-800 hover:shadow-xl transition">
                     <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-renjana-500 via-renjana-400 to-amber-500"></div>
                     <div class="absolute top-4 right-4 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300">
                         <Sparkles class="w-3 h-3" />
@@ -264,8 +264,9 @@
                                 {k.location} • {k.district_name}
                             </div>
                         </div>
-                        <div class="mt-4 pt-4 border-t border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
-                            <div class="flex gap-2">
+                        <div class="mt-4 pt-4 border-t border-neutral-200 dark:border-neutral-800 flex items-center justify-between" onclick={(e) => e.stopPropagation()}
+                            role="group">
+                            <div class="flex gap-2 relative z-10">
                                 {#if canEdit}
                                     <button onclick={() => openEdit(k)} class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold transition">
                                         <Pencil class="w-3 h-3" />
@@ -281,7 +282,7 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </a>
             {/each}
         </div>
     {/if}
@@ -291,7 +292,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {#each regularItems as k}
                 {@const colors = typeColorMap[k.type_name] || typeColorMap.Pelatihan}
-                <div class="rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-5 hover:shadow-lg transition flex flex-col">
+                <a href="/kegiatan/{k.id}" class="block rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-5 hover:shadow-lg transition flex flex-col group">
                     <div class="flex items-start justify-between gap-2 mb-3">
                         <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium {colors.bg} {colors.text}">
                             {k.type_name}
@@ -302,7 +303,7 @@
                             <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300">AKTIF</span>
                         {/if}
                     </div>
-                    <h3 class="text-base font-bold text-neutral-900 dark:text-white mb-2 line-clamp-2">{k.title}</h3>
+                    <h3 class="text-base font-bold text-neutral-900 dark:text-white mb-2 line-clamp-2 group-hover:text-renjana-600 dark:group-hover:text-renjana-400 transition">{k.title}</h3>
                     {#if k.description}
                         <p class="text-xs text-neutral-600 dark:text-neutral-400 mb-4 line-clamp-2 flex-1">{k.description}</p>
                     {/if}
@@ -320,7 +321,7 @@
                             <span class="truncate">{k.location}</span>
                         </div>
                     </div>
-                    <div class="mt-4 pt-3 border-t border-neutral-200 dark:border-neutral-800 flex gap-2">
+                    <div class="mt-4 pt-3 border-t border-neutral-200 dark:border-neutral-800 flex gap-2 relative z-10" onclick={(e) => e.stopPropagation()} role="group">
                         {#if canEdit}
                             <button onclick={() => openEdit(k)} class="flex-1 inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:border-renjana-500 text-neutral-700 dark:text-neutral-300 text-xs font-semibold transition">
                                 <Pencil class="w-3 h-3" />
@@ -333,7 +334,7 @@
                             </button>
                         {/if}
                     </div>
-                </div>
+                </a>
             {/each}
         </div>
     {:else if upcomingItems.length === 0}

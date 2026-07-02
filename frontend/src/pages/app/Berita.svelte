@@ -98,18 +98,11 @@
     }
 
     function openCreate() {
-        actionType = "create";
-        editTarget = null;
+        window.location.href = "/berita/create";
     }
 
     function openEdit(item: Announcement) {
-        actionType = "edit";
-        editTarget = item;
-    }
-
-    function closeModal() {
-        actionType = "";
-        editTarget = null;
+        window.location.href = `/berita/${item.id}/edit`;
     }
 
     function handleDelete(id: number) {
@@ -260,61 +253,5 @@
         </div>
     {/if}
 
-    <!-- Create/Edit Modal -->
-    {#if actionType === "create" || actionType === "edit"}
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-            <div class="bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-                <div class="flex items-center justify-between p-6 border-b border-neutral-200 dark:border-neutral-800">
-                    <h2 class="text-xl font-bold text-neutral-900 dark:text-white">
-                        {actionType === "create" ? "Tambah Berita" : "Edit Berita"}
-                    </h2>
-                    <button onclick={closeModal} class="text-neutral-500 hover:text-neutral-700"><X class="w-5 h-5" /></button>
-                </div>
-                <form method="POST" action={actionType === "create" ? "/berita" : `/berita/${editTarget?.id}`} class="p-6 space-y-4">
-                    {#if actionType === "edit"}
-                        <input type="hidden" name="_method" value="PUT" />
-                    {/if}
-                    <div>
-                        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Judul *</label>
-                        <input type="text" name="title" required value={editTarget?.title ?? ""} class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Kategori</label>
-                            <select name="category" class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none">
-                                {#each categories as c}
-                                    <option value={c} selected={editTarget?.category === c}>{c}</option>
-                                {/each}
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Status</label>
-                            <select name="is_published" class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none">
-                                <option value="true" selected={editTarget?.is_published === true}>Publish</option>
-                                <option value="false" selected={editTarget?.is_published === false}>Draft</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">URL Cover</label>
-                        <input type="url" name="cover_url" value={editTarget?.cover_url ?? ""} placeholder="https://..." class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Ringkasan *</label>
-                        <textarea name="content" required rows="3" class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none resize-none">{editTarget?.content ?? ""}</textarea>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Konten Lengkap</label>
-                        <textarea name="body" rows="6" class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none resize-none">{editTarget?.body ?? ""}</textarea>
-                    </div>
-                    <div class="flex justify-end gap-2 pt-4 border-t border-neutral-200 dark:border-neutral-800">
-                        <button type="button" onclick={closeModal} class="px-4 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 text-sm font-medium hover:border-renjana-500 transition">Batal</button>
-                        <button type="submit" class="px-4 py-2 rounded-lg bg-renjana-500 hover:bg-renjana-600 text-white text-sm font-semibold transition">
-                            {actionType === "create" ? "Tambah" : "Simpan"}
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    {/if}
+
 </AppLayout>
