@@ -72,7 +72,7 @@
     <div class="flex flex-col items-center gap-6">
         <!-- Donut -->
         <div class="flex justify-center">
-            <svg viewBox="0 0 160 160" class="w-60 h-60">
+            <svg viewBox="0 0 160 160" class="w-72 h-72">
                 {#each segments() as seg}
                     <path
                         d={seg.path}
