@@ -3,6 +3,7 @@
     import { inertia } from "@inertiajs/svelte";
 
     interface Announcement {
+        id: number;
         title: string;
         date: string;
         excerpt: string;
@@ -32,7 +33,7 @@
         <div class="flex-1 space-y-2.5">
             {#each announcements as a, i}
                 <a
-                    href="/berita"
+                    href="/berita/{a.id}"
                     use:inertia
                     class="flex gap-3 p-2.5 rounded-xl transition-colors hover:bg-renjana-50/80 dark:hover:bg-renjana-500/5 border border-transparent hover:border-renjana-200/50 dark:hover:border-renjana-500/20"
                 >

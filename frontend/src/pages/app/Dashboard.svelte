@@ -202,6 +202,7 @@
 
     let announcementList = $derived(
         latest_announcements.map(a => ({
+            id: a.id,
             title: a.title,
             date: new Date(a.published_at).toLocaleDateString("id-ID", {
                 day: "numeric",
