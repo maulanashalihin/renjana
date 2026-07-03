@@ -1,7 +1,7 @@
 <script lang="ts">
     import AppLayout from "../../components/AppLayout.svelte";
     import PageHeader from "../../lib/components/PageHeader.svelte";
-    import { Info, Target, Eye, Users, Building2, Calendar, Award, Handshake, MapPin, Clock, Pencil, Save, X } from "lucide-svelte";
+    import { Info, Target, Eye, Users, Building2, Award, Handshake, MapPin, Clock, Pencil, Save, FileDown } from "lucide-svelte";
 
     interface AppUser {
         id: number;
@@ -84,12 +84,22 @@
     {/if}
 
     <PageHeader title="Profil RENJANA" subtitle="Informasi organisasi dan kontak" icon={Info}>
-        {#if user}
-            <button onclick={() => editing = !editing} class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-renjana-500 hover:bg-renjana-600 text-white text-sm font-semibold transition">
-                <Pencil class="w-4 h-4" />
-                {editing ? "Batal Edit" : "Edit"}
-            </button>
-        {/if}
+        <div class="flex gap-2">
+            <a
+                href="/public/panduan-penggunaan-renjana.pdf"
+                target="_blank"
+                class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:border-renjana-500 text-neutral-700 dark:text-neutral-300 text-sm font-semibold transition"
+            >
+                <FileDown class="w-4 h-4" />
+                Panduan
+            </a>
+            {#if user}
+                <button onclick={() => editing = !editing} class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-renjana-500 hover:bg-renjana-600 text-white text-sm font-semibold transition">
+                    <Pencil class="w-4 h-4" />
+                    {editing ? "Batal Edit" : "Edit"}
+                </button>
+            {/if}
+        </div>
     </PageHeader>
 
     <!-- Hero banner -->
@@ -146,19 +156,19 @@
                     <div class="space-y-4">
                         <div>
                             <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Visi</label>
-                            <textarea name="vision" rows="3" class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none resize-none">{org.vision}</textarea>
+                            <textarea name="vision" rows="3" class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none resize-none">{org.vision}</textarea>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Misi (satu per baris)</label>
-                            <textarea name="mission" rows="5" class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none resize-none">{org.mission}</textarea>
+                            <textarea name="mission" rows="5" class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none resize-none">{org.mission}</textarea>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Sejarah</label>
-                            <textarea name="history" rows="4" class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none resize-none">{org.history}</textarea>
+                            <textarea name="history" rows="4" class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none resize-none">{org.history}</textarea>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Struktur / Mitra (satu per baris)</label>
-                            <textarea name="structure" rows="4" class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none resize-none">{org.structure}</textarea>
+                            <textarea name="structure" rows="4" class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none resize-none">{org.structure}</textarea>
                         </div>
                     </div>
                 {:else if activeTab === "kontak"}
@@ -166,31 +176,31 @@
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Email</label>
-                                <input type="email" name="contact_email" value={org.contact_email} class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
+                                <input type="email" name="contact_email" value={org.contact_email} class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Telepon</label>
-                                <input type="tel" name="contact_phone" value={org.contact_phone} class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
+                                <input type="tel" name="contact_phone" value={org.contact_phone} class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
                             </div>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Alamat</label>
-                            <textarea name="address" rows="3" class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none resize-none">{org.address}</textarea>
+                            <textarea name="address" rows="3" class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none resize-none">{org.address}</textarea>
                         </div>
                     </div>
                 {:else}
                     <div class="space-y-4">
                         <div>
                             <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Instagram</label>
-                            <input type="text" name="social_instagram" value={org.social_instagram} placeholder="@renjana" class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
+                            <input type="text" name="social_instagram" value={org.social_instagram} placeholder="@renjana" class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">TikTok</label>
-                            <input type="text" name="social_tiktok" value={org.social_tiktok} placeholder="@renjana" class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
+                            <input type="text" name="social_tiktok" value={org.social_tiktok} placeholder="@renjana" class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">YouTube</label>
-                            <input type="text" name="social_youtube" value={org.social_youtube} class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
+                            <input type="text" name="social_youtube" value={org.social_youtube} class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
                         </div>
                     </div>
                 {/if}
@@ -270,13 +280,13 @@
                             <p class="text-xs uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-2">Sosial Media</p>
                             <div class="flex gap-2 flex-wrap">
                                 {#if org.social_instagram}
-                                    <span class="px-3 py-1 rounded-full bg-pink-100 dark:bg-pink-900/30 text-pink-700 text-sm">Instagram: {org.social_instagram}</span>
+                                    <span class="px-3 py-1 rounded-full bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300 text-sm">Instagram: {org.social_instagram}</span>
                                 {/if}
                                 {#if org.social_tiktok}
-                                    <span class="px-3 py-1 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-700 text-sm">TikTok: {org.social_tiktok}</span>
+                                    <span class="px-3 py-1 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-sm">TikTok: {org.social_tiktok}</span>
                                 {/if}
                                 {#if org.social_youtube}
-                                    <span class="px-3 py-1 rounded-full bg-red-100 dark:bg-red-900/30 text-red-700 text-sm">YouTube: {org.social_youtube}</span>
+                                    <span class="px-3 py-1 rounded-full bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-sm">YouTube: {org.social_youtube}</span>
                                 {/if}
                             </div>
                         </div>

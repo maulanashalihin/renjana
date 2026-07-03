@@ -72,7 +72,7 @@ func (s *UserService) UpdateProfile(userID int64, req models.UpdateProfileReques
 		return nil, err
 	}
 
-	// Update fields
+	// Update user fields
 	if req.Name != "" {
 		user.Name = req.Name
 	}
@@ -82,6 +82,12 @@ func (s *UserService) UpdateProfile(userID int64, req models.UpdateProfileReques
 
 	if err := s.querier.UpdateUser(context.Background(), user); err != nil {
 		return nil, err
+	}
+
+	// Sync name & avatar ke volunteer record kalau user punya volunteer account
+	vol, volErr := s.querier.GetVolunteerByUserID(context.Background(), userID)
+	if volErr == nil {
+		_ = s.querier.UpdateVolunteerProfile(context.Background(), vol.ID, req.Name, user.Avatar)
 	}
 
 	// Invalidate old cache entry

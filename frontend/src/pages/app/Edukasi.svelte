@@ -41,7 +41,7 @@
 
     let search = $state("");
     let activeCategory = $state<string | null>(null);
-    const categories = ["Gempa", "Banjir", "Kebakaran", "Longsor", "Tsunami"];
+    const categories = ["Gempa", "Banjir", "Kebakaran", "Longsor", "Tsunami", "Asap", "Angin"];
 
     const items = $derived(articles?.data ?? []);
     const filtered = $derived.by(() => {
@@ -64,11 +64,13 @@
     }
 
     const categoryColors: Record<string, string> = {
-        Gempa: "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300",
-        Banjir: "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300",
-        Kebakaran: "bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-300",
-        Longsor: "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300",
-        Tsunami: "bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300",
+        Gempa: "bg-amber-100 dark:bg-amber-900/80 text-amber-700 dark:text-amber-200",
+        Banjir: "bg-blue-100 dark:bg-blue-900/80 text-blue-700 dark:text-blue-200",
+        Kebakaran: "bg-rose-100 dark:bg-rose-900/80 text-rose-700 dark:text-rose-200",
+        Longsor: "bg-emerald-100 dark:bg-emerald-900/80 text-emerald-700 dark:text-emerald-200",
+        Tsunami: "bg-cyan-100 dark:bg-cyan-900/80 text-cyan-700 dark:text-cyan-200",
+        Asap: "bg-stone-100 dark:bg-stone-900/80 text-stone-700 dark:text-stone-200",
+        Angin: "bg-teal-100 dark:bg-teal-900/80 text-teal-700 dark:text-teal-200",
     };
 
     function courseUrl(id: number): string {
@@ -93,7 +95,7 @@
     <div class="mb-6">
         <div class="relative max-w-md">
             <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
-            <input type="text" placeholder="Cari kursus..." bind:value={search} class="w-full pl-10 pr-3 py-2.5 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
+            <input type="text" placeholder="Cari kursus..." bind:value={search} class="w-full pl-10 pr-3 py-2.5 rounded-lg bg-white dark:bg-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
         </div>
     </div>
 
@@ -161,7 +163,7 @@
                                 <GraduationCap class="w-12 h-12 text-renjana-500 opacity-50" />
                             </div>
                         {/if}
-                        <span class="absolute top-3 left-3 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold {categoryColors[e.category] || 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700'}">
+                        <span class="absolute top-3 left-3 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold {categoryColors[e.category] || 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300'}">
                             {e.category}
                         </span>
                         {#if e.total_modules}

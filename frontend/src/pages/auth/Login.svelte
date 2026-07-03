@@ -1,6 +1,6 @@
 <script lang="ts">
     import { router } from "@inertiajs/svelte";
-    import { Lock, Mail, ArrowRight, Eye, EyeOff, Shield } from "lucide-svelte";
+    import { Lock, Mail, Eye, EyeOff, Shield } from "lucide-svelte";
 
     let form = $state({
         email: "",
@@ -51,9 +51,9 @@
         <div class="relative z-10 max-w-lg">
             <!-- Logo -->
             <div class="mb-8 flex items-center gap-3">
-                <img src="/public/images/renjana-logo.svg" alt="RENJANA" class="w-16 h-16" />
+                <img src="/public/images/renjana-logo.png" alt="RENJANA" class="h-16 w-auto" />
                 <div>
-                    <h1 class="text-3xl font-black italic text-slate-900 dark:text-white tracking-tight">
+                    <h1 class="text-4xl font-black text-slate-900 dark:text-white tracking-tight">
                         <span class="text-renjana-500">RENJANA</span>
                     </h1>
                     <p class="text-sm text-slate-600 dark:text-slate-400">Relawan Remaja Aman Bencana</p>
@@ -99,8 +99,8 @@
         <div class="w-full max-w-md">
             <!-- Mobile Logo -->
             <div class="lg:hidden mb-8 flex flex-col items-center gap-2">
-                <img src="/public/images/renjana-logo.svg" alt="RENJANA" class="w-16 h-16" />
-                <h1 class="text-2xl font-black italic text-slate-900 dark:text-white">
+                <img src="/public/images/renjana-logo.png" alt="RENJANA" class="h-16 w-auto" />
+                <h1 class="text-3xl font-black text-slate-900 dark:text-white">
                     <span class="text-renjana-500">RENJANA</span>
                 </h1>
                 <p class="text-xs text-slate-600 dark:text-slate-400">Relawan Remaja Aman Bencana</p>

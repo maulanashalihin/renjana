@@ -51,6 +51,7 @@
         school: volunteer?.school ?? "",
         district_id: volunteer?.district_id ?? 0,
         phone: volunteer?.phone ?? "",
+        avatar_url: "",
     });
 
     let isLoading = $state(false);
@@ -81,6 +82,7 @@
         e.preventDefault();
         if (!validate()) return;
         isLoading = true;
+        form.avatar_url = user?.avatar ?? "";
         router.post("/onboarding", form, {
             onFinish: () => {
                 setTimeout(() => {

@@ -5,6 +5,13 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"io"
+	"log/slog"
+	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/maulanashalihin/laju-go/app/models"
 	"github.com/maulanashalihin/laju-go/app/queries"
@@ -99,6 +106,16 @@ func (s *AuthService) ProcessGoogleToken(ctx context.Context, code string) (*mod
 	// Check if user exists by Google ID
 	user, err := s.querier.GetUserByGoogleID(ctx, googleUser.ID)
 	if err == nil {
+		// Migrate external avatar to local if needed
+		if user.Avatar != "" && !strings.HasPrefix(user.Avatar, "/storage/") {
+			if localPath, dlErr := s.downloadAndSaveAvatar(ctx, user.Avatar, googleUser.ID); dlErr != nil {
+				slog.Warn("failed to download avatar for existing user", "user_id", user.ID, "error", dlErr)
+			} else if upErr := s.querier.UpdateUserAvatar(ctx, user.ID, localPath); upErr != nil {
+				slog.Warn("failed to update avatar path", "user_id", user.ID, "error", upErr)
+			} else {
+				user.Avatar = localPath
+			}
+		}
 		return user, nil
 	}
 	if !errors.Is(err, queries.ErrUserNotFound) {
@@ -110,10 +127,28 @@ func (s *AuthService) ProcessGoogleToken(ctx context.Context, code string) (*mod
 	if err == nil {
 		// Link Google ID to existing account
 		user.GoogleID = sql.NullString{String: googleUser.ID, Valid: true}
+
+		// Migrate external avatar to local if needed
+		if user.Avatar != "" && !strings.HasPrefix(user.Avatar, "/storage/") {
+			if localPath, dlErr := s.downloadAndSaveAvatar(ctx, user.Avatar, googleUser.ID); dlErr != nil {
+				slog.Warn("failed to download avatar for existing user", "user_id", user.ID, "error", dlErr)
+			} else {
+				user.Avatar = localPath
+			}
+		}
+
 		if err := s.querier.UpdateUser(ctx, user); err != nil {
 			return nil, err
 		}
 		return user, nil
+	}
+
+	// Download avatar to local storage
+	localAvatar := googleUser.Picture
+	if localPath, dlErr := s.downloadAndSaveAvatar(ctx, googleUser.Picture, googleUser.ID); dlErr != nil {
+		slog.Warn("failed to download Google avatar", "email", googleUser.Email, "error", dlErr)
+	} else {
+		localAvatar = localPath
 	}
 
 	// Create new user
@@ -124,7 +159,7 @@ func (s *AuthService) ProcessGoogleToken(ctx context.Context, code string) (*mod
 			String: googleUser.ID,
 			Valid:  true,
 		},
-		Avatar:        googleUser.Picture,
+		Avatar:        localAvatar,
 		EmailVerified: googleUser.Verified,
 		Role:          models.RoleRelawan,
 	}
@@ -202,6 +237,61 @@ func (s *AuthService) GetUserByID(id int64) (*models.User, error) {
 // hashPassword hashes a password using argon2id with the configured params.
 func (s *AuthService) hashPassword(password string) (string, error) {
 	return generateFromPassword(password, s.argon2Params)
+}
+
+// downloadAndSaveAvatar downloads an external avatar image and saves it to local storage.
+// Returns the local URL path (/storage/avatars/<filename>) or an error.
+func (s *AuthService) downloadAndSaveAvatar(ctx context.Context, pictureURL, googleID string) (string, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, pictureURL, nil)
+	if err != nil {
+		return "", fmt.Errorf("create request: %w", err)
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("download: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("unexpected status %d", resp.StatusCode)
+	}
+
+	// Detect extension from Content-Type
+	contentType := resp.Header.Get("Content-Type")
+	ext := ".jpg"
+	switch {
+	case strings.Contains(contentType, "jpeg"), strings.Contains(contentType, "jpg"):
+		ext = ".jpg"
+	case strings.Contains(contentType, "png"):
+		ext = ".png"
+	case strings.Contains(contentType, "gif"):
+		ext = ".gif"
+	case strings.Contains(contentType, "webp"):
+		ext = ".webp"
+	}
+
+	filename := googleID + ext
+
+	// Ensure directory exists
+	avatarDir := "./storage/avatars"
+	if err := os.MkdirAll(avatarDir, 0755); err != nil {
+		return "", fmt.Errorf("mkdir: %w", err)
+	}
+
+	filePath := filepath.Join(avatarDir, filename)
+	f, err := os.Create(filePath)
+	if err != nil {
+		return "", fmt.Errorf("create file: %w", err)
+	}
+	defer f.Close()
+
+	if _, err := io.Copy(f, resp.Body); err != nil {
+		return "", fmt.Errorf("write file: %w", err)
+	}
+
+	slog.Info("saved avatar locally", "filename", filename, "source", pictureURL)
+	return "/storage/avatars/" + filename, nil
 }
 
 // GetOAuthURL returns the OAuth URL for Google login

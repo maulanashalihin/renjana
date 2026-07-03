@@ -298,6 +298,9 @@
     :global(.education-content p) {
         margin-bottom: 1rem; line-height: 1.625; color: #404040;
     }
+    :global(.dark .education-content p) {
+        color: #d4d4d4;
+    }
     :global(.education-content ul) {
         margin-bottom: 1rem;
     }

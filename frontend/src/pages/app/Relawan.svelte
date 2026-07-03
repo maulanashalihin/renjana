@@ -176,11 +176,11 @@
         <div class="flex flex-col lg:flex-row lg:items-center gap-3">
             <div class="relative flex-1">
                 <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
-                <input type="text" placeholder="Cari nama atau sekolah..." bind:value={search} onkeydown={(e) => e.key === "Enter" && applyFilter()} class="w-full pl-10 pr-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
+                <input type="text" placeholder="Cari nama atau sekolah..." bind:value={search} onkeydown={(e) => e.key === "Enter" && applyFilter()} class="w-full pl-10 pr-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
             </div>
             <div class="relative">
                 <MapPin class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400 pointer-events-none" />
-                <select bind:value={districtFilter} onchange={applyFilter} class="pl-10 pr-8 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm appearance-none cursor-pointer focus:border-renjana-500 outline-none min-w-[180px]">
+                <select bind:value={districtFilter} onchange={applyFilter} class="pl-10 pr-8 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm appearance-none cursor-pointer focus:border-renjana-500 outline-none min-w-[180px]">
                     <option value={0}>Semua Kecamatan</option>
                     {#each districts as d}
                         <option value={d.id}>{d.name}</option>
@@ -189,14 +189,14 @@
             </div>
             <div class="relative">
                 <Filter class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400 pointer-events-none" />
-                <select bind:value={statusFilter} onchange={applyFilter} class="pl-10 pr-8 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm appearance-none cursor-pointer focus:border-renjana-500 outline-none min-w-[140px]">
+                <select bind:value={statusFilter} onchange={applyFilter} class="pl-10 pr-8 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm appearance-none cursor-pointer focus:border-renjana-500 outline-none min-w-[140px]">
                     <option value="all">Semua Status</option>
                     <option value="aktif">Aktif</option>
                     <option value="nonaktif">Nonaktif</option>
                 </select>
             </div>
             <div class="relative">
-                <select bind:value={appFilter} onchange={applyFilter} class="pl-3 pr-8 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm appearance-none cursor-pointer focus:border-renjana-500 outline-none min-w-[140px]">
+                <select bind:value={appFilter} onchange={applyFilter} class="pl-3 pr-8 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm appearance-none cursor-pointer focus:border-renjana-500 outline-none min-w-[140px]">
                     <option value="all">Semua Aplikasi</option>
                     <option value="approved">Approved</option>
                     <option value="pending">Pending</option>
@@ -313,15 +313,15 @@
                     {/if}
                     <div>
                         <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Nama *</label>
-                        <input type="text" name="name" required value={editTarget?.name ?? ""} class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
+                        <input type="text" name="name" required value={editTarget?.name ?? ""} class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Sekolah *</label>
-                        <input type="text" name="school" required value={editTarget?.school ?? ""} class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
+                        <input type="text" name="school" required value={editTarget?.school ?? ""} class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Kecamatan *</label>
-                        <select name="district_id" required class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none">
+                        <select name="district_id" required class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none">
                             {#each districts as d}
                                 <option value={d.id} selected={editTarget?.district_id === d.id}>{d.name}</option>
                             {/each}
@@ -330,11 +330,11 @@
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Phone</label>
-                            <input type="tel" name="phone" value={editTarget?.phone ?? ""} class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
+                            <input type="tel" name="phone" value={editTarget?.phone ?? ""} class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Status</label>
-                            <select name="status" class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none">
+                            <select name="status" class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none">
                                 <option value="aktif" selected={editTarget?.status === "aktif"}>Aktif</option>
                                 <option value="nonaktif" selected={editTarget?.status === "nonaktif"}>Nonaktif</option>
                             </select>
@@ -342,7 +342,7 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Tanggal Gabung</label>
-                        <input type="date" name="joined_at" value={editTarget?.joined_at?.slice(0, 10) ?? ""} class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
+                        <input type="date" name="joined_at" value={editTarget?.joined_at?.slice(0, 10) ?? ""} class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
                     </div>
                     <div class="flex justify-end gap-2 pt-4 border-t border-neutral-200 dark:border-neutral-800">
                         <button type="button" onclick={closeModal} class="px-4 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 text-sm font-medium hover:border-renjana-500 transition">Batal</button>

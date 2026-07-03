@@ -80,7 +80,7 @@ func (h *OnboardingHandler) Store(c *fiber.Ctx) error {
 		return c.Redirect("/onboarding", fiber.StatusSeeOther)
 	}
 
-	_, err = h.volunteerService.CreateForUser(c.Context(), userID, user.Name, req)
+	_, err = h.volunteerService.CreateForUser(c.Context(), userID, user.Name, req.AvatarURL, req)
 	if err != nil {
 		slog.Error("onboarding: create volunteer failed", "err", err, "user_id", userID)
 		h.store.Flash(c, "error", err.Error())

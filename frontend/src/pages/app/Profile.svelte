@@ -46,7 +46,7 @@
             profileForm.name = user.name || "";
             profileForm.email = user.email || "";
             profileForm.avatar = user.avatar || "";
-            previewUrl = user.avatar ? `/api/avatar/${user.id}?v=${Date.now()}` : null;
+            previewUrl = user.avatar || null;
         }
     });
 

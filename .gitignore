@@ -48,3 +48,13 @@ laju-go
 laju-go
 --full-page
 recommendations.md
+
+# Generated docs / design drafts
+*.pdf
+*.html
+cover.png
+Screenshot*
+docs/guide/screenshots/
+docs/guide/cover.png
+docs/guide/panduan.html
+docs/guide/prompt-cover-chatgpt.md

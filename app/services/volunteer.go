@@ -159,18 +159,16 @@ func (s *VolunteerService) List(
 			avatar = r.AvatarUrl.String
 		}
 
-		// Count certificates for this volunteer (if linked to a user)
+		// Count certificates for this volunteer (shared ID: volunteer.id = user.id)
 		var certCount int64
-		if r.UserID.Valid && r.UserID.Int64 != 0 {
-			cnt, err := s.querier.CountCertificatesByUser(ctx, r.UserID.Int64)
-			if err == nil {
-				certCount = cnt
-			}
+		cnt, err := s.querier.CountCertificatesByUser(ctx, r.ID)
+		if err == nil {
+			certCount = cnt
 		}
 
 		items = append(items, VolunteerListItem{
 			ID:                r.ID,
-			UserID:            r.UserID.Int64,
+			UserID:            r.ID,
 			Name:              r.Name,
 			School:            r.School,
 			DistrictID:        r.DistrictID,
@@ -223,7 +221,7 @@ func (s *VolunteerService) Get(ctx context.Context, id int64) (*VolunteerDetail,
 
 	return &VolunteerDetail{
 		ID:                r.ID,
-		UserID:            r.UserID.Int64,
+		UserID:            r.ID,
 		Name:              r.Name,
 		School:            r.School,
 		DistrictID:        r.DistrictID,
@@ -500,6 +498,7 @@ type OnboardingRequest struct {
 	School     string `json:"school"`
 	DistrictID int64  `json:"district_id"`
 	Phone      string `json:"phone"`
+	AvatarURL  string `json:"avatar_url"`
 }
 
 // GetByUserID returns the volunteer record linked to a user.
@@ -528,6 +527,7 @@ func (s *VolunteerService) GetByUserID(ctx context.Context, userID int64) (*Volu
 
 	return &VolunteerDetail{
 		ID:                r.ID,
+		UserID:            r.ID,
 		Name:              r.Name,
 		School:            r.School,
 		DistrictID:        r.DistrictID,
@@ -547,7 +547,7 @@ func (s *VolunteerService) GetByUserID(ctx context.Context, userID int64) (*Volu
 // CreateForUser creates a volunteer record linked to a user (1:1).
 // Called during onboarding after a user registers.
 // Sets status='aktif' and application_status='approved' — user is auto-approved.
-func (s *VolunteerService) CreateForUser(ctx context.Context, userID int64, userName string, req OnboardingRequest) (*VolunteerDetail, error) {
+func (s *VolunteerService) CreateForUser(ctx context.Context, userID int64, userName, userAvatar string, req OnboardingRequest) (*VolunteerDetail, error) {
 	if strings.TrimSpace(req.School) == "" {
 		return nil, errors.New("sekolah wajib diisi")
 	}
@@ -555,7 +555,7 @@ func (s *VolunteerService) CreateForUser(ctx context.Context, userID int64, user
 		return nil, errors.New("kecamatan wajib dipilih")
 	}
 
-	id, err := s.querier.CreateVolunteerForUserDirect(ctx, userID, userName, req.School, req.DistrictID, req.Phone, time.Now())
+	id, err := s.querier.CreateVolunteerForUserDirect(ctx, userID, userName, req.School, req.DistrictID, req.Phone, time.Now(), userAvatar)
 	if err != nil {
 		return nil, err
 	}

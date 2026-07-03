@@ -1,6 +1,7 @@
 <script lang="ts">
     import { ChevronDown, Menu, LogOut, User as UserIcon } from "lucide-svelte";
     import { router, inertia } from "@inertiajs/svelte";
+    import DarkModeToggle from "../DarkModeToggle.svelte";
 
     interface User {
         id: number;
@@ -25,6 +26,7 @@
     }: Props = $props();
 
     let isUserMenuOpen = $state(false);
+    let avatarError = $state(false);
 
     function handleLogout() {
         router.post("/logout");
@@ -56,8 +58,9 @@
             </div>
         </div>
 
-        <!-- Right: User -->
-        <div class="flex items-center gap-2 sm:gap-4">
+        <!-- Right: DarkMode + User -->
+        <div class="flex items-center gap-1 sm:gap-3">
+            <DarkModeToggle />
             {#if user}
                 <!-- User Menu (logged in) -->
                 <div class="relative">
@@ -65,11 +68,20 @@
                         onclick={toggleUserMenu}
                         class="flex items-center gap-2 sm:gap-3 pl-1 pr-2 sm:pr-3 py-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                     >
-                        <img
-                            src={user.avatar || "https://i.pravatar.cc/100?u=admin-renjana"}
-                            alt={user.name}
-                            class="w-8 h-8 rounded-full object-cover ring-2 ring-white dark:ring-slate-800"
-                        />
+                        {#if user.avatar && !avatarError}
+                            <img
+                                src={user.avatar}
+                                alt={user.name}
+                                class="w-8 h-8 rounded-full object-cover ring-2 ring-white dark:ring-slate-800"
+                                onerror={() => (avatarError = true)}
+                            />
+                        {:else}
+                            <div
+                                class="w-8 h-8 rounded-full flex items-center justify-center bg-renjana-50 dark:bg-renjana-500/10 ring-2 ring-white dark:ring-slate-800 text-sm font-bold text-renjana-500"
+                            >
+                                {user.name?.charAt(0)?.toUpperCase() || "?"}
+                            </div>
+                        {/if}
                         <div class="hidden sm:block text-left min-w-0">
                             <p class="text-sm font-semibold text-slate-900 dark:text-white truncate max-w-[140px]">
                                 {user.name}

@@ -1,5 +1,5 @@
 <script lang="ts">
-import {
+    import {
         Home,
         Info,
         CalendarDays,
@@ -14,8 +14,9 @@ import {
         MessageSquareWarning,
         BarChart3,
         Shield,
-} from "lucide-svelte";
-import { inertia } from "@inertiajs/svelte";
+        FileDown,
+    } from "lucide-svelte";
+    import { inertia } from "@inertiajs/svelte";
 
     interface MenuItem {
         href: string;
@@ -38,7 +39,10 @@ import { inertia } from "@inertiajs/svelte";
         { href: "/kontak", label: "Kontak", icon: Phone },
     ];
 
-    let { active = "Dashboard", user }: { active?: string; user?: { role?: string } } = $props();
+    let {
+        active = "Dashboard",
+        user,
+    }: { active?: string; user?: { role?: string } } = $props();
 
     const isAdmin = $derived(user?.role === "admin");
     const adminMenuItems: MenuItem[] = [
@@ -49,11 +53,11 @@ import { inertia } from "@inertiajs/svelte";
         menuItems.filter((item) => {
             if (item.href === "/kontak") return isAdmin;
             return true;
-        })
+        }),
     );
 
     const allMenuItems = $derived(
-        isAdmin ? [...visibleMenuItems, ...adminMenuItems] : visibleMenuItems
+        isAdmin ? [...visibleMenuItems, ...adminMenuItems] : visibleMenuItems,
     );
 </script>
 
@@ -61,14 +65,22 @@ import { inertia } from "@inertiajs/svelte";
     class="bg-renjana-sidebar dark:bg-slate-900 text-white w-72 flex-shrink-0 flex flex-col h-screen sticky top-0 border-r border-renjana-sidebar-border dark:border-slate-800"
 >
     <!-- Logo -->
-    <div class="flex items-center gap-3 px-6 py-6 border-b border-renjana-sidebar-border dark:border-slate-800">
-        <img src="/public/images/renjana-logo.svg" alt="RENJANA" class="w-12 h-12 shrink-0" />
+    <div
+        class="flex items-center gap-3 px-6 py-6 border-b border-renjana-sidebar-border dark:border-slate-800"
+    >
+        <img
+            src="/public/images/renjana-logo.png"
+            alt="RENJANA"
+            class="h-12 w-auto shrink-0"
+        />
         <div class="min-w-0">
-            <h1 class="text-xl font-black italic leading-tight tracking-tight">
+            <h1 class="text-2xl font-black leading-tight tracking-tight">
                 <span class="text-renjana-500">RENJANA</span>
             </h1>
-            <p class="text-[10px] text-renjana-nav-text dark:text-slate-300 leading-tight">
-                Relawan Remaja<br />Aman Bencana
+            <p
+                class="text-[10px] text-renjana-nav-text dark:text-slate-300 leading-tight whitespace-nowrap"
+            >
+                Relawan Remaja Aman Bencana
             </p>
         </div>
     </div>
@@ -91,26 +103,51 @@ import { inertia } from "@inertiajs/svelte";
         {/each}
     </nav>
 
+    <!-- Panduan PDF -->
+    <div class="px-4 pb-2">
+        <a
+            href="/public/panduan-penggunaan-renjana.pdf"
+            target="_blank"
+            rel="noopener"
+            class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 group text-renjana-nav-text dark:text-slate-400 hover:bg-renjana-sidebar-hover dark:hover:bg-slate-800 hover:text-white dark:hover:text-white"
+        >
+            <FileDown class="w-[18px] h-[18px] shrink-0" strokeWidth={2} />
+            <span class="truncate">Panduan Penggunaan</span>
+        </a>
+    </div>
+
     <!-- Emergency Call -->
     <div class="px-4 pb-4">
         <a
             href="tel:112"
             class="block rounded-xl bg-renjana-sidebar-hover dark:bg-slate-800 border border-renjana-sidebar-border dark:border-slate-700 p-4 hover:border-emergency dark:hover:border-emergency transition-colors group"
         >
-            <p class="text-[10px] uppercase tracking-wider text-renjana-nav-text dark:text-slate-400 text-center font-semibold">
+            <p
+                class="text-[10px] uppercase tracking-wider text-renjana-nav-text dark:text-slate-400 text-center font-semibold"
+            >
                 Panggilan Darurat
             </p>
             <div class="flex items-center justify-center gap-2 mt-1">
-                <PhoneCall class="w-5 h-5 text-emergency group-hover:scale-110 transition-transform" />
+                <PhoneCall
+                    class="w-5 h-5 text-emergency group-hover:scale-110 transition-transform"
+                />
                 <span class="text-2xl font-black text-emergency">112</span>
             </div>
-            <p class="text-[10px] text-center text-renjana-nav-text dark:text-slate-400 mt-1">24 Jam / Gratis</p>
+            <p
+                class="text-[10px] text-center text-renjana-nav-text dark:text-slate-400 mt-1"
+            >
+                24 Jam / Gratis
+            </p>
         </a>
     </div>
 
     <!-- Quote -->
-    <div class="px-6 pb-6 pt-2 border-t border-renjana-sidebar-border dark:border-slate-800">
-        <p class="text-[11px] italic text-renjana-nav-text dark:text-slate-400 text-center leading-relaxed">
+    <div
+        class="px-6 pb-6 pt-2 border-t border-renjana-sidebar-border dark:border-slate-800"
+    >
+        <p
+            class="text-[11px] italic text-renjana-nav-text dark:text-slate-400 text-center leading-relaxed"
+        >
             "Remaja Siap, Tanggap, Peduli Bencana, Selamatkan Diri dan Sesama"
         </p>
     </div>

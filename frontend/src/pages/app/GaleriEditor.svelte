@@ -300,7 +300,7 @@
         {#if !edit}
             <div>
                 <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Caption (opsional)</label>
-                <textarea bind:value={caption} rows={2} class="w-full px-4 py-3 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none resize-none transition" placeholder="Deskripsi singkat untuk semua foto..."></textarea>
+                <textarea bind:value={caption} rows={2} class="w-full px-4 py-3 rounded-xl bg-white dark:bg-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none resize-none transition" placeholder="Deskripsi singkat untuk semua foto..."></textarea>
             </div>
         {/if}
     </div>

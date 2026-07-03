@@ -224,7 +224,7 @@
         {/each}
         <div class="flex-1"></div>
         <div class="relative flex gap-2">
-            <input type="text" placeholder="Cari kegiatan..." bind:value={search} onkeydown={(e) => e.key === "Enter" && applyFilter()} class="w-48 sm:w-64 pl-3 pr-3 py-1.5 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
+            <input type="text" placeholder="Cari kegiatan..." bind:value={search} onkeydown={(e) => e.key === "Enter" && applyFilter()} class="w-48 sm:w-64 pl-3 pr-3 py-1.5 rounded-lg bg-white dark:bg-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
             <button onclick={applyFilter} class="px-3 py-1.5 rounded-lg bg-renjana-500 hover:bg-renjana-600 text-white text-xs font-semibold transition">Cari</button>
             {#if search || activeType || activeStatus !== "akan_datang"}
                 <button onclick={resetFilter} class="px-3 py-1.5 rounded-lg text-xs font-medium border border-neutral-200 dark:border-neutral-700 hover:border-renjana-500 transition">Reset</button>
@@ -377,12 +377,12 @@
                     {/if}
                     <div>
                         <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Judul *</label>
-                        <input type="text" name="title" required value={editTarget?.title ?? ""} class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
+                        <input type="text" name="title" required value={editTarget?.title ?? ""} class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Jenis *</label>
-                            <select name="type_id" required class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none">
+                            <select name="type_id" required class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none">
                                 {#each types as t}
                                     <option value={t.id} selected={editTarget?.type_id === t.id}>{t.name}</option>
                                 {/each}
@@ -390,7 +390,7 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Kecamatan *</label>
-                            <select name="district_id" required class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none">
+                            <select name="district_id" required class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none">
                                 {#each districts as d}
                                     <option value={d.id} selected={editTarget?.district_id === d.id}>{d.name}</option>
                                 {/each}
@@ -399,26 +399,26 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Deskripsi</label>
-                        <textarea name="description" rows="3" class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none resize-none">{editTarget?.description ?? ""}</textarea>
+                        <textarea name="description" rows="3" class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none resize-none">{editTarget?.description ?? ""}</textarea>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Tanggal *</label>
-                            <input type="date" name="date" required value={editTarget?.date?.slice(0, 10) ?? ""} class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
+                            <input type="date" name="date" required value={editTarget?.date?.slice(0, 10) ?? ""} class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Waktu *</label>
-                            <input type="time" name="time" required value={editTarget?.time ?? ""} class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
+                            <input type="time" name="time" required value={editTarget?.time ?? ""} class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Lokasi *</label>
-                            <input type="text" name="location" required value={editTarget?.location ?? ""} class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
+                            <input type="text" name="location" required value={editTarget?.location ?? ""} class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Status</label>
-                            <select name="status" class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none">
+                            <select name="status" class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none">
                                 <option value="akan_datang" selected={editTarget?.status === "akan_datang"}>Akan Datang</option>
                                 <option value="berlangsung" selected={editTarget?.status === "berlangsung"}>Berlangsung</option>
                                 <option value="selesai" selected={editTarget?.status === "selesai"}>Selesai</option>

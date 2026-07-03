@@ -307,7 +307,7 @@ func (q *Queries) GetActiveVolunteersWithLimit(ctx context.Context, limit int64)
 const getVolunteerByID = `-- name: GetVolunteerByID :one
 
 SELECT
-    v.id, v.user_id, v.name, v.school, v.district_id, v.phone, v.status, v.avatar_url,
+    v.id, v.name, v.school, v.district_id, v.phone, v.status, v.avatar_url,
     v.joined_at, v.is_active, v.application_status, v.reviewer_id, v.reviewed_at,
     v.rejection_reason,
     d.name AS district_name
@@ -318,7 +318,6 @@ WHERE v.id = ?
 
 type GetVolunteerByIDRow struct {
 	ID                int64          `json:"id"`
-	UserID            sql.NullInt64  `json:"user_id"`
 	Name              string         `json:"name"`
 	School            string         `json:"school"`
 	DistrictID        int64          `json:"district_id"`
@@ -342,7 +341,6 @@ func (q *Queries) GetVolunteerByID(ctx context.Context, id int64) (GetVolunteerB
 	var i GetVolunteerByIDRow
 	err := row.Scan(
 		&i.ID,
-		&i.UserID,
 		&i.Name,
 		&i.School,
 		&i.DistrictID,
@@ -555,7 +553,7 @@ func (q *Queries) ListPendingApplicationsByDistrict(ctx context.Context, arg Lis
 
 const listVolunteersPaginated = `-- name: ListVolunteersPaginated :many
 SELECT
-    v.id, v.user_id, v.name, v.school, v.district_id, d.name AS district_name,
+    v.id, v.name, v.school, v.district_id, d.name AS district_name,
     v.status, v.phone, v.avatar_url, v.application_status, v.joined_at, v.is_active
 FROM renjana_volunteers v
 JOIN renjana_districts d ON d.id = v.district_id
@@ -580,7 +578,6 @@ type ListVolunteersPaginatedParams struct {
 
 type ListVolunteersPaginatedRow struct {
 	ID                int64          `json:"id"`
-	UserID            sql.NullInt64  `json:"user_id"`
 	Name              string         `json:"name"`
 	School            string         `json:"school"`
 	DistrictID        int64          `json:"district_id"`
@@ -611,7 +608,6 @@ func (q *Queries) ListVolunteersPaginated(ctx context.Context, arg ListVolunteer
 		var i ListVolunteersPaginatedRow
 		if err := rows.Scan(
 			&i.ID,
-			&i.UserID,
 			&i.Name,
 			&i.School,
 			&i.DistrictID,

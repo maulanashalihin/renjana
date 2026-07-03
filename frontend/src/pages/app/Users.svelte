@@ -115,7 +115,7 @@
     <div class="flex flex-wrap items-center gap-2 mb-6">
         <div class="flex-1"></div>
         <div class="relative flex gap-2">
-            <input type="text" placeholder="Cari admin..." bind:value={current_search} onkeydown={(e) => e.key === "Enter" && applyFilter()} class="w-48 sm:w-64 pl-3 pr-3 py-1.5 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
+            <input type="text" placeholder="Cari admin..." bind:value={current_search} onkeydown={(e) => e.key === "Enter" && applyFilter()} class="w-48 sm:w-64 pl-3 pr-3 py-1.5 rounded-lg bg-white dark:bg-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
             <button onclick={applyFilter} class="px-3 py-1.5 rounded-lg bg-renjana-500 hover:bg-renjana-600 text-white text-xs font-semibold transition">Cari</button>
             {#if current_search}
                 <button onclick={resetFilter} class="px-3 py-1.5 rounded-lg text-xs font-medium border border-neutral-200 dark:border-neutral-700 hover:border-renjana-500 transition">Reset</button>
@@ -198,7 +198,7 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Role</label>
-                        <select name="role" class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none">
+                        <select name="role" class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none">
                             {#each all_roles as role}
                                 <option value={role} selected={editingUser.role === role}>{role}</option>
                             {/each}
@@ -239,19 +239,19 @@
                 <form method="POST" action="/admin/users" onsubmit={handleSubmit} class="p-6 space-y-4">
                     <div>
                         <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Nama Lengkap *</label>
-                        <input type="text" name="name" required class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
+                        <input type="text" name="name" required class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Email *</label>
-                        <input type="email" name="email" required class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
+                        <input type="email" name="email" required class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Password *</label>
-                        <input type="password" name="password" required minlength="8" class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
+                        <input type="password" name="password" required minlength="8" class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Role</label>
-                        <select name="role" class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none">
+                        <select name="role" class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none">
                             <option value="admin" selected>admin</option>
                             <option value="koordinator">koordinator</option>
                             <option value="relawan">relawan</option>
