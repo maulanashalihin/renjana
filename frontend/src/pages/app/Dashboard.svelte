@@ -8,6 +8,7 @@
     import AchievementBar from "../../components/dashboard/AchievementBar.svelte";
     import AnnouncementCard from "../../components/dashboard/AnnouncementCard.svelte";
     import UpcomingActivity from "../../components/dashboard/UpcomingActivity.svelte";
+    import EdukasiCard from "../../components/dashboard/EdukasiCard.svelte";
     import { Users, GraduationCap, Activity, MapPin } from "lucide-svelte";
 
     // -----------------------------------------------------------------
@@ -285,14 +286,16 @@
             </div>
         </div>
 
-        <!-- Relawan Aktif + Pengumuman -->
+        <!-- Relawan Aktif + Edukasi + Pengumuman -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="lg:col-span-2">
+            <div>
                 <ActiveVolunteers volunteers={volunteerRows} />
             </div>
             <div>
+                <EdukasiCard />
+            </div>
+            <div>
                 <AnnouncementCard announcements={announcementList} />
-
             </div>
         </div>
 
