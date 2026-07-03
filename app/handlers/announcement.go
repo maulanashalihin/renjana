@@ -94,17 +94,20 @@ func (h *AnnouncementHandler) Create(c *fiber.Ctx) error {
 	}
 
 	// Load existing media images for the image picker
-	images, _ := h.querier.ListMediaPaginated(c.Context(), queries.ListMediaPaginatedParams{
+	rawImages, _ := h.querier.ListMediaPaginated(c.Context(), queries.ListMediaPaginatedParams{
 		Column1: "image",
 		Column2: nil,
 		Limit:   50,
 		Offset:  0,
 	})
+	if rawImages == nil {
+		rawImages = []queries.ListMediaPaginatedRow{}
+	}
 
 	return h.inertiaService.Render(c, "app/BeritaEditor", fiber.Map{
 		"user":   user,
 		"edit":   false,
-		"images": images,
+		"images": rawImages,
 	})
 }
 
@@ -144,18 +147,21 @@ func (h *AnnouncementHandler) Edit(c *fiber.Ctx) error {
 	ann, _ := h.announcementSvc.Get(c.Context(), id)
 
 	// Load existing media images for the image picker
-	images, _ := h.querier.ListMediaPaginated(c.Context(), queries.ListMediaPaginatedParams{
+	rawImages, _ := h.querier.ListMediaPaginated(c.Context(), queries.ListMediaPaginatedParams{
 		Column1: "image",
 		Column2: nil,
 		Limit:   50,
 		Offset:  0,
 	})
+	if rawImages == nil {
+		rawImages = []queries.ListMediaPaginatedRow{}
+	}
 
 	return h.inertiaService.Render(c, "app/BeritaEditor", fiber.Map{
 		"user":         user,
 		"edit":         true,
 		"announcement": ann,
-		"images":       images,
+		"images":       rawImages,
 	})
 }
 

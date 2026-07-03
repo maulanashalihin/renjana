@@ -36,7 +36,7 @@
         images?: MediaImage[];
     }
 
-    let { user, edit = false, announcement, images = [] }: Props = $props();
+    let { user, edit = false, announcement, images }: Props = $props();
 
     let title = $state(announcement?.title ?? "");
     let category = $state(announcement?.category ?? "Pengumuman");
@@ -53,7 +53,7 @@
     let linkUrl = $state("");
     let linkAlt = $state("");
     let uploadingPicker = $state(false);
-    let galleryImages = $state<MediaImage[]>(images);
+    let galleryImages = $state<MediaImage[]>(images ?? []);
 
     const categories = ["Prestasi", "Aksi", "Pelatihan", "Simulasi", "Edukasi", "Inovasi", "Pengumuman"];
 
