@@ -236,7 +236,7 @@
         <!-- Hero + Upcoming -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div class="lg:col-span-2">
-                <HeroBanner userName={user?.name} />
+                <HeroBanner />
             </div>
             <div>
                 <UpcomingActivity activities={upcomingRows} />
@@ -274,14 +274,16 @@
             />
         </div>
 
-        <!-- Sebaran + Donut -->
+        <!-- Sebaran -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="lg:col-span-2">
+            <div class="lg:col-span-3">
                 <VolunteerDistribution districts={districtRows} />
             </div>
-            <div>
-                <ActivityDonutChart activities={activitySegments} total={safeStats.total_kegiatan} />
-            </div>
+        </div>
+
+        <!-- Jenis Kegiatan -->
+        <div>
+            <ActivityDonutChart activities={activitySegments} total={safeStats.total_kegiatan} />
         </div>
 
         <!-- Relawan Aktif + Pengumuman -->

@@ -69,10 +69,10 @@
         </div>
     {:else}
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
+    <div class="flex flex-col items-center gap-6">
         <!-- Donut -->
-        <div class="flex items-center justify-center">
-            <svg viewBox="0 0 160 160" class="w-40 h-40">
+        <div class="flex justify-center">
+            <svg viewBox="0 0 160 160" class="w-44 h-44">
                 {#each segments() as seg}
                     <path
                         d={seg.path}
@@ -106,20 +106,18 @@
             </svg>
         </div>
 
-        <!-- Legend -->
-        <div class="space-y-2">
+        <!-- Legend below -->
+        <div class="flex flex-wrap justify-center gap-x-6 gap-y-2">
             {#each activities as a}
-                <div class="flex items-center justify-between gap-2">
-                    <div class="flex items-center gap-2 min-w-0">
-                        <span
-                            class="w-2.5 h-2.5 rounded-sm shrink-0"
-                            style="background-color: {a.color};"
-                        ></span>
-                        <span class="text-xs text-slate-700 dark:text-slate-300 truncate">
-                            {a.name}
-                        </span>
-                    </div>
-                    <span class="text-xs font-bold text-slate-900 dark:text-white tabular-nums">
+                <div class="flex items-center gap-2">
+                    <span
+                        class="w-3 h-3 rounded-sm shrink-0"
+                        style="background-color: {a.color};"
+                    ></span>
+                    <span class="text-sm text-slate-700 dark:text-slate-300">
+                        {a.name}
+                    </span>
+                    <span class="text-sm font-bold text-slate-900 dark:text-white tabular-nums">
                         {a.percentage % 1 === 0 ? a.percentage : a.percentage.toFixed(1)}%
                     </span>
                 </div>
