@@ -1,6 +1,6 @@
 <script lang="ts">
     import AppLayout from "../../components/AppLayout.svelte";
-    import { ArrowLeft, Save, Image, Upload, Eye, EyeOff, Bold, Italic, Heading, List, Link as LinkIcon, Code } from "lucide-svelte";
+    import { ArrowLeft, Save, Image, Upload, Eye, EyeOff, Bold, Italic, Heading, List, Link as LinkIcon, Code, X, GalleryHorizontalEnd, ExternalLink } from "lucide-svelte";
     import { router, inertia } from "@inertiajs/svelte";
 
     interface AppUser {
@@ -21,13 +21,22 @@
         is_published: boolean;
     }
 
+    interface MediaImage {
+        id: number;
+        title: string;
+        file_url: string;
+        caption: string;
+        uploaded_at: string;
+    }
+
     interface Props {
         user?: AppUser;
         edit?: boolean;
         announcement?: AnnouncementDetail;
+        images?: MediaImage[];
     }
 
-    let { user, edit = false, announcement }: Props = $props();
+    let { user, edit = false, announcement, images = [] }: Props = $props();
 
     let title = $state(announcement?.title ?? "");
     let category = $state(announcement?.category ?? "Pengumuman");
@@ -39,6 +48,12 @@
     let showPreview = $state(false);
     let dragging = $state(false);
     let uploading = $state(false);
+    let showImagePicker = $state(false);
+    let imagePickerTab = $state<"gallery" | "upload" | "link">("gallery");
+    let linkUrl = $state("");
+    let linkAlt = $state("");
+    let uploadingPicker = $state(false);
+    let galleryImages = $state<MediaImage[]>(images);
 
     const categories = ["Prestasi", "Aksi", "Pelatihan", "Simulasi", "Edukasi", "Inovasi", "Pengumuman"];
 
@@ -242,6 +257,7 @@
                             <button type="button" onclick={() => insertMarkdown("- ", "")} class="p-1.5 rounded-md hover:bg-white dark:hover:bg-neutral-700 text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 transition-colors" title="List"><List class="w-3.5 h-3.5" /></button>
                             <button type="button" onclick={() => insertMarkdown("[", "](url)")} class="p-1.5 rounded-md hover:bg-white dark:hover:bg-neutral-700 text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 transition-colors" title="Link"><LinkIcon class="w-3.5 h-3.5" /></button>
                             <button type="button" onclick={() => insertMarkdown("`", "`")} class="p-1.5 rounded-md hover:bg-white dark:hover:bg-neutral-700 text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 transition-colors" title="Kode"><Code class="w-3.5 h-3.5" /></button>
+                            <button type="button" onclick={() => showImagePicker = true} class="p-1.5 rounded-md hover:bg-white dark:hover:bg-neutral-700 text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 transition-colors" title="Gambar"><Image class="w-3.5 h-3.5" /></button>
                             <span class="w-px h-4 bg-neutral-300 dark:bg-neutral-600 mx-1"></span>
                             <button
                                 type="button"
@@ -342,5 +358,175 @@
             </div>
         </div>
     </div>
+
+    <!-- Image Picker Modal -->
+    {#if showImagePicker}
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onclick={() => showImagePicker = false}>
+            <div class="bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[85vh] overflow-hidden flex flex-col" onclick={(e) => e.stopPropagation()}>
+                <!-- Header -->
+                <div class="flex items-center justify-between p-5 border-b border-neutral-200 dark:border-neutral-800">
+                    <h2 class="text-lg font-bold text-neutral-900 dark:text-white">Sisipkan Gambar</h2>
+                    <button onclick={() => showImagePicker = false} class="text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300">
+                        <X class="w-5 h-5" />
+                    </button>
+                </div>
+
+                <!-- Tabs -->
+                <div class="flex gap-1 px-5 pt-4 border-b border-neutral-200 dark:border-neutral-800">
+                    <button
+                        onclick={() => imagePickerTab = "gallery"}
+                        class="px-4 py-2 text-sm font-medium rounded-t-lg transition {imagePickerTab === 'gallery' ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white border-b-2 border-renjana-500' : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}"
+                    >
+                        <GalleryHorizontalEnd class="w-4 h-4 inline-block mr-1.5" />
+                        Galeri
+                    </button>
+                    <button
+                        onclick={() => imagePickerTab = "upload"}
+                        class="px-4 py-2 text-sm font-medium rounded-t-lg transition {imagePickerTab === 'upload' ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white border-b-2 border-renjana-500' : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}"
+                    >
+                        <Upload class="w-4 h-4 inline-block mr-1.5" />
+                        Upload
+                    </button>
+                    <button
+                        onclick={() => imagePickerTab = "link"}
+                        class="px-4 py-2 text-sm font-medium rounded-t-lg transition {imagePickerTab === 'link' ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white border-b-2 border-renjana-500' : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}"
+                    >
+                        <LinkIcon class="w-4 h-4 inline-block mr-1.5" />
+                        Link
+                    </button>
+                </div>
+
+                <!-- Tab content -->
+                <div class="flex-1 overflow-y-auto p-5">
+                    {#if imagePickerTab === "gallery"}
+                        {#if galleryImages.length === 0}
+                            <div class="text-center py-12">
+                                <Image class="w-12 h-12 mx-auto text-neutral-300 dark:text-neutral-600 mb-3" />
+                                <p class="text-neutral-500 dark:text-neutral-400 text-sm">Belum ada gambar. Upload dulu!</p>
+                            </div>
+                        {:else}
+                            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                                {#each galleryImages as img}
+                                    <button
+                                        onclick={() => { insertMarkdown('![' + (img.caption || 'gambar') + '](' + img.file_url + ')', ''); showImagePicker = false; }}
+                                        class="group relative aspect-video rounded-xl overflow-hidden bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 hover:border-renjana-500 hover:shadow-lg transition-all duration-200"
+                                    >
+                                        <img src={img.file_url} alt={img.caption || img.title} class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                                        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-200"></div>
+                                        <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-2 translate-y-full group-hover:translate-y-0 transition-transform duration-200">
+                                            <p class="text-xs text-white truncate">{img.caption || img.title || 'Gambar'}</p>
+                                        </div>
+                                    </button>
+                                {/each}
+                            </div>
+                        {/if}
+                    {:else if imagePickerTab === "upload"}
+                        <div class="text-center py-8">
+                            <div
+                                class="relative rounded-xl border-2 border-dashed p-10 text-center transition-all duration-200 mx-auto max-w-md {uploadingPicker ? 'opacity-60 pointer-events-none border-renjana-500 bg-renjana-50 dark:bg-renjana-900/20' : 'border-neutral-300 dark:border-neutral-600'}"
+                            >
+                                {#if uploadingPicker}
+                                    <div class="flex flex-col items-center gap-3">
+                                        <div class="w-10 h-10 border-[3px] border-renjana-500 border-t-transparent rounded-full animate-spin"></div>
+                                        <p class="text-sm text-neutral-500">Mengupload...</p>
+                                    </div>
+                                {:else}
+                                    <div class="flex flex-col items-center gap-3">
+                                        <div class="w-14 h-14 rounded-xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
+                                            <Upload class="w-6 h-6 text-neutral-400" />
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-neutral-600 dark:text-neutral-400">Upload gambar baru</p>
+                                            <p class="text-xs text-neutral-400 dark:text-neutral-500 mt-1">Format: JPG, PNG, GIF, WebP. Max 20MB</p>
+                                        </div>
+                                        <label class="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-lg bg-renjana-500 hover:bg-renjana-600 text-white text-sm font-semibold cursor-pointer transition-all duration-200 active:scale-95">
+                                            <Upload class="w-4 h-4" />
+                                            Pilih File
+                                            <input type="file" accept="image/*" class="hidden" onchange={async (e) => {
+                                                const input = e.target as HTMLInputElement;
+                                                if (!input.files?.length) return;
+                                                uploadingPicker = true;
+                                                try {
+                                                    const form = new FormData();
+                                                    form.append("file", input.files[0]);
+                                                    form.append("purpose", "media");
+                                                    const res = await fetch("/upload", {
+                                                        method: "POST",
+                                                        headers: { "X-XSRF-TOKEN": getCSRFToken(), "X-Requested-With": "XMLHttpRequest" },
+                                                        body: form,
+                                                    });
+                                                    const data = await res.json();
+                                                    if (data.success) {
+                                                        const newImg: MediaImage = {
+                                                            id: Date.now(),
+                                                            title: input.files[0].name,
+                                                            file_url: data.url,
+                                                            caption: "",
+                                                            uploaded_at: new Date().toISOString(),
+                                                        };
+                                                        galleryImages = [newImg, ...galleryImages];
+                                                        insertMarkdown('![' + input.files[0].name + '](' + data.url + ')', '');
+                                                        showImagePicker = false;
+                                                    } else {
+                                                        alert("Gagal upload: " + (data.error || "unknown"));
+                                                    }
+                                                } catch {
+                                                    alert("Gagal upload gambar.");
+                                                } finally {
+                                                    uploadingPicker = false;
+                                                }
+                                            }} />
+                                        </label>
+                                    </div>
+                                {/if}
+                            </div>
+                        </div>
+                    {:else if imagePickerTab === "link"}
+                        <div class="max-w-md mx-auto py-8">
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">URL Gambar</label>
+                                    <input
+                                        type="url"
+                                        bind:value={linkUrl}
+                                        placeholder="https://contoh.com/gambar.jpg"
+                                        class="w-full px-4 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none"
+                                    />
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Teks Alternatif (alt)</label>
+                                    <input
+                                        type="text"
+                                        bind:value={linkAlt}
+                                        placeholder="Deskripsi gambar"
+                                        class="w-full px-4 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none"
+                                    />
+                                </div>
+                                {#if linkUrl}
+                                    <div class="rounded-xl overflow-hidden bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700">
+                                        <img src={linkUrl} alt={linkAlt} class="w-full max-h-48 object-contain" onerror={(e) => (e.target as HTMLImageElement).style.display = 'none'} />
+                                    </div>
+                                {/if}
+                                <button
+                                    onclick={() => {
+                                        if (!linkUrl.trim()) return;
+                                        insertMarkdown('![' + (linkAlt || 'gambar') + '](' + linkUrl.trim() + ')', '');
+                                        showImagePicker = false;
+                                        linkUrl = '';
+                                        linkAlt = '';
+                                    }}
+                                    disabled={!linkUrl.trim()}
+                                    class="w-full px-4 py-2.5 rounded-lg bg-renjana-500 hover:bg-renjana-600 disabled:bg-neutral-300 dark:disabled:bg-neutral-700 text-white text-sm font-semibold transition"
+                                >
+                                    <ExternalLink class="w-4 h-4 inline-block mr-1.5" />
+                                    Sisipkan Gambar
+                                </button>
+                            </div>
+                        </div>
+                    {/if}
+                </div>
+            </div>
+        </div>
+    {/if}
 
 </AppLayout>

@@ -7,19 +7,23 @@
 -- - Beberapa volunteers dengan status 'pending' untuk demo Pendaftaran
 -- ============================================================================
 
--- 1. Seed koordinator per kecamatan (2 per kecamatan = 24 records)
+-- 1. Seed koordinator kabupaten (district_id = NULL = tingkat kabupaten)
+INSERT INTO renjana_contacts (district_id, name, role, phone, email, is_active)
+VALUES (NULL, 'H. Abdullah Sani, S.Sos', 'Koordinator', '081234567890', 'koordinator@renjana.id', 1);
+
+-- 2. Seed fasilitator per kecamatan (2 per kecamatan = 24 records)
 INSERT INTO renjana_contacts (district_id, name, role, phone, email, is_active)
 SELECT
     d.id,
     CASE (d.id % 6)
-        WHEN 0 THEN 'H. Abdullah Sani'
-        WHEN 1 THEN 'Hj. Siti Aminah'
-        WHEN 2 THEN 'Drs. M. Yasin'
-        WHEN 3 THEN 'Ir. Hasanuddin'
-        WHEN 4 THEN 'Dra. Nurhasanah'
-        ELSE 'Ahmad Rivai, S.Sos'
+        WHEN 0 THEN 'Hj. Siti Aminah'
+        WHEN 1 THEN 'Drs. M. Yasin'
+        WHEN 2 THEN 'Ir. Hasanuddin'
+        WHEN 3 THEN 'Dra. Nurhasanah'
+        WHEN 4 THEN 'Ahmad Rivai, S.Sos'
+        ELSE 'Haris Fadillah, S.KM'
     END,
-    'Koordinator',
+    'Fasilitator',
     '0812' || printf('%08d', d.id * 100),
     'kec' || lower(replace(d.name, ' ', '')) || '@renjana.id',
     1
@@ -29,15 +33,15 @@ INSERT INTO renjana_contacts (district_id, name, role, phone, email, is_active)
 SELECT
     d.id,
     CASE (d.id % 5)
-        WHEN 0 THEN 'Haris Fadillah, S.KM'
-        WHEN 1 THEN 'Putri Maharani, S.Pd'
-        WHEN 2 THEN 'Muhammad Arif, M.Si'
-        WHEN 3 THEN 'Dewi Sartika, S.Kom'
-        ELSE 'Rizky Pratama, S.H'
+        WHEN 0 THEN 'Putri Maharani, S.Pd'
+        WHEN 1 THEN 'Muhammad Arif, M.Si'
+        WHEN 2 THEN 'Dewi Sartika, S.Kom'
+        WHEN 3 THEN 'Rizky Pratama, S.H'
+        ELSE 'Muhammad Amin'
     END,
-    'Wakil Koordinator',
+    'Fasilitator',
     '0813' || printf('%08d', d.id * 200),
-    'wakil' || lower(replace(d.name, ' ', '')) || '@renjana.id',
+    'fasilitator' || lower(replace(d.name, ' ', '')) || '@renjana.id',
     1
 FROM renjana_districts d;
 

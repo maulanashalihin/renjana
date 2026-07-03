@@ -20,7 +20,7 @@ func setupContactTestDB(t *testing.T) *queries.Querier {
 
 	_, err = db.Exec(`
 		CREATE TABLE renjana_districts (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL UNIQUE, is_active BOOLEAN NOT NULL DEFAULT 1, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP);
-		CREATE TABLE renjana_contacts (id INTEGER PRIMARY KEY AUTOINCREMENT, district_id INTEGER NOT NULL REFERENCES renjana_districts(id), name TEXT NOT NULL, role TEXT NOT NULL DEFAULT 'Koordinator', phone TEXT, email TEXT, is_active BOOLEAN NOT NULL DEFAULT 1, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP);
+		CREATE TABLE renjana_contacts (id INTEGER PRIMARY KEY AUTOINCREMENT, district_id INTEGER REFERENCES renjana_districts(id) ON DELETE SET NULL, name TEXT NOT NULL, role TEXT NOT NULL DEFAULT 'Fasilitator', phone TEXT, email TEXT, is_active BOOLEAN NOT NULL DEFAULT 1, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP);
 		CREATE INDEX idx_renjana_contacts_district ON renjana_contacts(district_id);
 		CREATE INDEX idx_renjana_contacts_active ON renjana_contacts(is_active);
 	`)
@@ -76,7 +76,7 @@ func TestContactServiceGet(t *testing.T) {
 	got, err := svc.Get(context.Background(), created.ID)
 	require.NoError(t, err)
 	assert.Equal(t, "Get Test", got.Name)
-	assert.Equal(t, "Koordinator", got.Role) // default
+	assert.Equal(t, "Fasilitator", got.Role) // default
 
 	_, err = svc.Get(context.Background(), 99999)
 	assert.ErrorIs(t, err, ErrContactNotFound)
@@ -92,7 +92,7 @@ func TestContactServiceUpdate(t *testing.T) {
 	require.NoError(t, err)
 
 	err = svc.Update(context.Background(), created.ID, UpdateContactRequest{
-		Name: "Updated", DistrictID: 2, Role: "Wakil", Phone: "080000000",
+		Name: "Updated", DistrictID: 2, Role: "Fasilitator", Phone: "080000000",
 	})
 	require.NoError(t, err)
 

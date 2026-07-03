@@ -132,7 +132,6 @@
                         <th class="px-4 py-3 text-left">User</th>
                         <th class="px-4 py-3 text-left">Email</th>
                         <th class="px-4 py-3 text-left">Role</th>
-                        <th class="px-4 py-3 text-left">Kecamatan</th>
                         <th class="px-4 py-3 text-left">Status</th>
                         <th class="px-4 py-3 text-right">Aksi</th>
                     </tr>

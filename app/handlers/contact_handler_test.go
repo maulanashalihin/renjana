@@ -21,7 +21,7 @@ import (
 
 const contactSchema = `
 	CREATE TABLE renjana_districts (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL UNIQUE, is_active BOOLEAN NOT NULL DEFAULT 1, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP);
-	CREATE TABLE renjana_contacts (id INTEGER PRIMARY KEY AUTOINCREMENT, district_id INTEGER NOT NULL, name TEXT NOT NULL, role TEXT NOT NULL DEFAULT 'Koordinator', phone TEXT, email TEXT, is_active BOOLEAN NOT NULL DEFAULT 1, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP);
+	CREATE TABLE renjana_contacts (id INTEGER PRIMARY KEY AUTOINCREMENT, district_id INTEGER REFERENCES renjana_districts(id) ON DELETE SET NULL, name TEXT NOT NULL, role TEXT NOT NULL DEFAULT 'Fasilitator', phone TEXT, email TEXT, is_active BOOLEAN NOT NULL DEFAULT 1, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP);
 	CREATE INDEX idx_renjana_contacts_district ON renjana_contacts(district_id);
 	CREATE INDEX idx_renjana_contacts_active ON renjana_contacts(is_active);
 `

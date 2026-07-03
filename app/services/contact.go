@@ -20,7 +20,7 @@ func NewContactService(querier *queries.Querier) *ContactService {
 }
 
 // ---------------------------------------------------------------------------
-// DTOs
+// DTOs — district_id = NULL berarti tingkat kabupaten (Koordinator)
 // ---------------------------------------------------------------------------
 
 type ContactItem struct {
@@ -67,7 +67,7 @@ type UpdateContactRequest struct {
 
 var ErrContactNotFound = errors.New("contact not found")
 
-// ListAll returns all contacts grouped by district (for display pages).
+// ListAll returns all contacts (for display pages).
 func (s *ContactService) ListAll(ctx context.Context) ([]ContactItem, error) {
 	rows, err := s.querier.ListContactsByDistrict(ctx)
 	if err != nil {
@@ -75,6 +75,14 @@ func (s *ContactService) ListAll(ctx context.Context) ([]ContactItem, error) {
 	}
 	out := make([]ContactItem, 0, len(rows))
 	for _, r := range rows {
+		did := int64(0)
+		if r.DistrictID.Valid {
+			did = r.DistrictID.Int64
+		}
+		dname := ""
+		if r.DistrictName.Valid {
+			dname = r.DistrictName.String
+		}
 		role := ""
 		if r.Role != "" {
 			role = r.Role
@@ -89,8 +97,8 @@ func (s *ContactService) ListAll(ctx context.Context) ([]ContactItem, error) {
 		}
 		out = append(out, ContactItem{
 			ID:           r.ID,
-			DistrictID:   r.DistrictID,
-			DistrictName: r.DistrictName,
+			DistrictID:   did,
+			DistrictName: dname,
 			Name:         r.Name,
 			Role:         role,
 			Phone:        phone,
@@ -131,6 +139,14 @@ func (s *ContactService) List(ctx context.Context, search string, districtID int
 
 	items := make([]ContactItem, 0, len(rows))
 	for _, r := range rows {
+		did := int64(0)
+		if r.DistrictID.Valid {
+			did = r.DistrictID.Int64
+		}
+		dname := ""
+		if r.DistrictName.Valid {
+			dname = r.DistrictName.String
+		}
 		role := ""
 		if r.Role != "" {
 			role = r.Role
@@ -145,8 +161,8 @@ func (s *ContactService) List(ctx context.Context, search string, districtID int
 		}
 		items = append(items, ContactItem{
 			ID:           r.ID,
-			DistrictID:   r.DistrictID,
-			DistrictName: r.DistrictName,
+			DistrictID:   did,
+			DistrictName: dname,
 			Name:         r.Name,
 			Role:         role,
 			Phone:        phone,
@@ -187,10 +203,18 @@ func (s *ContactService) Get(ctx context.Context, id int64) (*ContactDetail, err
 	if r.Email.Valid {
 		email = r.Email.String
 	}
+	did := int64(0)
+	if r.DistrictID.Valid {
+		did = r.DistrictID.Int64
+	}
+	dname := ""
+	if r.DistrictName.Valid {
+		dname = r.DistrictName.String
+	}
 	return &ContactDetail{
 		ID:           r.ID,
-		DistrictID:   r.DistrictID,
-		DistrictName: r.DistrictName,
+		DistrictID:   did,
+		DistrictName: dname,
 		Name:         r.Name,
 		Role:         role,
 		Phone:        phone,
@@ -205,15 +229,23 @@ func (s *ContactService) Create(ctx context.Context, req CreateContactRequest) (
 	if strings.TrimSpace(req.Name) == "" {
 		return nil, errors.New("nama wajib diisi")
 	}
-	if req.DistrictID == 0 {
+	// Koordinator (kabupaten) boleh tanpa district_id
+	if req.DistrictID == 0 && req.Role != "Koordinator" {
 		return nil, errors.New("kecamatan wajib dipilih")
 	}
 	if req.Role == "" {
-		req.Role = "Koordinator"
+		req.Role = "Fasilitator"
+	}
+
+	var districtArg sql.NullInt64
+	if req.Role == "Koordinator" && req.DistrictID == 0 {
+		districtArg = sql.NullInt64{Valid: false}
+	} else {
+		districtArg = sql.NullInt64{Int64: req.DistrictID, Valid: true}
 	}
 
 	id, err := s.querier.CreateContact(ctx, queries.CreateContactParams{
-		DistrictID: req.DistrictID,
+		DistrictID: districtArg,
 		Name:       req.Name,
 		Role:       req.Role,
 		Phone:      sql.NullString{String: req.Phone, Valid: req.Phone != ""},
@@ -231,15 +263,23 @@ func (s *ContactService) Update(ctx context.Context, id int64, req UpdateContact
 	if strings.TrimSpace(req.Name) == "" {
 		return errors.New("nama wajib diisi")
 	}
-	if req.DistrictID == 0 {
+	// Koordinator (kabupaten) boleh tanpa district_id
+	if req.DistrictID == 0 && req.Role != "Koordinator" {
 		return errors.New("kecamatan wajib dipilih")
 	}
 	if req.Role == "" {
-		req.Role = "Koordinator"
+		req.Role = "Fasilitator"
+	}
+
+	var districtArg sql.NullInt64
+	if req.Role == "Koordinator" && req.DistrictID == 0 {
+		districtArg = sql.NullInt64{Valid: false}
+	} else {
+		districtArg = sql.NullInt64{Int64: req.DistrictID, Valid: true}
 	}
 
 	rows, err := s.querier.UpdateContact(ctx, queries.UpdateContactParams{
-		DistrictID: req.DistrictID,
+		DistrictID: districtArg,
 		Name:       req.Name,
 		Role:       req.Role,
 		Phone:      sql.NullString{String: req.Phone, Valid: req.Phone != ""},

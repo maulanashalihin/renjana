@@ -85,7 +85,7 @@ type RenjanaComplaint struct {
 
 type RenjanaContact struct {
 	ID         int64          `json:"id"`
-	DistrictID int64          `json:"district_id"`
+	DistrictID sql.NullInt64  `json:"district_id"`
 	Name       string         `json:"name"`
 	Role       string         `json:"role"`
 	Phone      sql.NullString `json:"phone"`

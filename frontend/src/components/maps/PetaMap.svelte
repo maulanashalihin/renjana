@@ -78,7 +78,7 @@
                 attributionControl: true,
                 maxBounds: L.latLngBounds([-3.8, 115.2], [-3.0, 116.2]),
                 maxBoundsViscosity: 1.0,
-            }).setView([-3.37, 115.95], 10);
+            }).setView([-3.95, 117.08], 10);
 
             // OSM base tiles
             L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -149,10 +149,8 @@
                     .addTo(map!);
             });
 
-            // Fit bounds to polygons
-            if (geoLayer.getBounds().isValid()) {
-                map.fitBounds(geoLayer.getBounds(), { padding: [20, 20] });
-            }
+            // Set view to desired center and zoom — fitBounds disabled to respect manual positioning
+            map.setView([-3.95, 117.08], 10);
 
         } catch (err) {
             console.error("Failed to initialize map:", err);

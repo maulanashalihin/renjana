@@ -10,9 +10,9 @@
 -- 1. Kontak (koordinator per kecamatan)
 CREATE TABLE IF NOT EXISTS renjana_contacts (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    district_id INTEGER NOT NULL REFERENCES renjana_districts(id) ON DELETE CASCADE,
+    district_id INTEGER REFERENCES renjana_districts(id) ON DELETE SET NULL,
     name TEXT NOT NULL,
-    role TEXT NOT NULL DEFAULT 'Koordinator', -- 'Koordinator' | 'Wakil'
+    role TEXT NOT NULL DEFAULT 'Fasilitator',
     phone TEXT,
     email TEXT,
     is_active BOOLEAN NOT NULL DEFAULT 1,
