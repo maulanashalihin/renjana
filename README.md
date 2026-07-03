@@ -460,125 +460,71 @@ education_quiz_answers, education_quiz_attempts, education_certificates
 
 ## 🖥️ Rekomendasi Deployment & Spesifikasi Server
 
-Bagian ini diperuntukkan bagi **Dinas Kominfo Kabupaten Tanah Bumbu** sebagai acuan dalam pengadaan server dan infrastruktur untuk aplikasi RENJANA.
+Bagian ini diperuntukkan bagi **Dinas Kominfo Kabupaten Tanah Bumbu** sebagai acuan pengadaan server.
 
-### 📦 Spesifikasi Minimum Server
+> Aplikasi RENJANA adalah **Go static binary** + **SQLite embedded** (via `modernc.org/sqlite` — pure Go, tanpa CGO). Tidak perlu server database terpisah. Satu binary bisa langsung jalan.
 
-| Komponen | Spesifikasi | Keterangan |
-|----------|-------------|------------|
-| **CPU** | 2 core (x86_64/ARM64) | ARM64 lebih hemat daya, x86_64 untuk kompatibilitas maksimal |
-| **RAM** | 2 GB | Cukup untuk melayani 500-1.000 pengguna simultan |
-| **Storage** | 40 GB SSD | Sistem + database + file upload (foto, dokumen) |
-| **OS** | Ubuntu 24.04 LTS / Debian 12 | Dukungan jangka panjang, security patches rutin |
-| **Database** | SQLite (embedded) | Tidak perlu server database terpisah — hemat resource |
+### Spesifikasi Server
 
-### 📈 Spesifikasi Rekomendasi (Produksi)
+| Komponen | Minimum | Rekomendasi |
+|----------|---------|-------------|
+| **CPU** | 1 core | 2 core |
+| **RAM** | 1 GB | 2 GB |
+| **Storage** | 20 GB SSD | 40 GB SSD |
+| **OS** | Ubuntu 22.04+ / Debian 12 | Ubuntu 24.04 LTS |
 
-| Komponen | Spesifikasi | Alasan |
-|----------|-------------|--------|
-| **CPU** | 4 core | Menangani traffic puncak (event bencana, pelaporan simultan) |
-| **RAM** | 4 GB | Cache session, file processing, concurrent requests |
-| **Storage** | 80 GB NVMe/SSD | Foto kegiatan, dokumen, sertifikat — growth estimate 2-5 GB/tahun |
-| **OS** | Ubuntu 24.04 LTS | Familiar, dokumentasi melimpah, dukungan komunitas |
-| **Bandwidth** | 100 Mbps | Page size rata-rata ~150 KB, muat 500+ request/detik |
+**Dengan 2 core + 2 GB RAM**, server sanggup melayani **100.000+ request/detik** (berdasarkan benchmark real `wrk` + Fiber + SQLite).
 
-### 🏗️ Arsitektur Deployment
+### Arsitektur
 
 ```
                         ┌──────────────────┐
-                        │   Cloudflare      │
-                        │   (CDN + SSL +    │
-                        │   DDoS Protection)│
-                        └────────┬─────────┘
-                                 │
-                        ┌────────▼─────────┐
                         │   Reverse Proxy   │
-                        │   Nginx/Caddy     │
-                        │   (Terminasi SSL, │
-                        │   HTTP/2, Cache)  │
+                        │   Caddy (auto     │
+                        │   HTTPS, simple)  │
                         └────────┬─────────┘
                                  │
                         ┌────────▼─────────┐
                         │   RENJANA App     │
-                        │   (Go Binary)     │
+                        │   (Binary ~20MB)  │
                         │   :8080           │
                         └────────┬─────────┘
                                  │
-              ┌──────────────────┼──────────────────┐
-              ▼                  ▼                  ▼
-     ┌────────────────┐ ┌──────────────┐ ┌────────────────┐
-     │   SQLite DB     │ │   Storage     │ │   RAM Cache    │
-     │   (File-based)  │ │   (Uploads)   │ │   (Sessions)   │
-     └────────────────┘ └──────────────┘ └────────────────┘
+                    ┌────────────┴────────────┐
+                    ▼                         ▼
+           ┌──────────────┐        ┌────────────────┐
+           │   SQLite DB   │        │   Upload        │
+           │   (file)      │        │   (storage/)    │
+           └──────────────┘        └────────────────┘
 ```
 
-#### Komponen Infrastruktur
+### Strategi Backup
 
-| Komponen | Rekomendasi | Opsi Alternatif |
-|----------|-------------|-----------------|
-| **Reverse Proxy** | Caddy (auto HTTPS, konfigurasi minimal) | Nginx (lebih familiar di tim infrastruktur) |
-| **CDN** | Cloudflare (Free plan cukup) | — |
-| **SSL/TLS** | Let's Encrypt (otomatis via Caddy/Cloudflare) | — |
-| **Monitoring** | Uptime Kuma + Grafana | Prometheus + node_exporter |
-| **Backup** | `rclone` ke Cloud Storage (S3/Backblaze) | `rsync` ke server cadangan |
-| **CI/CD** | GitHub Actions | Manual deploy via git pull |
+Karena SQLite adalah file tunggal, backup cukup copy file:
 
-### 🔄 Strategi Backup
+```bash
+# Backup database (safe — SQLite atomic commit)
+sqlite3 data/app.db "VACUUM INTO '/backup/renjana-$(date +%Y%m%d).db'"
 
-| Data | Frekuensi | Retention | Metode |
-|------|-----------|-----------|--------|
-| **Database SQLite** | Setiap 6 jam | 30 hari | `sqlite3 .backup` → kompresi → Cloud Storage |
-| **File Upload** | Setiap 24 jam | 30 hari | `rclone sync` ke Cloud Storage |
-| **Konfigurasi** | Setiap deploy | Permanen (git) | Commit `.env.example`, actual `.env` di vault |
-| **Full Server** | Setiap minggu | 3 bulan | Snapshot VPS (jika provider support) |
-
-> **⚠️ PENTING:** SQLite backup harus menggunakan `sqlite3 .backup` atau `VACUUM INTO`, bukan sekadar copy file. Copy file saat database sedang ditulis bisa menghasilkan backup korup.
-
-### 🚦Estimasi Kapasitas
-
-| Metrik | Estimasi | Notes |
-|--------|----------|-------|
-| **Pengguna Aktif** | 1.500+ relawan + admin | Seluruh Kecamatan Tanah Bumbu |
-| **Concurrent Requests** | 200-500 | Traffic normal, puncak saat event |
-| **Database Size** | ~100 MB (tahun 1) | Growth ~50 MB/tahun |
-| **Storage Upload** | ~5 GB (tahun 1) | Foto kegiatan, dokumen, sertifikat |
-| **Response Time** | <100 ms (server-side) | Go Fiber + SQLite in-memory cache |
-| **Uptime Target** | 99.9% | ~8 jam downtime/tahun maksimal |
-
-### ☁️ Rekomendasi Provider (Indonesia)
-
-| Provider | Spesifikasi | Estimasi Biaya | Cocok Untuk |
-|----------|-------------|----------------|-------------|
-| **AWS Lightsail** | 2 CPU, 4 GB RAM, 80 GB SSD | ~$12-24/bulan | Tim dengan pengalaman AWS |
-| **DigitalOcean** | 2 CPU, 4 GB RAM, 80 GB SSD | ~$20-24/bulan | Paling populer, dokumentasi lengkap |
-| **Vultr** | 2 CPU, 4 GB RAM, 80 GB NVMe | ~$20-24/bulan | Performa NVMe terbaik di kelas harga |
-| **IDCloudHost** | 4 CPU, 8 GB RAM, 100 GB SSD | ~Rp 200-400rb/bulan | Hosting lokal, dukungan Bahasa Indonesia |
-| **Biznet Gio** | 2 CPU, 4 GB RAM, 80 GB SSD | ~Rp 150-300rb/bulan | Hosting lokal, koneksi dalam negeri cepat |
-| **Neuv** | 2 CPU, 4 GB RAM, 80 GB SSD | ~Rp 100-250rb/bulan | Hosting lokal termurah |
-
-> **Rekomendasi:** VPS di **IDCloudHost** atau **Biznet Gio** untuk latensi minimal ke pengguna di Kalimantan Selatan. Bisa juga gunakan AWS Lightsail jika tim Kominfo sudah punya ekosistem AWS.
-
-### 🔧 Persiapan Server (Checklist Tim Kominfo)
-
-- [ ] VPS dengan spesifikasi di atas (Ubuntu 24.04 LTS)
-- [ ] Domain: `renjana.tanahlmbubkab.go.id` (atau subdomain yang ditentukan)
-- [ ] SSL Certificate (Let's Encrypt otomatis)
-- [ ] Cloudflare account (Free plan) — pointing DNS ke server
-- [ ] SMTP relay untuk email (reset password, notifikasi) — bisa pakai Gmail SMTP atau SendGrid
-- [ ] Postfix atau Mailgun untuk outgoing email
-- [ ] Backup storage (Cloud Storage atau server kedua)
-- [ ] Monitoring (Uptime Kuma untuk health check endpoint)
-- [ ] Firewall: buka port 80 (HTTP), 443 (HTTPS), 22 (SSH terbatas IP tertentu)
-- [ ] Fail2Ban untuk proteksi SSH bruteforce
-
-### 📋 Tahapan Go Live
-
+# Backup file upload
+rsync -av storage/ /backup/storage/
 ```
-Minggu 1: Persiapan infrastruktur (VPS, domain, SSL, CDN)
-Minggu 2: Deployment staging → UAT oleh admin & koordinator
-Minggu 3: Load testing & optimasi
-Minggu 4: Go Live + Monitoring
-```
+
+### Estimasi Biaya Server (VPS Lokal)
+
+| Provider | Spek | Harga/bulan |
+|----------|------|-------------|
+| IDCloudHost | 2 CPU, 2 GB, 40 GB SSD | ~Rp 100-200rb |
+| Biznet Gio | 2 CPU, 2 GB, 40 GB SSD | ~Rp 100-150rb |
+| Neuv | 1 CPU, 2 GB, 40 GB SSD | ~Rp 80-150rb |
+
+### Checklist Tim Kominfo
+
+- [ ] VPS Ubuntu 24.04 (2 core, 2 GB RAM, 40 GB SSD)
+- [ ] Domain (misal: `renjana.tanahlmbubkab.go.id`)
+- [ ] SSL otomatis via Caddy
+- [ ] SMTP untuk reset password (bisa Gmail SMTP gratis)
+- [ ] Backup otomatis harian (crontab + script di atas)
 
 ---
 
