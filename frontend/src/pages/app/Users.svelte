@@ -2,7 +2,7 @@
     import AppLayout from "../../components/AppLayout.svelte";
     import PageHeader from "../../lib/components/PageHeader.svelte";
     import EmptyState from "../../lib/components/EmptyState.svelte";
-    import { Users, Search, UserCog, Shield, UserCheck, UserX, MapPin, X, Plus, Pencil } from "lucide-svelte";
+    import { Shield, UserCheck, UserX, X, Plus, Pencil } from "lucide-svelte";
 
     interface AppUser {
         id: number;
@@ -16,11 +16,6 @@
         created_at: string;
     }
 
-    interface District {
-        id: number;
-        name: string;
-    }
-
     interface Pagination {
         data: AppUser[];
         current_page: number;
@@ -32,25 +27,17 @@
     interface Props {
         user?: AppUser;
         users?: Pagination;
-        districts?: District[];
         current_search?: string;
-        current_role?: string;
         admin_count?: number;
-        koordinator_count?: number;
-        relawan_count?: number;
         all_roles?: string[];
     }
 
     let {
         user,
         users,
-        districts = [],
         current_search = "",
-        current_role = "",
         admin_count = 0,
-        koordinator_count = 0,
-        relawan_count = 0,
-        all_roles = ["relawan", "koordinator", "admin"],
+        all_roles = ["admin"],
     }: Props = $props();
 
     const userItems = $derived(users?.data ?? []);
@@ -66,15 +53,9 @@
         }
     }
 
-    function districtName(districtID: number | undefined): string {
-        if (!districtID) return "-";
-        return districts.find((d) => d.id === districtID)?.name ?? `#${districtID}`;
-    }
-
     function buildQuery() {
         const params = new URLSearchParams();
         if (current_search) params.set("search", current_search);
-        if (current_role) params.set("role", current_role);
         return params.toString();
     }
 
@@ -110,65 +91,33 @@
 </script>
 
 <AppLayout {user} pageTitle="Manajemen User" pageSubtitle="Kelola akun, role, dan akses pengguna" activeMenu="Manajemen User">
-    <PageHeader title="Manajemen User RENJANA" subtitle="Kelola akun pengguna dan role-based access" icon={Users}>
+    <PageHeader title="Manajemen Admin" subtitle="Kelola akun admin RENJANA" icon={Shield}>
         <button onclick={openCreate} class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-renjana-500 hover:bg-renjana-600 text-white text-sm font-semibold transition">
             <Plus class="w-4 h-4" />
-            Tambah User
+            Tambah Admin
         </button>
     </PageHeader>
 
-    <!-- Stats banner -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+    <!-- Stats -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
         <div class="rounded-xl bg-gradient-to-br from-rose-50 to-rose-100 dark:from-rose-900/20 dark:to-rose-900/40 border border-rose-200 dark:border-rose-800 p-4">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-xs font-medium text-rose-700 dark:text-rose-300 uppercase tracking-wide">Admin</p>
+                    <p class="text-xs font-medium text-rose-700 dark:text-rose-300 uppercase tracking-wide">Total Admin</p>
                     <p class="text-2xl font-bold text-rose-900 dark:text-rose-100 mt-1">{admin_count}</p>
                 </div>
                 <Shield class="w-8 h-8 text-rose-500" />
-            </div>
-        </div>
-        <div class="rounded-xl bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-900/40 border border-amber-200 dark:border-amber-800 p-4">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-xs font-medium text-amber-700 dark:text-amber-300 uppercase tracking-wide">Koordinator</p>
-                    <p class="text-2xl font-bold text-amber-900 dark:text-amber-100 mt-1">{koordinator_count}</p>
-                </div>
-                <UserCog class="w-8 h-8 text-amber-500" />
-            </div>
-        </div>
-        <div class="rounded-xl bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-900/40 border border-emerald-200 dark:border-emerald-800 p-4">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-xs font-medium text-emerald-700 dark:text-emerald-300 uppercase tracking-wide">Relawan</p>
-                    <p class="text-2xl font-bold text-emerald-900 dark:text-emerald-100 mt-1">{relawan_count}</p>
-                </div>
-                <Users class="w-8 h-8 text-emerald-500" />
             </div>
         </div>
     </div>
 
     <!-- Filter -->
     <div class="flex flex-wrap items-center gap-2 mb-6">
-        <button
-            onclick={() => { current_role = ""; applyFilter(); }}
-            class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium border transition {current_role === '' ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 border-transparent' : 'bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-700 hover:border-neutral-400'}"
-        >
-            Semua Role
-        </button>
-        {#each all_roles as role}
-            <button
-                onclick={() => { current_role = role; applyFilter(); }}
-                class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium border transition {current_role === role ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 border-transparent' : 'bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-700 hover:border-neutral-400'}"
-            >
-                {role}
-            </button>
-        {/each}
         <div class="flex-1"></div>
         <div class="relative flex gap-2">
-            <input type="text" placeholder="Cari user..." bind:value={current_search} onkeydown={(e) => e.key === "Enter" && applyFilter()} class="w-48 sm:w-64 pl-3 pr-3 py-1.5 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
+            <input type="text" placeholder="Cari admin..." bind:value={current_search} onkeydown={(e) => e.key === "Enter" && applyFilter()} class="w-48 sm:w-64 pl-3 pr-3 py-1.5 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
             <button onclick={applyFilter} class="px-3 py-1.5 rounded-lg bg-renjana-500 hover:bg-renjana-600 text-white text-xs font-semibold transition">Cari</button>
-            {#if current_search || current_role}
+            {#if current_search}
                 <button onclick={resetFilter} class="px-3 py-1.5 rounded-lg text-xs font-medium border border-neutral-200 dark:border-neutral-700 hover:border-renjana-500 transition">Reset</button>
             {/if}
         </div>
@@ -205,12 +154,7 @@
                                     {u.role}
                                 </span>
                             </td>
-                            <td class="px-4 py-3 text-neutral-600 dark:text-neutral-400">
-                                <div class="flex items-center gap-1">
-                                    <MapPin class="w-3 h-3" />
-                                    {districtName(u.district_id)}
-                                </div>
-                            </td>
+
                             <td class="px-4 py-3">
                                 {#if u.is_active}
                                     <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
@@ -235,7 +179,7 @@
             </table>
         </div>
     {:else}
-        <EmptyState title="Tidak ada user" message="Coba ubah filter atau tambah user baru." icon={Users} />
+        <EmptyState title="Tidak ada admin" message="Coba ubah filter atau tambah admin baru." icon={Shield} />
     {/if}
 
     <!-- Edit modal -->
@@ -254,19 +198,10 @@
                         <p>{editingUser.email}</p>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Role *</label>
-                        <select name="role" required class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none">
+                        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Role</label>
+                        <select name="role" class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none">
                             {#each all_roles as role}
                                 <option value={role} selected={editingUser.role === role}>{role}</option>
-                            {/each}
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Kecamatan (untuk koordinator)</label>
-                        <select name="district_id" class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none">
-                            <option value="0">- Tidak ada -</option>
-                            {#each districts as d}
-                                <option value={d.id} selected={editingUser.district_id === d.id}>{d.name}</option>
                             {/each}
                         </select>
                     </div>
@@ -316,20 +251,11 @@
                         <input type="password" name="password" required minlength="8" class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Role *</label>
-                        <select name="role" required class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none">
-                            {#each all_roles as role}
-                                <option value={role}>{role}</option>
-                            {/each}
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Kecamatan (untuk koordinator)</label>
-                        <select name="district_id" class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none">
-                            <option value="0">- Tidak ada -</option>
-                            {#each districts as d}
-                                <option value={d.id}>{d.name}</option>
-                            {/each}
+                        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Role</label>
+                        <select name="role" class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none">
+                            <option value="admin" selected>admin</option>
+                            <option value="koordinator">koordinator</option>
+                            <option value="relawan">relawan</option>
                         </select>
                     </div>
                     <div class="flex justify-end gap-2 pt-4 border-t border-neutral-200 dark:border-neutral-800">

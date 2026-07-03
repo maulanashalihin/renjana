@@ -46,7 +46,7 @@ func (h *UserAdminHandler) authUser(c *fiber.Ctx) (int64, *models.User, error) {
 	return id, u, nil
 }
 
-// Index — list all users.
+// Index — list admin users only.
 func (h *UserAdminHandler) Index(c *fiber.Ctx) error {
 	_, user, err := h.authUser(c)
 	if err != nil {
@@ -56,10 +56,9 @@ func (h *UserAdminHandler) Index(c *fiber.Ctx) error {
 	page, _ := strconv.Atoi(c.Query("page", "1"))
 	perPage, _ := strconv.Atoi(c.Query("per_page", "20"))
 	search := c.Query("search", "")
-	role := models.UserRole(c.Query("role", ""))
 
 	result, err := h.userAdminSvc.ListUsers(c.Context(), services.UserFilter{
-		Role:   role,
+		Role:   models.RoleAdmin,
 		Search: search,
 	}, page, perPage)
 	if err != nil {
@@ -68,23 +67,14 @@ func (h *UserAdminHandler) Index(c *fiber.Ctx) error {
 		})
 	}
 
-	districts, _ := h.querier.GetActiveDistricts(c.Context())
-
-	// Counts per role
 	adminCount, _ := h.userAdminSvc.CountByRole(c.Context(), models.RoleAdmin)
-	koordCount, _ := h.userAdminSvc.CountByRole(c.Context(), models.RoleKoordinator)
-	relawanCount, _ := h.userAdminSvc.CountByRole(c.Context(), models.RoleRelawan)
 
 	return h.inertiaService.Render(c, "app/Users", fiber.Map{
-		"user":              user,
-		"users":             result,
-		"districts":         districts,
-		"current_search":    search,
-		"current_role":      string(role),
-		"admin_count":       adminCount,
-		"koordinator_count": koordCount,
-		"relawan_count":     relawanCount,
-		"all_roles":         models.AllRoles(),
+		"user":           user,
+		"users":          result,
+		"current_search": search,
+		"admin_count":    adminCount,
+		"all_roles":      []models.UserRole{models.RoleAdmin},
 	})
 }
 
