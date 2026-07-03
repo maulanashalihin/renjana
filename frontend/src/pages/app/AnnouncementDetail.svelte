@@ -2,6 +2,8 @@
     import AppLayout from "../../components/AppLayout.svelte";
     import { ArrowLeft, Calendar, Share2, Check } from "lucide-svelte";
     import { inertia } from "@inertiajs/svelte";
+    import MarkdownIt from "markdown-it";
+    const md = new MarkdownIt({ breaks: true, linkify: true });
 
     interface AppUser {
         id: number;
@@ -111,11 +113,7 @@
 
                 {#if announcement.body}
                     <div class="prose prose-neutral dark:prose-invert max-w-none">
-                        {#each announcement.body.split('\n') as paragraph}
-                            {#if paragraph.trim()}
-                                <p class="mb-4 leading-relaxed text-neutral-700 dark:text-neutral-300">{paragraph}</p>
-                            {/if}
-                        {/each}
+                        {@html md.render(announcement.body)}
                     </div>
                 {/if}
             </article>

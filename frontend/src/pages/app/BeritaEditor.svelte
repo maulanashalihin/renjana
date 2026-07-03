@@ -2,6 +2,8 @@
     import AppLayout from "../../components/AppLayout.svelte";
     import { ArrowLeft, Save, Image, Upload, Eye, EyeOff, Bold, Italic, Heading, List, Link as LinkIcon, Code, X } from "lucide-svelte";
     import { router, inertia } from "@inertiajs/svelte";
+    import MarkdownIt from "markdown-it";
+    const md = new MarkdownIt({ breaks: true, linkify: true });
 
     interface AppUser {
         id: number;
@@ -126,22 +128,14 @@
         });
     }
 
-    // Simple markdown → HTML renderer
-    function renderMarkdown(md: string): string {
-        let html = md
-            .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-            .replace(/^### (.+)$/gm, "<h3>$1</h3>")
-            .replace(/^## (.+)$/gm, "<h2>$1</h2>")
-            .replace(/^# (.+)$/gm, "<h1>$1</h1>")
-            .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-            .replace(/\*(.+?)\*/g, "<em>$1</em>")
-            .replace(/`(.+?)`/g, "<code>$1</code>")
-            .replace(/^\- (.+)$/gm, "<li>$1</li>")
-            .replace(/(<li>.*<\/li>\n?)+/g, "<ul>$&</ul>")
-            .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" target="_blank" class="text-renjana-600 underline">$1</a>')
-            .replace(/\n\n/g, "</p><p>")
-            .replace(/\n/g, "<br>");
-        return "<p>" + html + "</p>";
+    // Markdown → HTML renderer using markdown-it
+    function renderMarkdown(src: string): string {
+        if (!src) return "";
+        try {
+            return md.render(src);
+        } catch {
+            return src;
+        }
     }
 
     function handleSubmit() {
