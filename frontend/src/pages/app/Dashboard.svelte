@@ -274,16 +274,14 @@
             />
         </div>
 
-        <!-- Sebaran -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="lg:col-span-3">
+        <!-- Sebaran + Jenis Kegiatan -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div>
                 <VolunteerDistribution districts={districtRows} />
             </div>
-        </div>
-
-        <!-- Jenis Kegiatan -->
-        <div>
-            <ActivityDonutChart activities={activitySegments} total={safeStats.total_kegiatan} />
+            <div>
+                <ActivityDonutChart activities={activitySegments} total={safeStats.total_kegiatan} />
+            </div>
         </div>
 
         <!-- Relawan Aktif + Pengumuman -->
