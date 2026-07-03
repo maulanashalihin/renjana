@@ -17,7 +17,7 @@
         <div>
             <h3 class="text-base font-bold text-slate-900 dark:text-white">Edukasi</h3>
             <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
-                Pelajari materi kebencanaan,<br />quiz, dan sertifikat
+                Pelajari materi kebencanaan,<br />quiz, dan dapatkan sertifikat
             </p>
         </div>
         <div
