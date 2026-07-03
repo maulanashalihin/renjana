@@ -66,7 +66,7 @@ func (h *AppHandler) Dashboard(c *fiber.Ctx) error {
 		"activity_breakdown":    data.ActivityBreakdown,
 		"active_volunteers":     data.ActiveVolunteers,
 		"achievements":          data.Achievements,
-		"latest_announcement":   data.LatestAnnouncement,
+		"latest_announcements":  data.LatestAnnouncements,
 		"upcoming_activities":   data.UpcomingActivities,
 	})
 }

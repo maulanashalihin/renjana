@@ -49,15 +49,15 @@ type RenjanaActivityType struct {
 type RenjanaAnnouncement struct {
 	ID          int64          `json:"id"`
 	Title       string         `json:"title"`
-	Content     string         `json:"content"`
-	PublishedAt time.Time      `json:"published_at"`
-	IsPublished bool           `json:"is_published"`
-	CreatedAt   time.Time      `json:"created_at"`
+	Excerpt     string         `json:"excerpt"`
 	Category    string         `json:"category"`
 	Slug        sql.NullString `json:"slug"`
 	Body        sql.NullString `json:"body"`
 	CoverUrl    sql.NullString `json:"cover_url"`
 	AuthorID    sql.NullInt64  `json:"author_id"`
+	PublishedAt time.Time      `json:"published_at"`
+	IsPublished bool           `json:"is_published"`
+	CreatedAt   time.Time      `json:"created_at"`
 }
 
 type RenjanaCertificate struct {
@@ -238,7 +238,6 @@ type RenjanaVolunteer struct {
 	ReviewerID        sql.NullInt64  `json:"reviewer_id"`
 	ReviewedAt        sql.NullTime   `json:"reviewed_at"`
 	RejectionReason   sql.NullString `json:"rejection_reason"`
-	UserID            sql.NullInt64  `json:"user_id"`
 }
 
 type Session struct {

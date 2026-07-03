@@ -71,13 +71,20 @@ CREATE INDEX idx_renjana_activities_status ON renjana_activities(status);
 CREATE TABLE IF NOT EXISTS renjana_announcements (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
-    content TEXT NOT NULL,
+    excerpt TEXT NOT NULL,
+    category TEXT NOT NULL DEFAULT 'Pengumuman',
+    slug TEXT,
+    body TEXT,
+    cover_url TEXT,
+    author_id INTEGER REFERENCES users(id),
     published_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     is_published BOOLEAN NOT NULL DEFAULT TRUE,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX idx_renjana_announcements_published ON renjana_announcements(is_published, published_at DESC);
+CREATE INDEX idx_renjana_announcements_category ON renjana_announcements(category, is_published, published_at DESC);
+CREATE INDEX idx_renjana_announcements_slug ON renjana_announcements(slug);
 
 -- 6. Achievements (Capaian Tahunan)
 CREATE TABLE IF NOT EXISTS renjana_achievements (
@@ -103,6 +110,8 @@ CREATE INDEX idx_renjana_achievements_year ON renjana_achievements(year, display
 DROP INDEX IF EXISTS idx_renjana_achievements_year;
 DROP TABLE IF EXISTS renjana_achievements;
 
+DROP INDEX IF EXISTS idx_renjana_announcements_slug;
+DROP INDEX IF EXISTS idx_renjana_announcements_category;
 DROP INDEX IF EXISTS idx_renjana_announcements_published;
 DROP TABLE IF EXISTS renjana_announcements;
 

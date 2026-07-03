@@ -16,7 +16,7 @@
     interface AnnouncementDetail {
         id: number;
         title: string;
-        content: string;
+        excerpt: string;
         category: string;
         body: string;
         cover_url: string;
@@ -42,7 +42,7 @@
 
     let title = $state(announcement?.title ?? "");
     let category = $state(announcement?.category ?? "Pengumuman");
-    let summary = $state(announcement?.content ?? "");
+    let summary = $state(announcement?.excerpt ?? "");
     let body = $state(announcement?.body ?? "");
     let coverUrl = $state(announcement?.cover_url ?? "");
     let isPublished = $state(announcement?.is_published ?? true);
@@ -144,7 +144,7 @@
 
         const data = {
             title,
-            content: summary,
+            excerpt: summary,
             category,
             body,
             cover_url: coverUrl,
@@ -473,12 +473,12 @@
                                 <div>
                                     <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">URL Gambar</label>
                                     <input type="url" bind:value={linkUrl} placeholder="https://contoh.com/gambar.jpg"
-                                        class="w-full px-4 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
+                                        class="w-full px-4 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Teks Alternatif (alt)</label>
                                     <input type="text" bind:value={linkAlt} placeholder="Deskripsi gambar"
-                                        class="w-full px-4 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
+                                        class="w-full px-4 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
                                 </div>
                                 <button type="button"
                                     onclick={() => {

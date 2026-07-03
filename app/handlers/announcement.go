@@ -49,6 +49,7 @@ func (h *AnnouncementHandler) authUser(c *fiber.Ctx) (int64, *models.User, error
 }
 
 // Index — list with search, filter, pagination. Public GET.
+// Draft announcements (is_published=false) only visible to admin users.
 func (h *AnnouncementHandler) Index(c *fiber.Ctx) error {
 	// Detect user from session (works without AuthRequired middleware)
 	var user *models.User
@@ -59,11 +60,18 @@ func (h *AnnouncementHandler) Index(c *fiber.Ctx) error {
 		}
 	}
 
+	isAdmin := user != nil && user.Role == models.RoleAdmin
+
 	page, _ := strconv.Atoi(c.Query("page", "1"))
 	perPage, _ := strconv.Atoi(c.Query("per_page", "20"))
 	search := c.Query("search", "")
 	category := c.Query("category", "")
+
+	// Non-admin users only see published announcements
 	isPublished := c.Query("is_published", "")
+	if !isAdmin {
+		isPublished = "1"
+	}
 
 	result, err := h.announcementSvc.List(c.Context(), search, category, isPublished, page, perPage)
 	if err != nil {
@@ -202,6 +210,7 @@ func (h *AnnouncementHandler) Destroy(c *fiber.Ctx) error {
 }
 
 // Show — view detail.
+// Draft announcements (is_published=false) only visible to admin users.
 func (h *AnnouncementHandler) Show(c *fiber.Ctx) error {
 	// Detect user from session (works without AuthRequired middleware)
 	var user *models.User
@@ -211,6 +220,8 @@ func (h *AnnouncementHandler) Show(c *fiber.Ctx) error {
 			user, _ = h.querier.GetUserByID(c.Context(), uid.(int64))
 		}
 	}
+
+	isAdmin := user != nil && user.Role == models.RoleAdmin
 
 	id, _ := strconv.ParseInt(c.Params("id"), 10, 64)
 
@@ -223,6 +234,13 @@ func (h *AnnouncementHandler) Show(c *fiber.Ctx) error {
 		}
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err.Error(),
+		})
+	}
+
+	// Non-admin users cannot view draft announcements
+	if !isAdmin && !ann.IsPublished {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error": "Berita tidak ditemukan",
 		})
 	}
 

@@ -16,7 +16,7 @@ SELECT COUNT(*) AS total
 FROM renjana_announcements
 WHERE (?1 IS NULL OR ?1 = ''
        OR title LIKE '%' || ?1 || '%'
-       OR content LIKE '%' || ?1 || '%')
+       OR excerpt LIKE '%' || ?1 || '%')
   AND (?2 IS NULL OR ?2 = '' OR category = ?2)
   AND (?3 IS NULL OR ?3 = '' OR is_published = ?3)
 `
@@ -36,7 +36,7 @@ func (q *Queries) CountAnnouncementsFiltered(ctx context.Context, arg CountAnnou
 
 const createAnnouncement = `-- name: CreateAnnouncement :one
 INSERT INTO renjana_announcements (
-    title, content, category, slug, body, cover_url, author_id, published_at, is_published
+    title, excerpt, category, slug, body, cover_url, author_id, published_at, is_published
 )
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 RETURNING id
@@ -44,7 +44,7 @@ RETURNING id
 
 type CreateAnnouncementParams struct {
 	Title       string         `json:"title"`
-	Content     string         `json:"content"`
+	Excerpt     string         `json:"excerpt"`
 	Category    string         `json:"category"`
 	Slug        sql.NullString `json:"slug"`
 	Body        sql.NullString `json:"body"`
@@ -57,7 +57,7 @@ type CreateAnnouncementParams struct {
 func (q *Queries) CreateAnnouncement(ctx context.Context, arg CreateAnnouncementParams) (int64, error) {
 	row := q.db.QueryRowContext(ctx, createAnnouncement,
 		arg.Title,
-		arg.Content,
+		arg.Excerpt,
 		arg.Category,
 		arg.Slug,
 		arg.Body,
@@ -85,36 +85,22 @@ func (q *Queries) DeleteAnnouncement(ctx context.Context, id int64) (int64, erro
 
 const getAnnouncementByID = `-- name: GetAnnouncementByID :one
 
-SELECT id, title, content, category, slug, body, cover_url, author_id,
+SELECT id, title, excerpt, category, slug, body, cover_url, author_id,
        published_at, is_published, created_at
 FROM renjana_announcements
 WHERE id = ?
 `
 
-type GetAnnouncementByIDRow struct {
-	ID          int64          `json:"id"`
-	Title       string         `json:"title"`
-	Content     string         `json:"content"`
-	Category    string         `json:"category"`
-	Slug        sql.NullString `json:"slug"`
-	Body        sql.NullString `json:"body"`
-	CoverUrl    sql.NullString `json:"cover_url"`
-	AuthorID    sql.NullInt64  `json:"author_id"`
-	PublishedAt time.Time      `json:"published_at"`
-	IsPublished bool           `json:"is_published"`
-	CreatedAt   time.Time      `json:"created_at"`
-}
-
 // ============================================================================
 // CRUD queries for Berita page
 // ============================================================================
-func (q *Queries) GetAnnouncementByID(ctx context.Context, id int64) (GetAnnouncementByIDRow, error) {
+func (q *Queries) GetAnnouncementByID(ctx context.Context, id int64) (RenjanaAnnouncement, error) {
 	row := q.db.QueryRowContext(ctx, getAnnouncementByID, id)
-	var i GetAnnouncementByIDRow
+	var i RenjanaAnnouncement
 	err := row.Scan(
 		&i.ID,
 		&i.Title,
-		&i.Content,
+		&i.Excerpt,
 		&i.Category,
 		&i.Slug,
 		&i.Body,
@@ -128,7 +114,7 @@ func (q *Queries) GetAnnouncementByID(ctx context.Context, id int64) (GetAnnounc
 }
 
 const getLatestPublishedAnnouncement = `-- name: GetLatestPublishedAnnouncement :one
-SELECT id, title, content, published_at, is_published, created_at
+SELECT id, title, excerpt, published_at, is_published, created_at
 FROM renjana_announcements
 WHERE is_published = 1
 ORDER BY published_at DESC
@@ -138,7 +124,7 @@ LIMIT 1
 type GetLatestPublishedAnnouncementRow struct {
 	ID          int64     `json:"id"`
 	Title       string    `json:"title"`
-	Content     string    `json:"content"`
+	Excerpt     string    `json:"excerpt"`
 	PublishedAt time.Time `json:"published_at"`
 	IsPublished bool      `json:"is_published"`
 	CreatedAt   time.Time `json:"created_at"`
@@ -150,7 +136,7 @@ func (q *Queries) GetLatestPublishedAnnouncement(ctx context.Context) (GetLatest
 	err := row.Scan(
 		&i.ID,
 		&i.Title,
-		&i.Content,
+		&i.Excerpt,
 		&i.PublishedAt,
 		&i.IsPublished,
 		&i.CreatedAt,
@@ -159,7 +145,7 @@ func (q *Queries) GetLatestPublishedAnnouncement(ctx context.Context) (GetLatest
 }
 
 const getLatestPublishedAnnouncements = `-- name: GetLatestPublishedAnnouncements :many
-SELECT id, title, content, published_at, is_published, created_at
+SELECT id, title, excerpt, published_at, is_published, created_at
 FROM renjana_announcements
 WHERE is_published = 1
 ORDER BY published_at DESC
@@ -169,7 +155,7 @@ LIMIT ?
 type GetLatestPublishedAnnouncementsRow struct {
 	ID          int64     `json:"id"`
 	Title       string    `json:"title"`
-	Content     string    `json:"content"`
+	Excerpt     string    `json:"excerpt"`
 	PublishedAt time.Time `json:"published_at"`
 	IsPublished bool      `json:"is_published"`
 	CreatedAt   time.Time `json:"created_at"`
@@ -187,7 +173,7 @@ func (q *Queries) GetLatestPublishedAnnouncements(ctx context.Context, limit int
 		if err := rows.Scan(
 			&i.ID,
 			&i.Title,
-			&i.Content,
+			&i.Excerpt,
 			&i.PublishedAt,
 			&i.IsPublished,
 			&i.CreatedAt,
@@ -206,12 +192,12 @@ func (q *Queries) GetLatestPublishedAnnouncements(ctx context.Context, limit int
 }
 
 const listAnnouncementsPaginated = `-- name: ListAnnouncementsPaginated :many
-SELECT id, title, content, category, slug, body, cover_url, author_id,
+SELECT id, title, excerpt, category, slug, body, cover_url, author_id,
        published_at, is_published, created_at
 FROM renjana_announcements
 WHERE (?1 IS NULL OR ?1 = ''
        OR title LIKE '%' || ?1 || '%'
-       OR content LIKE '%' || ?1 || '%')
+       OR excerpt LIKE '%' || ?1 || '%')
   AND (?2 IS NULL OR ?2 = '' OR category = ?2)
   AND (?3 IS NULL OR ?3 = '' OR is_published = ?3)
 ORDER BY published_at DESC, created_at DESC
@@ -226,21 +212,7 @@ type ListAnnouncementsPaginatedParams struct {
 	Offset  int64       `json:"offset"`
 }
 
-type ListAnnouncementsPaginatedRow struct {
-	ID          int64          `json:"id"`
-	Title       string         `json:"title"`
-	Content     string         `json:"content"`
-	Category    string         `json:"category"`
-	Slug        sql.NullString `json:"slug"`
-	Body        sql.NullString `json:"body"`
-	CoverUrl    sql.NullString `json:"cover_url"`
-	AuthorID    sql.NullInt64  `json:"author_id"`
-	PublishedAt time.Time      `json:"published_at"`
-	IsPublished bool           `json:"is_published"`
-	CreatedAt   time.Time      `json:"created_at"`
-}
-
-func (q *Queries) ListAnnouncementsPaginated(ctx context.Context, arg ListAnnouncementsPaginatedParams) ([]ListAnnouncementsPaginatedRow, error) {
+func (q *Queries) ListAnnouncementsPaginated(ctx context.Context, arg ListAnnouncementsPaginatedParams) ([]RenjanaAnnouncement, error) {
 	rows, err := q.db.QueryContext(ctx, listAnnouncementsPaginated,
 		arg.Column1,
 		arg.Column2,
@@ -252,13 +224,13 @@ func (q *Queries) ListAnnouncementsPaginated(ctx context.Context, arg ListAnnoun
 		return nil, err
 	}
 	defer rows.Close()
-	var items []ListAnnouncementsPaginatedRow
+	var items []RenjanaAnnouncement
 	for rows.Next() {
-		var i ListAnnouncementsPaginatedRow
+		var i RenjanaAnnouncement
 		if err := rows.Scan(
 			&i.ID,
 			&i.Title,
-			&i.Content,
+			&i.Excerpt,
 			&i.Category,
 			&i.Slug,
 			&i.Body,
@@ -283,14 +255,14 @@ func (q *Queries) ListAnnouncementsPaginated(ctx context.Context, arg ListAnnoun
 
 const updateAnnouncement = `-- name: UpdateAnnouncement :execrows
 UPDATE renjana_announcements
-SET title = ?, content = ?, category = ?, slug = ?, body = ?,
+SET title = ?, excerpt = ?, category = ?, slug = ?, body = ?,
     cover_url = ?, published_at = ?, is_published = ?
 WHERE id = ?
 `
 
 type UpdateAnnouncementParams struct {
 	Title       string         `json:"title"`
-	Content     string         `json:"content"`
+	Excerpt     string         `json:"excerpt"`
 	Category    string         `json:"category"`
 	Slug        sql.NullString `json:"slug"`
 	Body        sql.NullString `json:"body"`
@@ -303,7 +275,7 @@ type UpdateAnnouncementParams struct {
 func (q *Queries) UpdateAnnouncement(ctx context.Context, arg UpdateAnnouncementParams) (int64, error) {
 	result, err := q.db.ExecContext(ctx, updateAnnouncement,
 		arg.Title,
-		arg.Content,
+		arg.Excerpt,
 		arg.Category,
 		arg.Slug,
 		arg.Body,

@@ -24,7 +24,7 @@ func setupDashboardTestDB(t *testing.T) *queries.Querier {
 		CREATE TABLE renjana_activities (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, type_id INTEGER NOT NULL, district_id INTEGER NOT NULL, description TEXT, location TEXT NOT NULL, date DATE NOT NULL, time TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'akan_datang', created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP);
 		CREATE TABLE renjana_volunteers (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, school TEXT NOT NULL, district_id INTEGER NOT NULL, phone TEXT, status TEXT NOT NULL DEFAULT 'aktif', avatar_url TEXT, joined_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, is_active BOOLEAN NOT NULL DEFAULT 1, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, application_status TEXT NOT NULL DEFAULT 'approved');
 		CREATE TABLE renjana_achievements (id INTEGER PRIMARY KEY AUTOINCREMENT, year INTEGER NOT NULL, metric_key TEXT NOT NULL, metric_name TEXT NOT NULL, value REAL NOT NULL, unit TEXT NOT NULL DEFAULT '', target REAL, display_order INTEGER NOT NULL DEFAULT 0, icon TEXT, icon_color TEXT, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, UNIQUE(year, metric_key));
-		CREATE TABLE renjana_announcements (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, content TEXT NOT NULL, published_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, is_published BOOLEAN NOT NULL DEFAULT 1, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, category TEXT NOT NULL DEFAULT 'Pengumuman');
+		CREATE TABLE renjana_announcements (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, excerpt TEXT NOT NULL, published_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, is_published BOOLEAN NOT NULL DEFAULT 1, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, category TEXT NOT NULL DEFAULT 'Pengumuman');
 		CREATE INDEX idx_renjana_activities_status ON renjana_activities(status);
 		CREATE INDEX idx_renjana_activities_date ON renjana_activities(date);
 		CREATE INDEX idx_renjana_activities_type ON renjana_activities(type_id);
@@ -47,7 +47,7 @@ func setupDashboardTestDB(t *testing.T) *queries.Querier {
 	_, err = db.Exec(`INSERT INTO renjana_activities (title, type_id, district_id, location, date, time, status) VALUES ('Upcoming Activity', 1, 1, 'Loc', date('now', '+1 day'), '09.00', 'akan_datang'), ('Past Activity', 1, 1, 'Loc', date('now', '-10 days'), '09.00', 'selesai')`)
 	require.NoError(t, err)
 
-	_, err = db.Exec(`INSERT INTO renjana_announcements (title, content, is_published) VALUES ('Latest News', 'Content', 1)`)
+	_, err = db.Exec(`INSERT INTO renjana_announcements (title, excerpt, is_published) VALUES ('Latest News', 'Content', 1)`)
 	require.NoError(t, err)
 
 	_, err = db.Exec(`INSERT INTO renjana_achievements (year, metric_key, metric_name, value, unit, display_order) VALUES (2024, 'program_achievement', 'Capaian Program', 85, '%', 1)`)
@@ -104,7 +104,7 @@ func TestDashboardServiceGetDataEmpty(t *testing.T) {
 		CREATE TABLE renjana_activities (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, type_id INTEGER NOT NULL, district_id INTEGER NOT NULL, description TEXT, location TEXT NOT NULL, date DATE NOT NULL, time TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'akan_datang', created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP);
 		CREATE TABLE renjana_volunteers (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, school TEXT NOT NULL, district_id INTEGER NOT NULL, phone TEXT, status TEXT NOT NULL DEFAULT 'aktif', avatar_url TEXT, joined_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, is_active BOOLEAN NOT NULL DEFAULT 1, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, application_status TEXT NOT NULL DEFAULT 'approved');
 		CREATE TABLE renjana_achievements (id INTEGER PRIMARY KEY AUTOINCREMENT, year INTEGER NOT NULL, metric_key TEXT NOT NULL, metric_name TEXT NOT NULL, value REAL NOT NULL, unit TEXT NOT NULL DEFAULT '', target REAL, display_order INTEGER NOT NULL DEFAULT 0, icon TEXT, icon_color TEXT, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, UNIQUE(year, metric_key));
-		CREATE TABLE renjana_announcements (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, content TEXT NOT NULL, published_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, is_published BOOLEAN NOT NULL DEFAULT 1, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, category TEXT NOT NULL DEFAULT 'Pengumuman');
+		CREATE TABLE renjana_announcements (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, excerpt TEXT NOT NULL, published_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, is_published BOOLEAN NOT NULL DEFAULT 1, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, category TEXT NOT NULL DEFAULT 'Pengumuman');
 	`)
 	require.NoError(t, err)
 

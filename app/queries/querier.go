@@ -505,37 +505,54 @@ type VolunteerByUserIDRow struct {
 	ReviewerID        sql.NullInt64
 	ReviewedAt        sql.NullTime
 	RejectionReason   sql.NullString
-	UserID            sql.NullInt64
 	DistrictName      sql.NullString
 }
 
-// GetVolunteerByUserID returns the volunteer linked to a user. Direct query implementation
-// because sqlc has a bug stripping `?` from this specific query pattern.
+// GetVolunteerByUserID returns the volunteer linked to a user.
+// Looks up via users.volunteer_id — the user record stores the volunteer ID
+// (set during onboarding via CreateVolunteerForUserDirect).
 func (q *Querier) GetVolunteerByUserID(ctx context.Context, userID int64) (VolunteerByUserIDRow, error) {
-	const query = `SELECT v.id, v.name, v.school, v.district_id, v.phone, v.status, v.avatar_url, v.joined_at, v.is_active, v.application_status, v.reviewer_id, v.reviewed_at, v.rejection_reason, v.user_id, d.name AS district_name
+	const query = `SELECT v.id, v.name, v.school, v.district_id, v.phone, v.status, v.avatar_url, v.joined_at, v.is_active, v.application_status, v.reviewer_id, v.reviewed_at, v.rejection_reason, d.name AS district_name
 FROM renjana_volunteers v
 LEFT JOIN renjana_districts d ON d.id = v.district_id
-WHERE v.user_id = ?`
+WHERE v.id = (SELECT volunteer_id FROM users WHERE id = ?)`
 	var row VolunteerByUserIDRow
 	err := q.db.QueryRowContext(ctx, query, userID).Scan(
 		&row.ID, &row.Name, &row.School, &row.DistrictID, &row.Phone, &row.Status,
 		&row.AvatarUrl, &row.JoinedAt, &row.IsActive, &row.ApplicationStatus,
-		&row.ReviewerID, &row.ReviewedAt, &row.RejectionReason, &row.UserID,
+		&row.ReviewerID, &row.ReviewedAt, &row.RejectionReason,
 		&row.DistrictName,
 	)
 	return row, err
 }
 
-// CreateVolunteerForUserDirect creates a volunteer linked to a user (1:1).
-// Direct query implementation because sqlc has a bug stripping `?` from this specific query.
-func (q *Querier) CreateVolunteerForUserDirect(ctx context.Context, userID int64, name, school string, districtID int64, phone string, joinedAt time.Time) (int64, error) {
-	const query = `INSERT INTO renjana_volunteers (
-    user_id, name, school, district_id, phone, status, joined_at,
+// CreateVolunteerForUserDirect creates a volunteer linked to a user.
+// The volunteer gets its own auto-increment ID; the user record is updated
+// with volunteer_id for reverse lookup. Returns the new volunteer ID.
+func (q *Querier) CreateVolunteerForUserDirect(ctx context.Context, userID int64, name, school string, districtID int64, phone string, joinedAt time.Time, avatarURL string) (int64, error) {
+	const ins = `INSERT INTO renjana_volunteers (
+    name, school, district_id, phone, status, avatar_url, joined_at,
     is_active, application_status
 )
-VALUES (?, ?, ?, ?, ?, 'aktif', ?, 1, 'approved')
+VALUES (?, ?, ?, ?, 'aktif', ?, ?, 1, 'approved')
 RETURNING id`
-	var id int64
-	err := q.db.QueryRowContext(ctx, query, userID, name, school, districtID, phone, joinedAt).Scan(&id)
-	return id, err
+	var volunteerID int64
+	var avatarArg interface{}
+	if avatarURL != "" {
+		avatarArg = avatarURL
+	}
+	err := q.db.QueryRowContext(ctx, ins, name, school, districtID, phone, avatarArg, joinedAt).Scan(&volunteerID)
+	if err != nil {
+		return 0, err
+	}
+	// Set volunteer_id on the user record (for reverse lookup)
+	_, _ = q.db.ExecContext(ctx, `UPDATE users SET volunteer_id = ? WHERE id = ?`, volunteerID, userID)
+	return volunteerID, nil
+}
+
+// UpdateVolunteerProfile updates a volunteer's name and avatar_url pulled from their linked user account.
+func (q *Querier) UpdateVolunteerProfile(ctx context.Context, volunteerID int64, name, avatarURL string) error {
+	const query = `UPDATE renjana_volunteers SET name = ?, avatar_url = ? WHERE id = ?`
+	_, err := q.db.ExecContext(ctx, query, name, avatarURL, volunteerID)
+	return err
 }

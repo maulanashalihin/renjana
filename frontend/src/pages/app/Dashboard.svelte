@@ -74,7 +74,7 @@
     interface Announcement {
         id: number;
         title: string;
-        content: string;
+        excerpt: string;
         published_at: string;
     }
 
@@ -98,7 +98,7 @@
         activity_breakdown?: ActivityTypeCount[];
         active_volunteers?: VolunteerSummary[];
         achievements?: Achievement[];
-        latest_announcement?: Announcement | null;
+        latest_announcements?: Announcement[];
         upcoming_activities?: UpcomingActivityItem[];
         success?: string;
         error?: string;
@@ -111,7 +111,7 @@
         activity_breakdown = [],
         active_volunteers = [],
         achievements = [],
-        latest_announcement,
+        latest_announcements = [],
         upcoming_activities = [],
     }: Props = $props();
 
@@ -184,6 +184,7 @@
         active_volunteers.map(v => ({
             name: v.name,
             school: v.school,
+            avatar_url: v.avatar_url,
         }))
     );
 
@@ -199,18 +200,16 @@
         }))
     );
 
-    let announcementView = $derived(
-        latest_announcement
-            ? {
-                  title: latest_announcement.title,
-                  date: new Date(latest_announcement.published_at).toLocaleDateString("id-ID", {
-                      day: "numeric",
-                      month: "short",
-                      year: "numeric",
-                  }),
-                  content: latest_announcement.content,
-              }
-            : null
+    let announcementList = $derived(
+        latest_announcements.map(a => ({
+            title: a.title,
+            date: new Date(a.published_at).toLocaleDateString("id-ID", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+            }),
+            excerpt: a.excerpt,
+        }))
     );
 
     let upcomingRows = $derived(
@@ -291,7 +290,8 @@
                 <ActiveVolunteers volunteers={volunteerRows} />
             </div>
             <div>
-                <AnnouncementCard announcement={announcementView} />
+                <AnnouncementCard announcements={announcementList} />
+
             </div>
         </div>
 

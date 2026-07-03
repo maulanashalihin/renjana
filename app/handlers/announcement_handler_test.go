@@ -20,7 +20,7 @@ import (
 )
 
 const announcementSchema = `
-	CREATE TABLE renjana_announcements (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, content TEXT NOT NULL, published_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, is_published BOOLEAN NOT NULL DEFAULT 1, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, category TEXT NOT NULL DEFAULT 'Pengumuman', slug TEXT, body TEXT, cover_url TEXT, author_id INTEGER);
+	CREATE TABLE renjana_announcements (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, excerpt TEXT NOT NULL, published_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, is_published BOOLEAN NOT NULL DEFAULT 1, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, category TEXT NOT NULL DEFAULT 'Pengumuman', slug TEXT, body TEXT, cover_url TEXT, author_id INTEGER);
 	CREATE INDEX idx_renjana_announcements_published ON renjana_announcements(is_published, published_at DESC);
 	CREATE INDEX idx_renjana_announcements_slug ON renjana_announcements(slug);
 `
@@ -62,13 +62,13 @@ func TestAnnouncementHandlerIndex(t *testing.T) {
 func TestAnnouncementHandlerStore(t *testing.T) {
 	app, _ := setupAnnouncementHandler(t)
 
-	body := `{"title":"Test Berita","content":"Test content","category":"Pengumuman"}`
+	body := `{"title":"Test Berita","excerpt":"Test content","category":"Pengumuman"}`
 	req := httptest.NewRequest(http.MethodPost, "/berita", strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("X-Inertia", "true")
 	resp, err := app.Test(req)
 	require.NoError(t, err)
-	assert.Equal(t, http.StatusFound, resp.StatusCode)
+	assert.Equal(t, http.StatusSeeOther, resp.StatusCode)
 	assert.Contains(t, resp.Header.Get("Location"), "success=created")
 }
 
@@ -77,17 +77,17 @@ func TestAnnouncementHandlerUpdate(t *testing.T) {
 
 	annSvc := services.NewAnnouncementService(q)
 	created, err := annSvc.Create(context.Background(), services.CreateAnnouncementRequest{
-		Title: "Original", Content: "original",
+		Title: "Original", Excerpt: "original",
 	})
 	require.NoError(t, err)
 
-	body := `{"title":"Updated","content":"updated","category":"Artikel"}`
+	body := `{"title":"Updated","excerpt":"updated","category":"Artikel"}`
 	req := httptest.NewRequest(http.MethodPut, "/berita/"+strconv.FormatInt(created.ID, 10), strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("X-Inertia", "true")
 	resp, err := app.Test(req)
 	require.NoError(t, err)
-	assert.Equal(t, http.StatusFound, resp.StatusCode)
+	assert.Equal(t, http.StatusSeeOther, resp.StatusCode)
 	assert.Contains(t, resp.Header.Get("Location"), "success=updated")
 }
 
@@ -96,7 +96,7 @@ func TestAnnouncementHandlerDelete(t *testing.T) {
 
 	annSvc := services.NewAnnouncementService(q)
 	created, err := annSvc.Create(context.Background(), services.CreateAnnouncementRequest{
-		Title: "To Delete", Content: "content",
+		Title: "To Delete", Excerpt: "content",
 	})
 	require.NoError(t, err)
 
@@ -104,6 +104,6 @@ func TestAnnouncementHandlerDelete(t *testing.T) {
 	req.Header.Set("X-Inertia", "true")
 	resp, err := app.Test(req)
 	require.NoError(t, err)
-	assert.Equal(t, http.StatusFound, resp.StatusCode)
+	assert.Equal(t, http.StatusSeeOther, resp.StatusCode)
 	assert.Contains(t, resp.Header.Get("Location"), "success=deleted")
 }

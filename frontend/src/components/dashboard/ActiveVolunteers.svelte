@@ -1,8 +1,10 @@
 <script lang="ts">
+    import { inertia } from "@inertiajs/svelte";
+
     interface Volunteer {
         name: string;
         school: string;
-        avatar?: string;
+        avatar_url?: string;
     }
 
     interface Props {
@@ -19,6 +21,7 @@
         <h3 class="text-base font-bold text-slate-900 dark:text-white">Relawan Aktif</h3>
         <a
             href="/relawan"
+            use:inertia
             class="text-xs font-semibold text-renjana-500 hover:text-renjana-600 transition-colors"
         >
             Lihat Semua
@@ -30,13 +33,19 @@
         </div>
     {:else}
     <div class="space-y-3">
-        {#each volunteers as v, i}
+        {#each volunteers as v}
             <div class="flex items-center gap-3">
-                <img
-                    src={v.avatar || `https://i.pravatar.cc/100?img=${(i % 70) + 1}`}
-                    alt={v.name}
-                    class="w-10 h-10 rounded-full object-cover ring-2 ring-slate-100 dark:ring-slate-800 shrink-0"
-                />
+                {#if v.avatar_url}
+                    <img
+                        src={v.avatar_url}
+                        alt={v.name}
+                        class="w-10 h-10 rounded-full object-cover ring-2 ring-renjana-500/20 dark:ring-renjana-500/30 shrink-0"
+                    />
+                {:else}
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-renjana-400 to-amber-400 flex items-center justify-center text-white text-sm font-bold shrink-0">
+                        {v.name.charAt(0).toUpperCase()}
+                    </div>
+                {/if}
                 <div class="flex-1 min-w-0">
                     <p class="text-sm font-semibold text-slate-900 dark:text-white truncate">
                         {v.name}

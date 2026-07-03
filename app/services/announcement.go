@@ -27,7 +27,7 @@ func NewAnnouncementService(querier *queries.Querier) *AnnouncementService {
 type AnnouncementListItem struct {
 	ID          int64     `json:"id"`
 	Title       string    `json:"title"`
-	Content     string    `json:"content"`
+	Excerpt     string    `json:"excerpt"`
 	Category    string    `json:"category"`
 	Slug        string    `json:"slug"`
 	Body        string    `json:"body"`
@@ -42,7 +42,7 @@ type AnnouncementListItem struct {
 type AnnouncementDetail struct {
 	ID          int64     `json:"id"`
 	Title       string    `json:"title"`
-	Content     string    `json:"content"`
+	Excerpt     string    `json:"excerpt"`
 	Category    string    `json:"category"`
 	Slug        string    `json:"slug"`
 	Body        string    `json:"body"`
@@ -56,7 +56,7 @@ type AnnouncementDetail struct {
 // CreateAnnouncementRequest — input for create.
 type CreateAnnouncementRequest struct {
 	Title       string `json:"title"`
-	Content     string `json:"content"`
+	Excerpt     string `json:"excerpt"`
 	Category    string `json:"category"`
 	Slug        string `json:"slug"`
 	Body        string `json:"body"`
@@ -69,7 +69,7 @@ type CreateAnnouncementRequest struct {
 // UpdateAnnouncementRequest — input for update.
 type UpdateAnnouncementRequest struct {
 	Title       string `json:"title"`
-	Content     string `json:"content"`
+	Excerpt     string `json:"excerpt"`
 	Category    string `json:"category"`
 	Slug        string `json:"slug"`
 	Body        string `json:"body"`
@@ -179,7 +179,7 @@ func (s *AnnouncementService) List(
 		items = append(items, AnnouncementListItem{
 			ID:          r.ID,
 			Title:       r.Title,
-			Content:     r.Content,
+			Excerpt:     r.Excerpt,
 			Category:    r.Category,
 			Slug:        slug,
 			Body:        body,
@@ -234,7 +234,7 @@ func (s *AnnouncementService) Get(ctx context.Context, id int64) (*AnnouncementD
 	return &AnnouncementDetail{
 		ID:          r.ID,
 		Title:       r.Title,
-		Content:     r.Content,
+		Excerpt:     r.Excerpt,
 		Category:    cat,
 		Slug:        slug,
 		Body:        body,
@@ -258,13 +258,13 @@ func (s *AnnouncementService) Create(ctx context.Context, req CreateAnnouncement
 		req.Slug = slugify(req.Title)
 	}
 	if req.Body == "" {
-		req.Body = req.Content
+		req.Body = req.Excerpt
 	}
 	pubAt := parsePublishedAt(req.PublishedAt, time.Now())
 
 	id, err := s.querier.CreateAnnouncement(ctx, queries.CreateAnnouncementParams{
 		Title:       req.Title,
-		Content:     req.Content,
+		Excerpt:     req.Excerpt,
 		Category:    req.Category,
 		Slug:        sql.NullString{String: req.Slug, Valid: req.Slug != ""},
 		Body:        sql.NullString{String: req.Body, Valid: req.Body != ""},
@@ -288,13 +288,13 @@ func (s *AnnouncementService) Update(ctx context.Context, id int64, req UpdateAn
 		req.Slug = slugify(req.Title)
 	}
 	if req.Body == "" {
-		req.Body = req.Content
+		req.Body = req.Excerpt
 	}
 	pubAt := parsePublishedAt(req.PublishedAt, time.Now())
 
 	rows, err := s.querier.UpdateAnnouncement(ctx, queries.UpdateAnnouncementParams{
 		Title:       req.Title,
-		Content:     req.Content,
+		Excerpt:     req.Excerpt,
 		Category:    req.Category,
 		Slug:        sql.NullString{String: req.Slug, Valid: req.Slug != ""},
 		Body:        sql.NullString{String: req.Body, Valid: req.Body != ""},
@@ -358,7 +358,7 @@ func (s *AnnouncementService) ListByCategory(ctx context.Context, category strin
 		items = append(items, AnnouncementListItem{
 			ID:          r.ID,
 			Title:       r.Title,
-			Content:     r.Content,
+			Excerpt:     r.Excerpt,
 			Category:    r.Category,
 			Slug:        slug,
 			Body:        body,

@@ -20,7 +20,7 @@ func setupAnnouncementTestDB(t *testing.T) *queries.Querier {
 
 	_, err = db.Exec(`
 		CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT NOT NULL UNIQUE, name TEXT NOT NULL, password TEXT, avatar TEXT DEFAULT '', role TEXT NOT NULL DEFAULT 'user', google_id TEXT UNIQUE, email_verified BOOLEAN NOT NULL DEFAULT 0, district_id INTEGER, volunteer_id INTEGER, is_active BOOLEAN NOT NULL DEFAULT 1, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP);
-		CREATE TABLE IF NOT EXISTS renjana_announcements (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, content TEXT NOT NULL, published_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, is_published BOOLEAN NOT NULL DEFAULT 1, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, category TEXT NOT NULL DEFAULT 'Pengumuman', slug TEXT, body TEXT, cover_url TEXT, author_id INTEGER REFERENCES users(id));
+		CREATE TABLE IF NOT EXISTS renjana_announcements (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, excerpt TEXT NOT NULL, published_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, is_published BOOLEAN NOT NULL DEFAULT 1, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, category TEXT NOT NULL DEFAULT 'Pengumuman', slug TEXT, body TEXT, cover_url TEXT, author_id INTEGER REFERENCES users(id));
 		CREATE INDEX idx_renjana_announcements_published ON renjana_announcements(is_published, published_at DESC);
 		CREATE INDEX idx_renjana_announcements_slug ON renjana_announcements(slug);
 	`)
@@ -33,7 +33,7 @@ func TestAnnouncementServiceCreate(t *testing.T) {
 	svc := NewAnnouncementService(q)
 
 	ann, err := svc.Create(context.Background(), CreateAnnouncementRequest{
-		Title: "Test Announcement", Content: "Test content",
+		Title: "Test Announcement", Excerpt: "Test content",
 	})
 	require.NoError(t, err)
 	assert.NotZero(t, ann.ID)
@@ -47,7 +47,7 @@ func TestAnnouncementServiceCreateValidation(t *testing.T) {
 	svc := NewAnnouncementService(q)
 
 	_, err := svc.Create(context.Background(), CreateAnnouncementRequest{
-		Title: "", Content: "content",
+		Title: "", Excerpt: "content",
 	})
 	assert.Error(t, err)
 }
@@ -57,7 +57,7 @@ func TestAnnouncementServiceGet(t *testing.T) {
 	svc := NewAnnouncementService(q)
 
 	created, err := svc.Create(context.Background(), CreateAnnouncementRequest{
-		Title: "Get Test", Content: "content",
+		Title: "Get Test", Excerpt: "content",
 	})
 	require.NoError(t, err)
 
@@ -74,12 +74,12 @@ func TestAnnouncementServiceUpdate(t *testing.T) {
 	svc := NewAnnouncementService(q)
 
 	created, err := svc.Create(context.Background(), CreateAnnouncementRequest{
-		Title: "Original", Content: "original",
+		Title: "Original", Excerpt: "original",
 	})
 	require.NoError(t, err)
 
 	err = svc.Update(context.Background(), created.ID, UpdateAnnouncementRequest{
-		Title: "Updated", Content: "updated content", Category: "Artikel",
+		Title: "Updated", Excerpt: "updated content", Category: "Artikel",
 	})
 	require.NoError(t, err)
 
@@ -90,7 +90,7 @@ func TestAnnouncementServiceUpdate(t *testing.T) {
 
 	// Not found
 	err = svc.Update(context.Background(), 99999, UpdateAnnouncementRequest{
-		Title: "Nope", Content: "x",
+		Title: "Nope", Excerpt: "x",
 	})
 	assert.ErrorIs(t, err, ErrAnnouncementNotFound)
 }
@@ -100,7 +100,7 @@ func TestAnnouncementServiceDelete(t *testing.T) {
 	svc := NewAnnouncementService(q)
 
 	created, err := svc.Create(context.Background(), CreateAnnouncementRequest{
-		Title: "To Delete", Content: "content",
+		Title: "To Delete", Excerpt: "content",
 	})
 	require.NoError(t, err)
 
@@ -121,7 +121,7 @@ func TestAnnouncementServiceList(t *testing.T) {
 			cat = "Artikel"
 		}
 		_, err := svc.Create(context.Background(), CreateAnnouncementRequest{
-			Title: "Announcement", Content: "content", Category: cat,
+			Title: "Announcement", Excerpt: "content", Category: cat,
 		})
 		require.NoError(t, err)
 	}
@@ -143,7 +143,7 @@ func TestAnnouncementServiceListByCategory(t *testing.T) {
 
 	for i := 0; i < 3; i++ {
 		_, err := svc.Create(context.Background(), CreateAnnouncementRequest{
-			Title: "Item", Content: "c", Category: "Pengumuman", IsPublished: true,
+			Title: "Item", Excerpt: "c", Category: "Pengumuman", IsPublished: true,
 		})
 		require.NoError(t, err)
 	}

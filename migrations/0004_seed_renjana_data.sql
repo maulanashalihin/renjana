@@ -143,12 +143,103 @@ FROM (
     SELECT x AS seq FROM cnt
 );
 
--- 5. Seed 4 Announcements
-INSERT INTO renjana_announcements (title, content, published_at, is_published) VALUES
-    ('Jadwal Pelatihan Dasar Relawan RENJANA 2025', 'Pendaftaran dibuka sampai 20 Mei 2024. Segera daftarkan diri Anda melalui menu Pendaftaran di sidebar atau hubungi koordinator kecamatan Anda. Pelatihan akan dilaksanakan setiap Sabtu selama 4 minggu berturut-turut.', datetime('now', '-2 days'), 1),
-    ('Simulasi Evakuasi Gempa Bumi Tingkat Kabupaten', 'Simulasi gabungan seluruh kecamatan akan dilaksanakan pada 15 Juni 2025. Seluruh relawan RENJANA diharapkan hadir. Pakaian lapangan dan topi volunteer akan dibagikan.', datetime('now', '-7 days'), 1),
-    ('Penambahan Kuota Volunteer Kecamatan Angsana', 'Kecamatan Angsana membuka kuota tambahan 30 volunteer untuk program 2025. Prioritas untuk pelajar SMA/sederajat kelas 10-12. Pendaftaran gratis, sertifikat resmi.', datetime('now', '-14 days'), 1),
-    ('Pelatihan SAR Bekerja Sama dengan Basarnas Banjarmasin', 'Kolaborasi dengan Basarnas Banjarmasin membuka pelatihan Search and Rescue untuk 20 volunteer terpilih. Sertifikasi resmi Basarnas setelah lulus.', datetime('now', '-30 days'), 0);
+-- 5. Seed 4 Announcements (Full Berita)
+INSERT INTO renjana_announcements (title, excerpt, category, slug, body, cover_url, published_at, is_published) VALUES
+(
+    'Jadwal Pelatihan Dasar Relawan RENJANA 2025',
+    'Pendaftaran dibuka sampai 20 Mei 2025. Segera daftarkan diri Anda melalui menu Pendaftaran di sidebar atau hubungi koordinator kecamatan Anda.',
+    'Pelatihan',
+    'jadwal-pelatihan-dasar-relawan-renjana-2025',
+    'RENJANA membuka pendaftaran Pelatihan Dasar Relawan untuk angkatan 2025. Program ini dirancang untuk membekali para relawan dengan pengetahuan dan keterampilan dasar dalam kesiapsiagaan bencana.
+
+Pelatihan akan dilaksanakan setiap hari Sabtu selama 4 minggu berturut-turut, dimulai pada bulan Juni 2025. Materi yang akan diberikan meliputi:
+
+1. Pengenalan kebencanaan dan mitigasi risiko
+2. Teknik pertolongan pertama (First Aid)
+3. Komunikasi darurat dan koordinasi lapangan
+4. Simulasi evakuasi dan penanganan korban
+
+Setiap peserta akan mendapatkan sertifikat resmi dari RENJANA dan BPBD Kabupaten Tanah Bumbu. Pendaftaran gratis dan terbuka untuk pelajar SMA/sederajat se-Kabupaten Tanah Bumbu.
+
+"Kami mengajak generasi muda untuk menjadi bagian dari perubahan. Bencana bisa datang kapan saja, dan kesiapsiagaan adalah kunci untuk menyelamatkan nyawa," ujar Koordinator RENJANA.
+
+Pendaftaran dapat dilakukan melalui menu Pendaftaran di sidebar website RENJANA atau menghubungi koordinator di masing-masing kecamatan. Kuota terbatas, segera daftarkan diri Anda!',
+    'https://cdn.pixabay.com/photo/2014/07/08/10/47/team-386673_1280.jpg',
+    datetime('now', '-2 days'),
+    1
+),
+(
+    'Simulasi Evakuasi Gempa Bumi Tingkat Kabupaten',
+    'Simulasi gabungan seluruh kecamatan akan dilaksanakan pada 15 Juni 2025. Seluruh relawan RENJANA diharapkan hadir.',
+    'Simulasi',
+    'simulasi-evakuasi-gempa-bumi-tingkat-kabupaten',
+    'RENJANA bersama BPBD Kabupaten Tanah Bumbu akan menggelar Simulasi Evakuasi Gempa Bumi tingkat kabupaten pada 15 Juni 2025. Kegiatan ini merupakan agenda tahunan untuk menguji kesiapsiagaan relawan dan masyarakat dalam menghadapi bencana gempa bumi.
+
+Simulasi akan melibatkan seluruh 12 kecamatan di Kabupaten Tanah Bumbu secara serentak. Skenario yang akan diuji meliputi:
+
+1. Prosedur evakuasi mandiri saat gempa terjadi
+2. Proses pencarian dan penyelamatan korban
+3. Pendirian posko darurat dan dapur umum
+4. Sistem komunikasi darurat antar kecamatan
+5. Evakuasi korban ke tempat aman dan rumah sakit rujukan
+
+Seluruh relawan RENJANA diharapkan hadir dengan pakaian lapangan lengkap. Topi volunteer dan rompi akan dibagikan pada saat registrasi. Simulasi akan dimulai pukul 08.00 WITA di masing-masing titik kumpul kecamatan.
+
+"Kesiapsiagaan bukan hanya tentang pengetahuan, tetapi tentang kebiasaan. Semakin sering kita berlatih, semakin siap kita menghadapi situasi nyata," kata Kepala BPBD Kabupaten Tanah Bumbu.',
+    'https://cdn.pixabay.com/photo/2019/10/24/08/07/fire-department-4573674_1280.jpg',
+    datetime('now', '-7 days'),
+    1
+),
+(
+    'Penambahan Kuota Volunteer Kecamatan Angsana',
+    'Kecamatan Angsana membuka kuota tambahan 30 volunteer untuk program 2025. Prioritas untuk pelajar SMA/sederajat kelas 10-12.',
+    'Aksi',
+    'penambahan-kuota-volunteer-kecamatan-angsana',
+    'Kecamatan Angsana kembali membuka kuota tambahan pendaftaran volunteer RENJANA untuk program tahun 2025. Sebanyak 30 kuota baru disediakan menyusul tingginya antusiasme pelajar di wilayah tersebut.
+
+Tambahan kuota ini diprioritaskan untuk:
+- Pelajar SMA/sederajat kelas 10-12
+- Berdomisili di Kecamatan Angsana dan sekitarnya
+- Memiliki komitmen untuk mengikuti seluruh rangkaian pelatihan
+
+Program volunteer RENJANA memberikan berbagai manfaat, antara lain:
+✓ Sertifikat resmi organisasi
+✓ Pengalaman organisasi dan kepemimpinan
+✓ Pelatihan kesiapsiagaan bencana bersertifikat
+✓ Relasi dan jaringan relawan se-Kabupaten Tanah Bumbu
+✓ Kesempatan mengikuti program lanjutan seperti SAR dan First Aid
+
+Pendaftaran tidak dipungut biaya alias gratis. Calon volunteer cukup mengisi formulir online di website RENJANA atau datang langsung ke Kantor Kecamatan Angsana.
+
+"Kami sangat senang dengan antusiasme anak-anak muda Angsana. Ini menunjukkan bahwa kesadaran akan pentingnya kesiapsiagaan bencana semakin tumbuh," ujar Koordinator RENJANA Kecamatan Angsana.',
+    'https://cdn.pixabay.com/photo/2017/08/02/00/49/people-2569234_1280.jpg',
+    datetime('now', '-14 days'),
+    1
+),
+(
+    'Pelatihan SAR Bekerja Sama dengan Basarnas Banjarmasin',
+    'Kolaborasi dengan Basarnas Banjarmasin membuka pelatihan Search and Rescue untuk 20 volunteer terpilih. Sertifikasi resmi Basarnas setelah lulus.',
+    'Pelatihan',
+    'pelatihan-sar-bekerja-sama-dengan-basarnas-banjarmasin',
+    'RENJANA menjalin kerja sama dengan Basarnas Banjarmasin untuk menyelenggarakan Pelatihan Search and Rescue (SAR) bagi relawan terpilih. Sebanyak 20 volunteer akan mengikuti program intensif ini yang akan berlangsung selama 5 hari.
+
+Materi pelatihan meliputi:
+1. Teknik pencarian darat dan air
+2. Navigasi medan berat dan GPS tracking
+3. Pertolongan pertama pada situasi darurat
+4. Evakuasi korban di medan sulit
+5. Komunikasi radio dan koordinasi tim
+6. Manajemen posko SAR
+
+Peserta yang lulus akan mendapatkan sertifikasi resmi dari Basarnas yang berlaku secara nasional. Pelatihan akan dipandu langsung oleh instruktur berpengalaman dari Basarnas Banjarmasin.
+
+"Kerja sama ini adalah langkah maju dalam meningkatkan kapasitas relawan RENJANA. Sertifikasi SAR dari Basarnas adalah standar nasional yang sangat berharga," jelas Ketua RENJANA.
+
+Seleksi peserta telah dimulai dan akan berlangsung hingga akhir bulan. Tim RENJANA akan memilih 20 peserta terbaik berdasarkan catatan keaktifan dan hasil tes fisik.',
+    'https://cdn.pixabay.com/photo/2017/11/20/20/12/helicopter-2966569_1280.jpg',
+    datetime('now', '-30 days'),
+    0
+);
 
 -- 6. Seed 5 Achievement Metrics untuk Tahun 2024
 INSERT INTO renjana_achievements (year, metric_key, metric_name, value, unit, target, display_order, icon, icon_color) VALUES

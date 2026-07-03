@@ -1,5 +1,6 @@
 <script lang="ts">
     import { MapPin, Clock } from "lucide-svelte";
+    import { inertia } from "@inertiajs/svelte";
 
     interface Activity {
         day: string;
@@ -23,6 +24,7 @@
         <h3 class="text-base font-bold text-slate-900 dark:text-white">Kegiatan Terdekat</h3>
         <a
             href="/kegiatan"
+            use:inertia
             class="text-xs font-semibold text-renjana-500 hover:text-renjana-600 transition-colors"
         >
             Lihat Semua

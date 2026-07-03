@@ -3,8 +3,7 @@
 -- ============================================================================
 -- RENJANA Extended Schema — Iterasi 3
 -- New tables: contacts, media, documents, education, innovations, organization
--- Extends: announcements (category, slug, body, cover_url, author_id)
---          volunteers (application_status, reviewer_id, reviewed_at, rejection_reason)
+-- Extends: volunteers (application_status, reviewer_id, reviewed_at, rejection_reason)
 -- ============================================================================
 
 -- 1. Kontak (koordinator per kecamatan)
@@ -98,21 +97,7 @@ CREATE TABLE IF NOT EXISTS renjana_organization (
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
--- 7. Extend renjana_announcements (untuk Berita CRUD)
-ALTER TABLE renjana_announcements ADD COLUMN category TEXT NOT NULL DEFAULT 'Pengumuman';
-ALTER TABLE renjana_announcements ADD COLUMN slug TEXT;
-ALTER TABLE renjana_announcements ADD COLUMN body TEXT;
-ALTER TABLE renjana_announcements ADD COLUMN cover_url TEXT;
-ALTER TABLE renjana_announcements ADD COLUMN author_id INTEGER REFERENCES users(id);
-
-CREATE INDEX idx_renjana_announcements_category ON renjana_announcements(category, is_published, published_at DESC);
-
--- Backfill: copy content to body, generate slug
-UPDATE renjana_announcements SET body = content WHERE body IS NULL;
-UPDATE renjana_announcements SET slug = lower(replace(replace(title, ' ', '-'), '.', '')) WHERE slug IS NULL;
-CREATE INDEX idx_renjana_announcements_slug ON renjana_announcements(slug);
-
--- 8. Extend renjana_volunteers (untuk Pendaftaran workflow)
+-- 7. Extend renjana_volunteers (untuk Pendaftaran workflow)
 ALTER TABLE renjana_volunteers ADD COLUMN application_status TEXT NOT NULL DEFAULT 'approved';
 ALTER TABLE renjana_volunteers ADD COLUMN reviewer_id INTEGER REFERENCES users(id);
 ALTER TABLE renjana_volunteers ADD COLUMN reviewed_at DATETIME;
@@ -124,8 +109,6 @@ CREATE INDEX idx_renjana_volunteers_application ON renjana_volunteers(applicatio
 -- +goose Down
 -- +goose StatementBegin
 DROP INDEX IF EXISTS idx_renjana_volunteers_application;
-DROP INDEX IF EXISTS idx_renjana_announcements_slug;
-DROP INDEX IF EXISTS idx_renjana_announcements_category;
 DROP INDEX IF EXISTS idx_renjana_innovations_year;
 DROP INDEX IF EXISTS idx_renjana_education_category;
 DROP INDEX IF EXISTS idx_renjana_documents_category;

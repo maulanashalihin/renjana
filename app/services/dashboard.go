@@ -85,7 +85,7 @@ type Achievement struct {
 type Announcement struct {
 	ID          int64     `json:"id"`
 	Title       string    `json:"title"`
-	Content     string    `json:"content"`
+	Excerpt     string    `json:"excerpt"`
 	PublishedAt time.Time `json:"published_at"`
 }
 
@@ -110,7 +110,7 @@ type DashboardResponse struct {
 	ActivityBreakdown    []ActivityTypeCount      `json:"activity_breakdown"`
 	ActiveVolunteers     []VolunteerSummary       `json:"active_volunteers"`
 	Achievements         []Achievement            `json:"achievements"`
-	LatestAnnouncement   *Announcement            `json:"latest_announcement"`
+	LatestAnnouncements  []Announcement           `json:"latest_announcements"`
 	UpcomingActivities   []UpcomingActivity       `json:"upcoming_activities"`
 }
 
@@ -177,14 +177,16 @@ func (s *DashboardService) GetDashboardData(ctx context.Context) (*DashboardResp
 		resp.Achievements = achievements
 	}
 
-	// 6. Latest published announcement
-	ann, err := s.querier.GetLatestPublishedAnnouncement(ctx)
+	// 6. Latest published announcements (max 3)
+	anns, err := s.querier.GetLatestPublishedAnnouncements(ctx, 3)
 	if err == nil {
-		resp.LatestAnnouncement = &Announcement{
-			ID:          ann.ID,
-			Title:       ann.Title,
-			Content:     ann.Content,
-			PublishedAt: ann.PublishedAt,
+		for _, a := range anns {
+			resp.LatestAnnouncements = append(resp.LatestAnnouncements, Announcement{
+				ID:          a.ID,
+				Title:       a.Title,
+				Excerpt:     a.Excerpt,
+				PublishedAt: a.PublishedAt,
+			})
 		}
 	} else if !errors.Is(err, sql.ErrNoRows) {
 		// ignore ErrNoRows, log other errors via return below
