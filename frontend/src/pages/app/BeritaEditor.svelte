@@ -1,6 +1,6 @@
 <script lang="ts">
     import AppLayout from "../../components/AppLayout.svelte";
-    import { ArrowLeft, Save, Image, Upload, Eye, EyeOff, Bold, Italic, Heading, List, Link as LinkIcon, Code, X, GalleryHorizontalEnd, ExternalLink } from "lucide-svelte";
+    import { ArrowLeft, Save, Image, Upload, Eye, EyeOff, Bold, Italic, Heading, List, Link as LinkIcon, Code, X } from "lucide-svelte";
     import { router, inertia } from "@inertiajs/svelte";
 
     interface AppUser {
@@ -366,7 +366,7 @@
                 <!-- Header -->
                 <div class="flex items-center justify-between p-5 border-b border-neutral-200 dark:border-neutral-800">
                     <h2 class="text-lg font-bold text-neutral-900 dark:text-white">Sisipkan Gambar</h2>
-                    <button onclick={() => showImagePicker = false} class="text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300">
+                    <button type="button" onclick={() => showImagePicker = false} class="text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300">
                         <X class="w-5 h-5" />
                     </button>
                 </div>
@@ -374,13 +374,15 @@
                 <!-- Tabs -->
                 <div class="flex gap-1 px-5 pt-4 border-b border-neutral-200 dark:border-neutral-800">
                     <button
+                        type="button"
                         onclick={() => imagePickerTab = "gallery"}
                         class="px-4 py-2 text-sm font-medium rounded-t-lg transition {imagePickerTab === 'gallery' ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white border-b-2 border-renjana-500' : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}"
                     >
-                        <GalleryHorizontalEnd class="w-4 h-4 inline-block mr-1.5" />
+                        <Image class="w-4 h-4 inline-block mr-1.5" />
                         Galeri
                     </button>
                     <button
+                        type="button"
                         onclick={() => imagePickerTab = "upload"}
                         class="px-4 py-2 text-sm font-medium rounded-t-lg transition {imagePickerTab === 'upload' ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white border-b-2 border-renjana-500' : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}"
                     >
@@ -388,6 +390,7 @@
                         Upload
                     </button>
                     <button
+                        type="button"
                         onclick={() => imagePickerTab = "link"}
                         class="px-4 py-2 text-sm font-medium rounded-t-lg transition {imagePickerTab === 'link' ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white border-b-2 border-renjana-500' : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}"
                     >
@@ -408,6 +411,7 @@
                             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                                 {#each galleryImages as img}
                                     <button
+                                        type="button"
                                         onclick={() => { insertMarkdown('![' + (img.caption || 'gambar') + '](' + img.file_url + ')', ''); showImagePicker = false; }}
                                         class="group relative aspect-video rounded-xl overflow-hidden bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 hover:border-renjana-500 hover:shadow-lg transition-all duration-200"
                                     >
@@ -508,6 +512,7 @@
                                     </div>
                                 {/if}
                                 <button
+                                    type="button"
                                     onclick={() => {
                                         if (!linkUrl.trim()) return;
                                         insertMarkdown('![' + (linkAlt || 'gambar') + '](' + linkUrl.trim() + ')', '');
@@ -518,7 +523,7 @@
                                     disabled={!linkUrl.trim()}
                                     class="w-full px-4 py-2.5 rounded-lg bg-renjana-500 hover:bg-renjana-600 disabled:bg-neutral-300 dark:disabled:bg-neutral-700 text-white text-sm font-semibold transition"
                                 >
-                                    <ExternalLink class="w-4 h-4 inline-block mr-1.5" />
+                                    <LinkIcon class="w-4 h-4 inline-block mr-1.5" />
                                     Sisipkan Gambar
                                 </button>
                             </div>
