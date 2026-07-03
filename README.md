@@ -521,7 +521,7 @@ rsync -av storage/ /backup/storage/
 ### Checklist Tim Kominfo
 
 - [ ] VPS Ubuntu 24.04 (2 core, 2 GB RAM, 40 GB SSD)
-- [ ] Domain (misal: `renjana.tanahlmbubkab.go.id`)
+- [ ] Domain (misal: `renjana.tanahbumbukab.go.id`)
 - [ ] SSL otomatis via Caddy
 - [ ] SMTP untuk reset password (bisa Gmail SMTP gratis)
 - [ ] Backup otomatis harian (crontab + script di atas)
