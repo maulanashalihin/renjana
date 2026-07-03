@@ -109,7 +109,7 @@ func Guest(store *session.Store) fiber.Handler {
 	}
 }
 
-// KoordinatorRequired allows koordinator or admin (and super_admin) to pass.
+// KoordinatorRequired allows koordinator or admin to pass.
 // Relawan (regular volunteers) are blocked.
 func KoordinatorRequired(store *session.Store) fiber.Handler {
 	return func(c *fiber.Ctx) error {
@@ -128,7 +128,7 @@ func KoordinatorRequired(store *session.Store) fiber.Handler {
 		}
 
 		role := sess.Get("role")
-		if role != "koordinator" && role != "admin" && role != "super_admin" {
+		if role != "koordinator" && role != "admin" {
 			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
 				"error": "Koordinator or admin access required",
 			})
@@ -189,8 +189,8 @@ func ScopeDistrict(store *session.Store) fiber.Handler {
 		role := sess.Get("role")
 		districtID := sess.Get("district_id")
 
-		// Admin/super_admin bypass district scope
-		if role == "admin" || role == "super_admin" {
+		// Admin bypass district scope
+		if role == "admin" {
 			return c.Next()
 		}
 

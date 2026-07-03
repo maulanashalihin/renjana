@@ -35,25 +35,23 @@
     interface Props {
         user?: AppUser;
         articles?: Pagination;
-        current_category?: string;
     }
 
-    let { user, articles, current_category = "" }: Props = $props();
+    let { user, articles }: Props = $props();
 
     let search = $state("");
-    let activeCategory = $state<string | null>(current_category || null);
+    let activeCategory = $state<string | null>(null);
     const categories = ["Gempa", "Banjir", "Kebakaran", "Longsor", "Tsunami"];
 
     const items = $derived(articles?.data ?? []);
-    let filtered = $derived(items);
-    {
+    const filtered = $derived.by(() => {
         const s = search.toLowerCase().trim();
-        filtered = filtered.filter(a => {
+        return items.filter(a => {
             if (activeCategory && a.category !== activeCategory) return false;
             if (s && !a.title.toLowerCase().includes(s)) return false;
             return true;
         });
-    }
+    });
 
     const featured = $derived(filtered[0]);
     const rest = $derived(filtered.slice(1));

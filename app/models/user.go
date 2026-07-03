@@ -8,7 +8,7 @@ import (
 // UserRole represents the role of a user in the RENJANA system.
 // The role hierarchy (highest → lowest):
 //
-//	super_admin → admin → koordinator → relawan
+//	admin → koordinator → relawan
 type UserRole string
 
 const (
@@ -18,8 +18,6 @@ const (
 	RoleKoordinator UserRole = "koordinator"
 	// RoleAdmin — full CRUD access across all districts
 	RoleAdmin UserRole = "admin"
-	// RoleSuperAdmin — future: system configuration
-	RoleSuperAdmin UserRole = "super_admin"
 	// RoleUser — backward-compatibility alias for RoleRelawan.
 	// Deprecated: use RoleRelawan instead.
 	RoleUser UserRole = RoleRelawan
@@ -27,7 +25,7 @@ const (
 
 // AllRoles returns the ordered list of valid roles.
 func AllRoles() []UserRole {
-	return []UserRole{RoleRelawan, RoleKoordinator, RoleAdmin, RoleSuperAdmin}
+	return []UserRole{RoleRelawan, RoleKoordinator, RoleAdmin}
 }
 
 // IsValid checks if the role is one of the defined roles.
@@ -42,12 +40,12 @@ func (r UserRole) IsValid() bool {
 
 // CanManageUsers returns true if the role can manage other users.
 func (r UserRole) CanManageUsers() bool {
-	return r == RoleAdmin || r == RoleSuperAdmin
+	return r == RoleAdmin
 }
 
 // CanCRUDAll returns true if the role can CRUD across all districts.
 func (r UserRole) CanCRUDAll() bool {
-	return r == RoleAdmin || r == RoleSuperAdmin
+	return r == RoleAdmin
 }
 
 // User represents a user account in the RENJANA system.

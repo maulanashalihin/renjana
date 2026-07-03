@@ -40,7 +40,7 @@ import { inertia } from "@inertiajs/svelte";
 
     let { active = "Dashboard", user }: { active?: string; user?: { role?: string } } = $props();
 
-    const isAdmin = $derived(user?.role === "admin" || user?.role === "super_admin");
+    const isAdmin = $derived(user?.role === "admin");
     const adminMenuItems: MenuItem[] = [
         { href: "/admin/users", label: "Manajemen User", icon: Shield },
     ];

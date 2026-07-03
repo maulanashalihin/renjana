@@ -215,18 +215,16 @@ func TestRoleConstants(t *testing.T) {
 	assert.Equal(t, models.UserRole("relawan"), models.RoleRelawan)
 	assert.Equal(t, models.UserRole("koordinator"), models.RoleKoordinator)
 	assert.Equal(t, models.UserRole("admin"), models.RoleAdmin)
-	assert.Equal(t, models.UserRole("super_admin"), models.RoleSuperAdmin)
 	assert.Equal(t, models.RoleRelawan, models.RoleUser) // backward-compat alias
 }
 
 // TestAllRoles
 func TestAllRoles(t *testing.T) {
 	roles := models.AllRoles()
-	assert.Len(t, roles, 4)
+	assert.Len(t, roles, 3)
 	assert.Contains(t, roles, models.RoleRelawan)
 	assert.Contains(t, roles, models.RoleKoordinator)
 	assert.Contains(t, roles, models.RoleAdmin)
-	assert.Contains(t, roles, models.RoleSuperAdmin)
 }
 
 // TestRoleIsValid
@@ -239,7 +237,6 @@ func TestRoleIsValid(t *testing.T) {
 // TestRoleCanManageUsers
 func TestRoleCanManageUsers(t *testing.T) {
 	assert.True(t, models.RoleAdmin.CanManageUsers())
-	assert.True(t, models.RoleSuperAdmin.CanManageUsers())
 	assert.False(t, models.RoleRelawan.CanManageUsers())
 	assert.False(t, models.RoleKoordinator.CanManageUsers())
 }
@@ -247,6 +244,7 @@ func TestRoleCanManageUsers(t *testing.T) {
 // TestRoleCanCRUDAll
 func TestRoleCanCRUDAll(t *testing.T) {
 	assert.True(t, models.RoleAdmin.CanCRUDAll())
+	assert.False(t, models.RoleKoordinator.CanCRUDAll())
 	assert.False(t, models.RoleKoordinator.CanCRUDAll())
 }
 
