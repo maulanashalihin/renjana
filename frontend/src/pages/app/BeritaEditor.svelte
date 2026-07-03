@@ -48,12 +48,14 @@
     let showPreview = $state(false);
     let dragging = $state(false);
     let uploading = $state(false);
+
+    // Image picker state
     let showImagePicker = $state(false);
-    let imagePickerTab = $state<"gallery" | "upload" | "link">("gallery");
+    let imagePickerTab = $state("gallery");
     let linkUrl = $state("");
     let linkAlt = $state("");
     let uploadingPicker = $state(false);
-    let galleryImages = $state<MediaImage[]>(images ?? []);
+    let galleryImages = $state<MediaImage[]>(Array.isArray(images) ? images : []);
 
     const categories = ["Prestasi", "Aksi", "Pelatihan", "Simulasi", "Edukasi", "Inovasi", "Pengumuman"];
 
