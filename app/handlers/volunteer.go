@@ -190,9 +190,19 @@ func (h *VolunteerHandler) Show(c *fiber.Ctx) error {
 		})
 	}
 
+	// Load certificates if volunteer is linked to a user
+	certificates := make([]queries.ListUserCertificatesRow, 0)
+	if vol.UserID != 0 {
+		certs, err := h.querier.ListUserCertificates(c.Context(), vol.UserID)
+		if err == nil && certs != nil {
+			certificates = certs
+		}
+	}
+
 	return h.inertiaService.Render(c, "app/VolunteerDetail", fiber.Map{
-		"user":      user,
-		"volunteer": vol,
+		"user":         user,
+		"volunteer":    vol,
+		"certificates": certificates,
 	})
 }
 

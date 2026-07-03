@@ -52,7 +52,7 @@
 <div class="min-h-screen bg-slate-50 dark:bg-slate-950 flex">
     <!-- Desktop Sidebar -->
     <div class="hidden lg:block">
-        <RenjanaSidebar active={activeMenu} />
+        <RenjanaSidebar active={activeMenu} {user} />
     </div>
 
     <!-- Mobile Sidebar Drawer -->
@@ -64,7 +64,7 @@
                 aria-label="Tutup menu"
             ></button>
             <div class="relative w-72 max-w-[85vw]">
-                <RenjanaSidebar active={activeMenu} />
+                <RenjanaSidebar active={activeMenu} {user} />
             </div>
         </div>
     {/if}

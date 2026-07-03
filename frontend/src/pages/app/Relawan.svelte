@@ -2,7 +2,7 @@
     import AppLayout from "../../components/AppLayout.svelte";
     import PageHeader from "../../lib/components/PageHeader.svelte";
     import EmptyState from "../../lib/components/EmptyState.svelte";
-    import { Users, Search, GraduationCap, MapPin, Phone, CalendarCheck, Filter, UserCheck, Clock, XCircle, School, Plus, Pencil, Trash2, X } from "lucide-svelte";
+    import { Users, Search, GraduationCap, MapPin, Phone, CalendarCheck, Filter, UserCheck, Clock, XCircle, School, Plus, Pencil, Trash2, X, Award } from "lucide-svelte";
     import { inertia } from "@inertiajs/svelte";
 
     interface AppUser {
@@ -15,6 +15,7 @@
 
     interface Volunteer {
         id: number;
+        user_id: number;
         name: string;
         school: string;
         district_id: number;
@@ -25,6 +26,7 @@
         application_status: string;
         joined_at: string;
         is_active: boolean;
+        certificate_count: number;
     }
 
     interface Pagination {
@@ -215,7 +217,7 @@
     {#if items.length > 0}
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {#each items as v}
-                <div class="rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-5 hover:shadow-lg hover:-translate-y-0.5 transition">
+                <a href="/relawan/{v.id}" use:inertia class="block rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-5 hover:shadow-lg hover:-translate-y-0.5 transition cursor-pointer">
                     <div class="flex items-start gap-3 mb-3">
                         <div class="relative flex-shrink-0">
                             {#if v.avatar_url}
@@ -229,7 +231,7 @@
                         </div>
                         <div class="flex-1 min-w-0">
                             <h3 class="font-bold text-neutral-900 dark:text-white truncate">{v.name}</h3>
-                            {#if v.phone}
+                            {#if isAdmin && v.phone}
                                 <div class="flex items-center gap-1 text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
                                     <Phone class="w-3 h-3" />
                                     <span class="truncate">{v.phone}</span>
@@ -241,6 +243,10 @@
                         <div class="flex items-center gap-2 text-neutral-600 dark:text-neutral-400">
                             <GraduationCap class="w-3.5 h-3.5 text-blue-500 flex-shrink-0" />
                             <span class="truncate">{v.school}</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-neutral-600 dark:text-neutral-400">
+                            <Award class="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
+                            <span>{v.certificate_count} Sertifikat</span>
                         </div>
                         <div class="flex items-center gap-2 text-neutral-600 dark:text-neutral-400">
                             <MapPin class="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
@@ -269,17 +275,17 @@
                             <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-300">DITOLAK</span>
                         {/if}
                     </div>
-                    <div class="mt-3 flex gap-2">
+                    <div class="mt-3 flex gap-2" onclick={(e) => e.stopPropagation()}>
                         {#if canEdit}
-                            <button onclick={() => openEdit(v)} class="flex-1 inline-flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:border-renjana-500 text-neutral-700 dark:text-neutral-300 text-xs font-semibold transition">
+                            <button onclick={(e) => { e.stopPropagation(); openEdit(v); }} class="flex-1 inline-flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:border-renjana-500 text-neutral-700 dark:text-neutral-300 text-xs font-semibold transition">
                                 <Pencil class="w-3 h-3" />Edit
                             </button>
-                            <button onclick={() => handleDelete(v.id)} class="inline-flex items-center gap-1 px-2 py-1.5 rounded-lg border border-rose-200 dark:border-rose-800 hover:bg-rose-50 text-rose-700 dark:text-rose-400 text-xs font-semibold transition">
+                            <button onclick={(e) => { e.stopPropagation(); handleDelete(v.id); }} class="inline-flex items-center gap-1 px-2 py-1.5 rounded-lg border border-rose-200 dark:border-rose-800 hover:bg-rose-50 text-rose-700 dark:text-rose-400 text-xs font-semibold transition">
                                 <Trash2 class="w-3 h-3" />
                         </button>
                         {/if}
                     </div>
-                </div>
+                </a>
             {/each}
         </div>
 

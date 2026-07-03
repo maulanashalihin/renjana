@@ -26,6 +26,7 @@ func NewVolunteerService(querier *queries.Querier) *VolunteerService {
 // VolunteerListItem — one row in the CRUD table.
 type VolunteerListItem struct {
 	ID                int64     `json:"id"`
+	UserID            int64     `json:"user_id"`
 	Name              string    `json:"name"`
 	School            string    `json:"school"`
 	DistrictID        int64     `json:"district_id"`
@@ -36,11 +37,13 @@ type VolunteerListItem struct {
 	ApplicationStatus string    `json:"application_status"`
 	JoinedAt          time.Time `json:"joined_at"`
 	IsActive          bool      `json:"is_active"`
+	CertificateCount  int64     `json:"certificate_count"`
 }
 
 // VolunteerDetail — full record (for show/edit).
 type VolunteerDetail struct {
 	ID                int64          `json:"id"`
+	UserID            int64          `json:"user_id"`
 	Name              string         `json:"name"`
 	School            string         `json:"school"`
 	DistrictID        int64          `json:"district_id"`
@@ -155,8 +158,19 @@ func (s *VolunteerService) List(
 		if r.AvatarUrl.Valid {
 			avatar = r.AvatarUrl.String
 		}
+
+		// Count certificates for this volunteer (if linked to a user)
+		var certCount int64
+		if r.UserID.Valid && r.UserID.Int64 != 0 {
+			cnt, err := s.querier.CountCertificatesByUser(ctx, r.UserID.Int64)
+			if err == nil {
+				certCount = cnt
+			}
+		}
+
 		items = append(items, VolunteerListItem{
 			ID:                r.ID,
+			UserID:            r.UserID.Int64,
 			Name:              r.Name,
 			School:            r.School,
 			DistrictID:        r.DistrictID,
@@ -167,6 +181,7 @@ func (s *VolunteerService) List(
 			ApplicationStatus: r.ApplicationStatus,
 			JoinedAt:          r.JoinedAt,
 			IsActive:          r.IsActive,
+			CertificateCount:  certCount,
 		})
 	}
 
@@ -208,6 +223,7 @@ func (s *VolunteerService) Get(ctx context.Context, id int64) (*VolunteerDetail,
 
 	return &VolunteerDetail{
 		ID:                r.ID,
+		UserID:            r.UserID.Int64,
 		Name:              r.Name,
 		School:            r.School,
 		DistrictID:        r.DistrictID,

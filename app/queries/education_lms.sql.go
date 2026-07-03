@@ -11,6 +11,19 @@ import (
 	"time"
 )
 
+const countCertificatesByUser = `-- name: CountCertificatesByUser :one
+SELECT COUNT(*) AS total
+FROM renjana_certificates
+WHERE user_id = ?
+`
+
+func (q *Queries) CountCertificatesByUser(ctx context.Context, userID int64) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countCertificatesByUser, userID)
+	var total int64
+	err := row.Scan(&total)
+	return total, err
+}
+
 const countPassedAttempts = `-- name: CountPassedAttempts :one
 SELECT COUNT(*) AS total
 FROM renjana_quiz_attempts

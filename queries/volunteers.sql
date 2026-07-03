@@ -58,7 +58,7 @@ LIMIT ?;
 
 -- name: GetVolunteerByID :one
 SELECT
-    v.id, v.name, v.school, v.district_id, v.phone, v.status, v.avatar_url,
+    v.id, v.user_id, v.name, v.school, v.district_id, v.phone, v.status, v.avatar_url,
     v.joined_at, v.is_active, v.application_status, v.reviewer_id, v.reviewed_at,
     v.rejection_reason,
     d.name AS district_name
@@ -68,7 +68,7 @@ WHERE v.id = ?;
 
 -- name: ListVolunteersPaginated :many
 SELECT
-    v.id, v.name, v.school, v.district_id, d.name AS district_name,
+    v.id, v.user_id, v.name, v.school, v.district_id, d.name AS district_name,
     v.status, v.phone, v.avatar_url, v.application_status, v.joined_at, v.is_active
 FROM renjana_volunteers v
 JOIN renjana_districts d ON d.id = v.district_id

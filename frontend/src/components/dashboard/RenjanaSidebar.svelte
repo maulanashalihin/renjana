@@ -37,7 +37,15 @@ import { inertia } from "@inertiajs/svelte";
         { href: "/kontak", label: "Kontak", icon: Phone },
     ];
 
-    let { active = "Dashboard" }: { active?: string } = $props();
+    let { active = "Dashboard", user }: { active?: string; user?: { role?: string } } = $props();
+
+    const isAdmin = $derived(user?.role === "admin" || user?.role === "super_admin");
+    const visibleMenuItems = $derived(
+        menuItems.filter((item) => {
+            if (item.href === "/kontak") return isAdmin;
+            return true;
+        })
+    );
 </script>
 
 <aside
@@ -58,7 +66,7 @@ import { inertia } from "@inertiajs/svelte";
 
     <!-- Navigation -->
     <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
-        {#each menuItems as item}
+        {#each visibleMenuItems as item}
             {@const Icon = item.icon}
             {@const isActive = item.label === active}
             <a

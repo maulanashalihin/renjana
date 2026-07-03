@@ -140,7 +140,7 @@
                 <!-- Footer -->
                 <div class="border-t border-neutral-200 dark:border-neutral-800 p-6 text-center">
                     <p class="text-xs text-neutral-400 dark:text-neutral-500">
-                        Sertifikat ini dapat diverifikasi di renjana.id/edukasi/sertifikat/{certificate.certificate_code}
+                        Sertifikat ini dapat diverifikasi di {window.location.origin}/edukasi/sertifikat/{certificate.certificate_code}
                     </p>
                 </div>
             </div>

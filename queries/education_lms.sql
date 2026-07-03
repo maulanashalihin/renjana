@@ -79,6 +79,11 @@ JOIN users u ON c.user_id = u.id
 JOIN renjana_education e ON c.course_id = e.id
 WHERE c.certificate_code = ?;
 
+-- name: CountCertificatesByUser :one
+SELECT COUNT(*) AS total
+FROM renjana_certificates
+WHERE user_id = ?;
+
 -- name: ListUserCertificates :many
 SELECT c.id, c.user_id, c.course_id, c.certificate_code, c.score, c.issued_at,
        u.name AS user_name, u.email AS user_email,

@@ -1,7 +1,6 @@
 <script lang="ts">
     import { router } from "@inertiajs/svelte";
     import {
-        School,
         MapPin,
         Phone,
         ArrowRight,
@@ -9,6 +8,7 @@
         User as UserIcon,
         Check,
     } from "lucide-svelte";
+    import SchoolAutocomplete from "../../lib/components/SchoolAutocomplete.svelte";
 
     interface User {
         id: number;
@@ -54,7 +54,7 @@
     });
 
     let isLoading = $state(false);
-    let fieldErrors = $state<{ school?: string; district_id?: string }>({});
+    let fieldErrors = $state<{ school?: string; district_id?: string; phone?: string }>({});
 
     function validate(): boolean {
         fieldErrors = {};
@@ -65,6 +65,13 @@
         }
         if (!form.district_id) {
             fieldErrors.district_id = "Kecamatan wajib dipilih";
+            ok = false;
+        }
+        if (!form.phone.trim()) {
+            fieldErrors.phone = "Nomor telepon wajib diisi";
+            ok = false;
+        } else if (form.phone.trim().length < 10) {
+            fieldErrors.phone = "Nomor telepon minimal 10 digit";
             ok = false;
         }
         return ok;
@@ -86,9 +93,10 @@
     // Compute progress: 0% initially, 100% when all required fields filled
     let progress = $derived.by(() => {
         let filled = 0;
-        const required = 2; // school, district
+        const required = 3; // school, district, phone
         if (form.school.trim()) filled++;
         if (form.district_id) filled++;
+        if (form.phone.trim()) filled++;
         return Math.round((filled / required) * 100);
     });
 </script>
@@ -153,22 +161,26 @@
                 <div>
                     <label for="school" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
                         <span class="inline-flex items-center gap-1.5">
-                            <School class="w-4 h-4 text-renjana-500" />
                             Sekolah
                             <span class="text-red-500">*</span>
                         </span>
                     </label>
-                    <input
-                        id="school"
-                        type="text"
+                    <SchoolAutocomplete
                         bind:value={form.school}
-                        placeholder="Contoh: SMA Negeri 1 Tanah Bumbu"
-                        class="w-full px-4 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:border-renjana-500 focus:ring-2 focus:ring-renjana-500/20 outline-none transition"
-                        class:border-red-500={fieldErrors.school}
+                        error={fieldErrors.school}
+                        onSelect={(entry) => {
+                            const match = districts.find(
+                                (d) => d.name.toLowerCase() === entry.kecamatan.toLowerCase(),
+                            );
+                            if (match) {
+                                form.district_id = match.id;
+                                // Clear district error if it was set
+                                if (fieldErrors.district_id) {
+                                    fieldErrors.district_id = undefined;
+                                }
+                            }
+                        }}
                     />
-                    {#if fieldErrors.school}
-                        <p class="mt-1 text-xs text-red-500">{fieldErrors.school}</p>
-                    {/if}
                 </div>
 
                 <!-- District -->
@@ -196,13 +208,13 @@
                     {/if}
                 </div>
 
-                <!-- Phone (optional) -->
+                <!-- Phone -->
                 <div>
                     <label for="phone" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
                         <span class="inline-flex items-center gap-1.5">
-                            <Phone class="w-4 h-4 text-slate-400" />
+                            <Phone class="w-4 h-4 text-renjana-500" />
                             Nomor Telepon
-                            <span class="text-xs text-slate-400 font-normal">(opsional)</span>
+                            <span class="text-red-500">*</span>
                         </span>
                     </label>
                     <input
@@ -211,7 +223,11 @@
                         bind:value={form.phone}
                         placeholder="081234567890"
                         class="w-full px-4 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:border-renjana-500 focus:ring-2 focus:ring-renjana-500/20 outline-none transition"
+                        class:border-red-500={fieldErrors.phone}
                     />
+                    {#if fieldErrors.phone}
+                        <p class="mt-1 text-xs text-red-500">{fieldErrors.phone}</p>
+                    {/if}
                 </div>
 
                 <!-- User info (read-only) -->

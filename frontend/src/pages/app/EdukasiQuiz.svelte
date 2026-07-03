@@ -47,6 +47,12 @@
         result = null,
     }: Props = $props();
 
+    function getCSRFToken(): string {
+        const name = "XSRF-TOKEN";
+        const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
+        return match ? match[2] : "";
+    }
+
     let currentIndex = $state(0);
     let answers = $state<Record<number, number>>({});
     let submitting = $state(false);
@@ -82,7 +88,11 @@
         try {
             const res = await fetch(`/edukasi/course/${course_id}/quiz`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json", "X-Inertia": "true" },
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-XSRF-TOKEN": getCSRFToken(),
+                    "X-Inertia": "true",
+                },
                 body: JSON.stringify({ answers }),
             });
 

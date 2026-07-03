@@ -131,7 +131,6 @@ func setupPublicRoutes(app *fiber.App, appHandler *handlers.AppHandler, activity
 	app.Get("/berita/create", middlewares.AuthRequired(store), middlewares.AdminRequired(store), announcementHandler.Create)
 	app.Get("/berita/:id", announcementHandler.Show)
 	app.Get("/berita/:id/edit", middlewares.AuthRequired(store), middlewares.AdminRequired(store), announcementHandler.Edit)
-	app.Get("/kontak", contactHandler.Index)
 }
 
 func setupEducationRoutes(app *fiber.App, educationHandler *handlers.EducationHandler, store *session.Store) {
@@ -218,7 +217,8 @@ func setupAppRoutes(app *fiber.App, appHandler *handlers.AppHandler, uploadHandl
 	app.Delete("/galeri/album/:albumId", middlewares.AdminRequired(store), galleryHandler.DestroyAlbum)
 	app.Delete("/galeri/:id", middlewares.AdminRequired(store), galleryHandler.Destroy)
 
-	// Kontak — CRUD for admin only (GET index is public)
+	// Kontak — admin only (entire page hidden from public & non-admin)
+	app.Get("/kontak", middlewares.AdminRequired(store), contactHandler.Index)
 	app.Get("/kontak/create", contactHandler.Create)
 	app.Post("/kontak", middlewares.AdminRequired(store), contactHandler.Store)
 	app.Get("/kontak/:id/edit", contactHandler.Edit)
