@@ -126,3 +126,16 @@
     </div>
 
 </AppLayout>
+
+<style>
+    :global(.prose img) {
+        margin: 1.5rem 0;
+        border-radius: 0.75rem;
+        max-width: 100%;
+        height: auto;
+    }
+    :global(.prose p) {
+        margin-bottom: 1rem;
+        line-height: 1.75;
+    }
+</style>
