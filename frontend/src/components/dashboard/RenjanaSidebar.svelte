@@ -13,6 +13,7 @@ import {
         PhoneCall,
         MessageSquareWarning,
         BarChart3,
+        Shield,
 } from "lucide-svelte";
 import { inertia } from "@inertiajs/svelte";
 
@@ -40,11 +41,19 @@ import { inertia } from "@inertiajs/svelte";
     let { active = "Dashboard", user }: { active?: string; user?: { role?: string } } = $props();
 
     const isAdmin = $derived(user?.role === "admin" || user?.role === "super_admin");
+    const adminMenuItems: MenuItem[] = [
+        { href: "/admin/users", label: "Manajemen User", icon: Shield },
+    ];
+
     const visibleMenuItems = $derived(
         menuItems.filter((item) => {
             if (item.href === "/kontak") return isAdmin;
             return true;
         })
+    );
+
+    const allMenuItems = $derived(
+        isAdmin ? [...visibleMenuItems, ...adminMenuItems] : visibleMenuItems
     );
 </script>
 
@@ -66,7 +75,7 @@ import { inertia } from "@inertiajs/svelte";
 
     <!-- Navigation -->
     <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
-        {#each visibleMenuItems as item}
+        {#each allMenuItems as item}
             {@const Icon = item.icon}
             {@const isActive = item.label === active}
             <a
