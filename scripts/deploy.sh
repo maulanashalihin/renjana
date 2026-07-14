@@ -1,12 +1,8 @@
 #!/bin/bash
 set -e
 
-# Source profile for non-interactive SSH (Go, cargo, etc.)
-if [ -f "$HOME/.bashrc" ]; then
-    source "$HOME/.bashrc"
-elif [ -f "$HOME/.profile" ]; then
-    source "$HOME/.profile"
-fi
+# Ensure Go and local tools are in PATH (non-interactive SSH doesn't source .bashrc)
+export PATH="/usr/local/go/bin:$HOME/go/bin:$HOME/.local/bin:$PATH"
 
 echo "🚀 Renjana Deploy"
 echo "━━━━━━━━━━━━━━━"
