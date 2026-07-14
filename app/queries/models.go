@@ -213,6 +213,17 @@ type RenjanaQuizQuestion struct {
 	CreatedAt     time.Time `json:"created_at"`
 }
 
+type RenjanaSchool struct {
+	ID        int64     `json:"id"`
+	Name      string    `json:"name"`
+	Level     string    `json:"level"`
+	Status    string    `json:"status"`
+	Kecamatan string    `json:"kecamatan"`
+	IsActive  int64     `json:"is_active"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
 type RenjanaSurvey struct {
 	ID              int64          `json:"id"`
 	RespondentName  sql.NullString `json:"respondent_name"`

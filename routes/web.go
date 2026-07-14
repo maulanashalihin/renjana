@@ -29,6 +29,7 @@ type Handlers struct {
 	Survey        *handlers.SurveyHandler
 	Gallery       *handlers.GalleryHandler
 	Education     *handlers.EducationHandler
+	School        *handlers.SchoolHandler
 }
 
 func SetupRoutes(app *fiber.App, h Handlers, store *session.Store, mailerService *services.MailerService, csrfMiddleware *middlewares.CSRFMiddleware) {
@@ -37,6 +38,9 @@ func SetupRoutes(app *fiber.App, h Handlers, store *session.Store, mailerService
 
 	// Client-side error reporting (no auth required)
 	app.Post("/api/errors", handlers.HandleClientError)
+
+	// Public API — no auth, no CSRF (before CSRF middleware)
+	setupPublicAPIRoutes(app, h.School)
 
 	// Setup auth routes
 	setupAuthRoutes(app, h.Auth, h.PasswordReset, store, mailerService)
@@ -56,7 +60,7 @@ func SetupRoutes(app *fiber.App, h Handlers, store *session.Store, mailerService
 	setupPublicFormRoutes(app, h.Complaint, h.Survey)
 
 	// Setup app routes (protected) — semua di root path
-	setupAppRoutes(app, h.App, h.Upload, h.Volunteer, h.Activity, h.Announcement, h.Contact, h.Gallery, h.Organization, h.Onboarding, h.Document, h.Static, h.UserAdmin, h.Complaint, h.Survey, h.Education, store, csrfMiddleware)
+	setupAppRoutes(app, h.App, h.Upload, h.Volunteer, h.Activity, h.Announcement, h.Contact, h.Gallery, h.Organization, h.Onboarding, h.Document, h.Static, h.UserAdmin, h.Complaint, h.Survey, h.Education, h.School, store, csrfMiddleware)
 }
 
 // setupRegistrationRoutes is deprecated — /daftar flow removed.
@@ -88,6 +92,11 @@ func setupStaticRoutes(app *fiber.App) {
 		CacheDuration: 24 * time.Hour,
 		MaxAge:        86400,
 	})
+}
+
+func setupPublicAPIRoutes(app *fiber.App, schoolHandler *handlers.SchoolHandler) {
+	// School search API — used by SchoolAutocomplete component (public, no auth)
+	app.Get("/api/schools/search", schoolHandler.SearchSchoolsAPI)
 }
 
 func setupPublicFormRoutes(app *fiber.App, complaintHandler *handlers.ComplaintHandler, surveyHandler *handlers.SurveyHandler) {
@@ -177,7 +186,7 @@ func setupAuthRoutes(app *fiber.App, authHandler *handlers.AuthHandler, password
 	app.Post("/reset-password/:token", passwordResetHandler.ResetPassword)
 }
 
-func setupAppRoutes(app *fiber.App, appHandler *handlers.AppHandler, uploadHandler *handlers.UploadHandler, volunteerHandler *handlers.VolunteerHandler, activityHandler *handlers.ActivityHandler, announcementHandler *handlers.AnnouncementHandler, contactHandler *handlers.ContactHandler, galleryHandler *handlers.GalleryHandler, organizationHandler *handlers.OrganizationHandler, onboardingHandler *handlers.OnboardingHandler, documentHandler *handlers.DocumentHandler, staticHandler *handlers.StaticHandler, userAdminHandler *handlers.UserAdminHandler, complaintHandler *handlers.ComplaintHandler, surveyHandler *handlers.SurveyHandler, educationHandler *handlers.EducationHandler, store *session.Store, csrfMiddleware *middlewares.CSRFMiddleware) {
+func setupAppRoutes(app *fiber.App, appHandler *handlers.AppHandler, uploadHandler *handlers.UploadHandler, volunteerHandler *handlers.VolunteerHandler, activityHandler *handlers.ActivityHandler, announcementHandler *handlers.AnnouncementHandler, contactHandler *handlers.ContactHandler, galleryHandler *handlers.GalleryHandler, organizationHandler *handlers.OrganizationHandler, onboardingHandler *handlers.OnboardingHandler, documentHandler *handlers.DocumentHandler, staticHandler *handlers.StaticHandler, userAdminHandler *handlers.UserAdminHandler, complaintHandler *handlers.ComplaintHandler, surveyHandler *handlers.SurveyHandler, educationHandler *handlers.EducationHandler, schoolHandler *handlers.SchoolHandler, store *session.Store, csrfMiddleware *middlewares.CSRFMiddleware) {
 	// Protected routes (semua di root path, bukan /app/* lagi)
 	// Apply AuthRequired globally — all routes below require auth
 	app.Use(middlewares.AuthRequired(store))
@@ -257,6 +266,12 @@ func setupAppRoutes(app *fiber.App, appHandler *handlers.AppHandler, uploadHandl
 	app.Put("/admin/users/:id/role", middlewares.AdminRequired(store), userAdminHandler.UpdateRole)
 	app.Post("/admin/users/:id/toggle-active", middlewares.AdminRequired(store), userAdminHandler.ToggleActive)
 	app.Delete("/admin/users/:id", middlewares.AdminRequired(store), userAdminHandler.Destroy)
+
+	// School management — admin only
+	app.Get("/admin/schools", middlewares.AdminRequired(store), schoolHandler.Index)
+	app.Post("/admin/schools", middlewares.AdminRequired(store), schoolHandler.Store)
+	app.Put("/admin/schools/:id", middlewares.AdminRequired(store), schoolHandler.Update)
+	app.Delete("/admin/schools/:id", middlewares.AdminRequired(store), schoolHandler.Destroy)
 
 }
 

@@ -1,0 +1,157 @@
+-- +goose Up
+-- +goose StatementBegin
+
+CREATE TABLE renjana_schools (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    name        TEXT    NOT NULL,
+    level       TEXT    NOT NULL CHECK (level IN ('SD', 'MI', 'SMP', 'MTs', 'SMA', 'MA', 'SMK')),
+    status      TEXT    NOT NULL CHECK (status IN ('Negeri', 'Swasta')),
+    kecamatan   TEXT    NOT NULL,
+    is_active   INTEGER NOT NULL DEFAULT 1,
+    created_at  DATETIME NOT NULL DEFAULT (datetime('now')),
+    updated_at  DATETIME NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX idx_schools_name ON renjana_schools(name);
+CREATE INDEX idx_schools_kecamatan ON renjana_schools(kecamatan);
+CREATE INDEX idx_schools_level ON renjana_schools(level);
+
+-- Seed data from existing schools.ts
+INSERT INTO renjana_schools (name, level, status, kecamatan) VALUES
+-- SMA / Sederajat
+('SMAN 1 Simpang Empat', 'SMA', 'Negeri', 'Simpang Empat'),
+('SMAN 2 Simpang Empat', 'SMA', 'Negeri', 'Simpang Empat'),
+('SMAN 1 Satui', 'SMA', 'Negeri', 'Satui'),
+('SMAN 2 Satui', 'SMA', 'Negeri', 'Satui'),
+('SMAN 1 Sungai Loban', 'SMA', 'Negeri', 'Sungai Loban'),
+('SMAN 1 Kusan Hilir', 'SMA', 'Negeri', 'Kusan Hilir'),
+('SMAN 1 Kusan Hulu', 'SMA', 'Negeri', 'Kusan Hulu'),
+('SMAN 1 Mantewe', 'SMA', 'Negeri', 'Mantewe'),
+('SMAN 1 Angsana', 'SMA', 'Negeri', 'Angsana'),
+('SMAN 1 Kuranji', 'SMA', 'Negeri', 'Kuranji'),
+('SMAN 1 Karang Bintang', 'SMA', 'Negeri', 'Karang Bintang'),
+('SMA IT Al Asmaul Husna', 'SMA', 'Swasta', 'Simpang Empat'),
+('SMAS Nusantara', 'SMA', 'Swasta', 'Karang Bintang'),
+('SMAIT Plus Ar-Rasyid', 'SMA', 'Swasta', 'Batu Licin'),
+-- SMK
+('SMKN 1 Simpang Empat', 'SMK', 'Negeri', 'Simpang Empat'),
+('SMKN 2 Simpang Empat', 'SMK', 'Negeri', 'Simpang Empat'),
+('SMKN 1 Satui', 'SMK', 'Negeri', 'Satui'),
+('SMKN 2 Satui', 'SMK', 'Negeri', 'Satui'),
+('SMKN 1 Sungai Loban', 'SMK', 'Negeri', 'Sungai Loban'),
+('SMKN 1 Kusan Hilir', 'SMK', 'Negeri', 'Kusan Hilir'),
+('SMKN 1 Kusan Hulu', 'SMK', 'Negeri', 'Kusan Hulu'),
+('SMKS Kodeco', 'SMK', 'Swasta', 'Simpang Empat'),
+('SMKS Bangun Banua', 'SMK', 'Swasta', 'Simpang Empat'),
+('SMKS Muhammadiyah Kusan Hilir', 'SMK', 'Swasta', 'Kusan Hilir'),
+('SMKS Muhammadiyah Satui', 'SMK', 'Swasta', 'Satui'),
+('SMKS Alhidayah', 'SMK', 'Swasta', 'Batu Licin'),
+('SMKS Islam Raudhatul Jannah', 'SMK', 'Swasta', 'Sungai Loban'),
+('SMKS Teluk Kepayang', 'SMK', 'Swasta', 'Teluk Kepayang'),
+('SMKS Tunas Bangsa', 'SMK', 'Swasta', 'Batu Licin'),
+('SMKS Insan Luhur Nusantara', 'SMK', 'Swasta', 'Angsana'),
+('SMKS Al Madani Terpadu', 'SMK', 'Swasta', 'Batu Licin'),
+('SMKS DDI', 'SMK', 'Swasta', 'Batu Licin'),
+-- MA
+('MAN Tanah Bumbu', 'MA', 'Negeri', 'Kusan Hilir'),
+('MA Riadhusshalihin', 'MA', 'Swasta', 'Satui'),
+('MA Nurul Wathan', 'MA', 'Swasta', 'Satui'),
+('MA Az Zikra Batulicin', 'MA', 'Swasta', 'Batu Licin'),
+('MA Al-Kautsar (Pagatan)', 'MA', 'Swasta', 'Kusan Hilir'),
+('MA Darul Azhar', 'MA', 'Swasta', 'Batu Licin'),
+('MA Syarif Abbas', 'MA', 'Swasta', 'Simpang Empat'),
+('MA Darul Ijabah', 'MA', 'Swasta', 'Batu Licin'),
+('MA Nurul Hidayah', 'MA', 'Swasta', 'Kusan Hilir'),
+('MA Al Kautsar (Satui)', 'MA', 'Swasta', 'Satui'),
+-- SMP Negeri
+('SMP Negeri 1 Simpang Empat', 'SMP', 'Negeri', 'Simpang Empat'),
+('SMP Negeri 2 Simpang Empat', 'SMP', 'Negeri', 'Simpang Empat'),
+('SMPN 3 Satap Simpang Empat', 'SMP', 'Negeri', 'Simpang Empat'),
+('SMP Negeri 1 Karang Bintang', 'SMP', 'Negeri', 'Karang Bintang'),
+('SMP Negeri 3 Karang Bintang', 'SMP', 'Negeri', 'Karang Bintang'),
+('SMP Negeri 4 Satu Atap Karang Bintang', 'SMP', 'Negeri', 'Karang Bintang'),
+('SMP Negeri 1 Mantewe', 'SMP', 'Negeri', 'Mantewe'),
+('SMP Negeri 1 Angsana', 'SMP', 'Negeri', 'Angsana'),
+('SMP Negeri 1 Kusan Hilir', 'SMP', 'Negeri', 'Kusan Hilir'),
+('SMP Negeri 3 Kusan Hilir', 'SMP', 'Negeri', 'Kusan Hilir'),
+('SMP Negeri 5 Kusan Hilir', 'SMP', 'Negeri', 'Kusan Hilir'),
+('SMP Negeri 1 Sungai Loban', 'SMP', 'Negeri', 'Sungai Loban'),
+('SMP Negeri 3 Sungai Loban', 'SMP', 'Negeri', 'Sungai Loban'),
+('SMP Negeri 1 Satui', 'SMP', 'Negeri', 'Satui'),
+('SMP Negeri 4 Satui', 'SMP', 'Negeri', 'Satui'),
+('SMP Negeri 5 Satu Atap Satui', 'SMP', 'Negeri', 'Satui'),
+('SMP Negeri 6 Satui', 'SMP', 'Negeri', 'Satui'),
+('SMPN 8 Satap Satui', 'SMP', 'Negeri', 'Satui'),
+('SMP Negeri 1 Batulicin', 'SMP', 'Negeri', 'Batu Licin'),
+('SMP Negeri 1 Kuranji', 'SMP', 'Negeri', 'Kuranji'),
+('SMP Negeri 2 Satu Atap Kuranji', 'SMP', 'Negeri', 'Kuranji'),
+('SMP Negeri 1 Kusan Hulu', 'SMP', 'Negeri', 'Kusan Hulu'),
+('SMP Negeri Satu Atap Kusan Hulu', 'SMP', 'Negeri', 'Kusan Hulu'),
+-- SMP Swasta
+('SMP Muhammadiyah', 'SMP', 'Swasta', 'Batu Licin'),
+('SMP Islam Terpadu Ar Rasyid', 'SMP', 'Swasta', 'Batu Licin'),
+('SMP Gunung Sari Estate', 'SMP', 'Swasta', 'Angsana'),
+-- MTs
+('MTsN 1 Tanah Bumbu', 'MTs', 'Negeri', 'Kusan Hilir'),
+('MTsN 2 Tanah Bumbu', 'MTs', 'Negeri', 'Kusan Hilir'),
+('MTsN 3 Tanah Bumbu', 'MTs', 'Negeri', 'Satui'),
+('MTs Miftahussalam', 'MTs', 'Swasta', 'Satui'),
+('MTs Miftahul Jannah', 'MTs', 'Swasta', 'Kusan Hilir'),
+('MTs Nurul Amien', 'MTs', 'Swasta', 'Kuranji'),
+('MTs Darul Ishlah NW', 'MTs', 'Swasta', 'Angsana'),
+('MTs Raudhatul Ulum Satui', 'MTs', 'Swasta', 'Satui'),
+('MTs Nu Al-Falah', 'MTs', 'Swasta', 'Kusan Hilir'),
+('MTs Syarif Ali', 'MTs', 'Swasta', 'Batu Licin'),
+('MTs Nurul Wathan', 'MTs', 'Swasta', 'Satui'),
+('MTs Sa Ai Istiqomah', 'MTs', 'Swasta', 'Mantewe'),
+('MTs Al Hidayah', 'MTs', 'Swasta', 'Batu Licin'),
+('MTs DDI Muara Pagatan', 'MTs', 'Swasta', 'Kusan Hilir'),
+('MTs Nurul Hidayah', 'MTs', 'Swasta', 'Kusan Hilir'),
+('MTs Darul Azhar', 'MTs', 'Swasta', 'Batu Licin'),
+('MTs Bahrul Ulum', 'MTs', 'Swasta', 'Mantewe'),
+('MTs Hidayatussalam NW', 'MTs', 'Swasta', 'Batu Licin'),
+('MTs Al Islahiyah', 'MTs', 'Swasta', 'Satui'),
+('MTs Sullamul Khair', 'MTs', 'Swasta', 'Kusan Hilir'),
+('MTs Syarif Abbas', 'MTs', 'Swasta', 'Simpang Empat'),
+-- SD Negeri
+('SD Negeri 1 Kota Pagatan', 'SD', 'Negeri', 'Kusan Hilir'),
+('SD Negeri 1 Manurung', 'SD', 'Negeri', 'Kusan Hilir'),
+('SD Negeri 1 Pasar Baru', 'SD', 'Negeri', 'Kusan Hilir'),
+('SD Negeri 1 Salimuran', 'SD', 'Negeri', 'Kusan Hilir'),
+('SD Negeri 1 Batuah', 'SD', 'Negeri', 'Kusan Hilir'),
+('SD Negeri Mudalang', 'SD', 'Negeri', 'Kusan Hilir'),
+('SD Negeri Penyolongan', 'SD', 'Negeri', 'Kusan Hilir'),
+('SD Negeri 1 Batulicin', 'SD', 'Negeri', 'Batu Licin'),
+('SD Negeri 1 Banjarsari', 'SD', 'Negeri', 'Angsana'),
+('SD Negeri 1 Manunggal', 'SD', 'Negeri', 'Mantewe'),
+('SD Negeri 2 Mantewe', 'SD', 'Negeri', 'Mantewe'),
+('SD Negeri 4 Mantewe', 'SD', 'Negeri', 'Mantewe'),
+('SD Negeri Tapus', 'SD', 'Negeri', 'Mantewe'),
+('SD Negeri 1 Bukit Baru', 'SD', 'Negeri', 'Satui'),
+('SD Negeri 1 Satui Timur', 'SD', 'Negeri', 'Satui'),
+('SD Negeri 5 Sungai Danau', 'SD', 'Negeri', 'Satui'),
+('SD Negeri 6 Sungai Danau', 'SD', 'Negeri', 'Satui'),
+('SD Negeri 7 Sungai Danau', 'SD', 'Negeri', 'Satui'),
+('SD Negeri 2 Batu Meranti', 'SD', 'Negeri', 'Sungai Loban'),
+('SD Negeri Purwodadi', 'SD', 'Negeri', 'Sungai Loban'),
+('SD Negeri Barokah', 'SD', 'Negeri', 'Simpang Empat'),
+('SD Negeri 9 Kampung Baru', 'SD', 'Negeri', 'Simpang Empat'),
+('SD Negeri 10 Kampung Baru', 'SD', 'Negeri', 'Simpang Empat'),
+('SDN Dermaga', 'SD', 'Negeri', 'Simpang Empat'),
+('SDN Tunas Nelayan', 'SD', 'Negeri', 'Batu Licin'),
+-- SD Swasta
+('SD Muhammadiyah', 'SD', 'Swasta', 'Kusan Hilir'),
+('SD Islam Terpadu Ar Rasyid', 'SD', 'Swasta', 'Batu Licin'),
+('SDIT Al-Fath', 'SD', 'Swasta', 'Batu Licin'),
+-- MI
+('MIN Tanah Bumbu', 'MI', 'Negeri', 'Kusan Hilir'),
+('MIS Al-Ikhlas', 'MI', 'Swasta', 'Kusan Hilir'),
+('MIS Darul Mutammam', 'MI', 'Swasta', 'Kusan Hilir'),
+('MI Raudhatul Ulum Satui', 'MI', 'Swasta', 'Satui');
+
+-- +goose StatementEnd
+
+-- +goose Down
+-- +goose StatementBegin
+DROP TABLE IF EXISTS renjana_schools;
+-- +goose StatementEnd

@@ -112,6 +112,7 @@ func main() {
 	complaintService := services.NewComplaintService(querier)
 	surveyService := services.NewSurveyService(querier)
 	educationService := services.NewEducationService(querier)
+	schoolService := services.NewSchoolService(querier)
 
 	// Initialize Asset service (for production builds with hashed filenames)
 	assetService := services.NewAssetService("./dist/.vite/manifest.json", ".vite-port", cfg.IsDevelopment())
@@ -137,6 +138,7 @@ func main() {
 		Survey:       handlers.NewSurveyHandler(sessionStore, inertiaService, surveyService, querier),
 		Gallery:      handlers.NewGalleryHandler(sessionStore, inertiaService, staticService, querier),
 		Education:    handlers.NewEducationHandler(sessionStore, inertiaService, educationService, querier),
+		School:       handlers.NewSchoolHandler(sessionStore, inertiaService, schoolService, querier),
 	}
 
 	// Setup CSRF middleware

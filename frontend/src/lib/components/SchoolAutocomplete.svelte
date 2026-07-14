@@ -1,11 +1,18 @@
 <script lang="ts">
   import { School, Check } from "lucide-svelte";
-  import { schools, type SchoolEntry } from "../data/schools";
+
+  interface SchoolResult {
+    id: number;
+    name: string;
+    level: string;
+    status: string;
+    kecamatan: string;
+  }
 
   interface Props {
     value?: string;
     error?: string;
-    onSelect?: (school: SchoolEntry) => void;
+    onSelect?: (school: SchoolResult) => void;
   }
 
   let { value = $bindable(""), error = "", onSelect = undefined }: Props = $props();
@@ -13,34 +20,33 @@
   let isOpen = $state(false);
   let highlightedIndex = $state(-1);
   let wrapperEl = $state<HTMLDivElement>();
+  let results = $state<SchoolResult[]>([]);
+  let isLoading = $state(false);
+  let debounceTimer: ReturnType<typeof setTimeout> | undefined;
 
-  // Filter schools based on current input
-  let filtered = $derived.by(() => {
-    const q = value.toLowerCase().trim();
-    if (!q || q.length < 1) return [];
+  let showDropdown = $derived(isOpen && results.length > 0);
 
-    const results = schools.filter((s) => {
-      const name = s.name.toLowerCase();
-      const level = s.level.toLowerCase();
-      const kec = s.kecamatan.toLowerCase();
-      return name.includes(q) || level.includes(q) || kec.includes(q);
-    });
+  async function searchSchools(query: string) {
+    const q = query.trim();
+    if (!q || q.length < 1) {
+      results = [];
+      return;
+    }
 
-    results.sort((a, b) => {
-      const aName = a.name.toLowerCase().indexOf(q);
-      const bName = b.name.toLowerCase().indexOf(q);
-      if (aName !== -1 && bName !== -1) return aName - bName;
-      if (aName !== -1) return -1;
-      if (bName !== -1) return 1;
-      return 0;
-    });
+    isLoading = true;
+    try {
+      const res = await fetch(`/api/schools/search?q=${encodeURIComponent(q)}`);
+      if (!res.ok) return;
+      const json = await res.json();
+      results = json.data ?? [];
+    } catch {
+      results = [];
+    } finally {
+      isLoading = false;
+    }
+  }
 
-    return results.slice(0, 20);
-  });
-
-  let showDropdown = $derived(isOpen && filtered.length > 0);
-
-  function selectSchool(entry: SchoolEntry) {
+  function selectSchool(entry: SchoolResult) {
     value = entry.name;
     isOpen = false;
     highlightedIndex = -1;
@@ -50,10 +56,16 @@
   function handleInput() {
     isOpen = true;
     highlightedIndex = -1;
+
+    // Debounce search
+    if (debounceTimer) clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      searchSchools(value);
+    }, 250);
   }
 
   function handleKeydown(e: KeyboardEvent) {
-    if (!isOpen || filtered.length === 0) {
+    if (!isOpen || results.length === 0) {
       if (e.key === "ArrowDown" || e.key === "ArrowUp") {
         isOpen = true;
       }
@@ -62,14 +74,14 @@
 
     if (e.key === "ArrowDown") {
       e.preventDefault();
-      highlightedIndex = Math.min(highlightedIndex + 1, filtered.length - 1);
+      highlightedIndex = Math.min(highlightedIndex + 1, results.length - 1);
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
       highlightedIndex = Math.max(highlightedIndex - 1, 0);
     } else if (e.key === "Enter") {
       e.preventDefault();
-      if (highlightedIndex >= 0 && highlightedIndex < filtered.length) {
-        selectSchool(filtered[highlightedIndex]);
+      if (highlightedIndex >= 0 && highlightedIndex < results.length) {
+        selectSchool(results[highlightedIndex]);
       }
     } else if (e.key === "Escape") {
       e.preventDefault();
@@ -110,14 +122,18 @@
       autocomplete="off"
     />
     <div class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
-      <School class="w-4 h-4" />
+      {#if isLoading}
+        <span class="block w-4 h-4 border-2 border-slate-300 border-t-renjana-500 rounded-full animate-spin" />
+      {:else}
+        <School class="w-4 h-4" />
+      {/if}
     </div>
   </div>
 
   {#if showDropdown}
     <!-- svelte-ignore a11y_role_has_required_aria_props -->
     <ul class="absolute z-50 mt-1 w-full max-h-64 overflow-y-auto rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xl shadow-slate-900/10">
-      {#each filtered as entry, i}
+      {#each results as entry, i}
         <li
           role="option"
           tabindex="-1"

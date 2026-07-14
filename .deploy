@@ -1,0 +1,18 @@
+# Deployment Configuration
+# Copy this file to .deploy and fill in your server details
+
+# Application name (used for binary name, service name, and paths)
+renjana=laju-go
+
+# SSH Credentials
+SERVER_USER=maulana
+SERVER_HOST=root.laju.dev
+
+# Remote server path where the application will be deployed
+SERVER_PATH=/home/maulana/projects/renjana
+
+# Git repository URL (for first-time deployment reference)
+REPO_URL=https://github.com/maulanashalihin/renjana.git
+
+# Systemd service name (defaults to renjana if not set)
+SERVICE_NAME=renjana

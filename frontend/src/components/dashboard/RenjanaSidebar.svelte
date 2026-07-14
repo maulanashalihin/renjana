@@ -15,6 +15,7 @@
         BarChart3,
         Shield,
         FileDown,
+        School,
     } from "lucide-svelte";
     import { inertia } from "@inertiajs/svelte";
 
@@ -47,6 +48,7 @@
     const isAdmin = $derived(user?.role === "admin");
     const adminMenuItems: MenuItem[] = [
         { href: "/admin/users", label: "Manajemen User", icon: Shield },
+        { href: "/admin/schools", label: "Data Sekolah", icon: School },
     ];
 
     const visibleMenuItems = $derived(
