@@ -1,6 +1,13 @@
 #!/bin/bash
 set -e
 
+# Source profile for non-interactive SSH (Go, cargo, etc.)
+if [ -f "$HOME/.bashrc" ]; then
+    source "$HOME/.bashrc"
+elif [ -f "$HOME/.profile" ]; then
+    source "$HOME/.profile"
+fi
+
 echo "🚀 Renjana Deploy"
 echo "━━━━━━━━━━━━━━━"
 
