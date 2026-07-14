@@ -46,6 +46,20 @@
 
     const LEVELS = ["SD", "MI", "SMP", "MTs", "SMA", "MA", "SMK"] as const;
     const STATUSES = ["Negeri", "Swasta"] as const;
+    const KECAMATAN = [
+        "Simpang Empat",
+        "Angsana",
+        "Kusan Hilir",
+        "Mantewe",
+        "Sungai Loban",
+        "Teluk Kepayang",
+        "Batu Licin",
+        "Karang Bintang",
+        "Kusan Tengah",
+        "Kuranji",
+        "Kusan Hulu",
+        "Satui",
+    ] as const;
 
     function openCreate() {
         editingSchool = null;
@@ -216,14 +230,18 @@
 
                     <div>
                         <label for="kecamatan" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Kecamatan *</label>
-                        <input
+                        <select
                             id="kecamatan"
                             name="kecamatan"
-                            type="text"
                             required
                             bind:value={formKecamatan}
                             class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none"
-                        />
+                        >
+                            <option value="" disabled>Pilih kecamatan...</option>
+                            {#each KECAMATAN as k}
+                                <option value={k}>{k}</option>
+                            {/each}
+                        </select>
                     </div>
 
                     <div class="flex justify-end gap-2 pt-4 border-t border-neutral-200 dark:border-neutral-800">
