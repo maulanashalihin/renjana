@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { router } from "@inertiajs/svelte";
     import AppLayout from "../../components/AppLayout.svelte";
     import PageHeader from "../../lib/components/PageHeader.svelte";
     import { Info, Target, Eye, Users, Building2, Award, Handshake, MapPin, Clock, Pencil, Save, FileDown } from "lucide-svelte";
@@ -49,6 +50,24 @@
 
     let editing = $state(false);
     let activeTab = $state<"tentang" | "kontak" | "sosial">("tentang");
+
+    function submitEdit(e: Event) {
+        e.preventDefault();
+        router.post("/profil", {
+            vision: org.vision,
+            mission: org.mission,
+            history: org.history,
+            structure: org.structure,
+            contact_email: org.contact_email,
+            contact_phone: org.contact_phone,
+            address: org.address,
+            social_instagram: org.social_instagram,
+            social_tiktok: org.social_tiktok,
+            social_youtube: org.social_youtube,
+        }, {
+            onSuccess: () => { editing = false; },
+        });
+    }
 
     const org = $derived(organization ?? {
         id: 1,
@@ -151,7 +170,7 @@
                     <button onclick={() => activeTab = "sosial"} class="px-3 py-1.5 rounded text-xs font-medium {activeTab === 'sosial' ? 'bg-renjana-500 text-white' : 'text-neutral-600'}">Sosial</button>
                 </div>
             </div>
-            <form method="POST" action="/profil">
+            <form onsubmit={submitEdit}>
                 {#if activeTab === "tentang"}
                     <div class="space-y-4">
                         <div>

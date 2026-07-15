@@ -9,5 +9,7 @@
   "concepts/rbac-roles": [],
   "concepts/svelte-conventions": [],
   "concepts/three-tier-rule": [],
-  "sources/obs-2026-07-15-agents-md-simplified-and-llm-wiki-bootstrapped": []
+  "sources/deployment-read-all-before-action": [],
+  "sources/obs-2026-07-15-agents-md-simplified-and-llm-wiki-bootstrapped": [],
+  "sources/obs-2026-07-15-storage-directories-auto-created-at-startup": []
 }

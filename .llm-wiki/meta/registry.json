@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-07-15T09:00:17.467Z",
+  "last_updated": "2026-07-15T09:25:56.288Z",
   "pages": {
     "concepts/agent-browser-testing": {
       "type": "page",
@@ -62,6 +62,15 @@
       "created": "2026-07-15",
       "updated": "2026-07-15"
     },
+    "sources/deployment-read-all-before-action": {
+      "type": "source",
+      "title": "\"Deploy: baca semua config sebelum action\"",
+      "created": "2026-07-15",
+      "updated": "2026-07-15",
+      "slug": "deployment-read-all-before-action",
+      "status": "insight",
+      "category": "devops"
+    },
     "sources/obs-2026-07-15-agents-md-simplified-and-llm-wiki-bootstrapped": {
       "type": "source",
       "title": "\"Observation: AGENTS.md simplified and .llm-wiki bootstrapped\"",
@@ -77,6 +86,22 @@
         "documentation"
       ],
       "source_context": "\"Simplifying AGENTS.md and bootstrapping .llm-wiki\""
+    },
+    "sources/obs-2026-07-15-storage-directories-auto-created-at-startup": {
+      "type": "source",
+      "title": "\"Observation: Storage directories auto-created at startup\"",
+      "created": "2026-07-15",
+      "updated": "2026-07-15",
+      "slug": "obs-2026-07-15-storage-directories-auto-created-at-startup",
+      "status": "observation",
+      "relevance": "medium",
+      "observed_at": "2026-07-15T09:17:03.778Z",
+      "tags": [
+        "storage",
+        "deployment",
+        "upload"
+      ],
+      "source_context": "\"Debugging BeritaEditor upload failure\""
     }
   }
 }

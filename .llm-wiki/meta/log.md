@@ -41,3 +41,9 @@
 ## [2026-07-15T09:00:17.431Z] observe
 - slug: "obs-2026-07-15-agents-md-simplified-and-llm-wiki-bootstrapped", title: "AGENTS.md simplified and .llm-wiki bootstrapped", relevance: "high"
 
+## [2026-07-15T09:17:03.787Z] observe
+- slug: "obs-2026-07-15-storage-directories-auto-created-at-startup", title: "Storage directories auto-created at startup", relevance: "medium"
+
+## [2026-07-15T09:22:24.535Z] retro
+- slug: "deployment-read-all-before-action", title: "Deploy: baca semua config sebelum action", category: "devops"
+
