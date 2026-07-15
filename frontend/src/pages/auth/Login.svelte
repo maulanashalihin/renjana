@@ -232,7 +232,7 @@
             </div>
 
             <p class="mt-6 text-center text-xs text-slate-500 dark:text-slate-500">
-                © 2024 RENJANA — Kabupaten Tanah Bumbu
+                © 2025 RENJANA — Kabupaten Tanah Bumbu
             </p>
         </div>
     </div>

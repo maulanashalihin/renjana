@@ -300,6 +300,6 @@
         </div>
 
         <!-- Capaian -->
-        <AchievementBar achievements={achievementRows} year={achievements[0]?.year ?? 2024} />
+        <AchievementBar achievements={achievementRows} year={achievements[0]?.year ?? 2025} />
     </div>
 </AppLayout>

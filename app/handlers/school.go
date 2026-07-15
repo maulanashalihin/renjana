@@ -75,17 +75,14 @@ func (h *SchoolHandler) Index(c *fiber.Ctx) error {
 		return c.Redirect("/login")
 	}
 
-	page, _ := strconv.Atoi(c.Query("page", "1"))
-	perPage, _ := strconv.Atoi(c.Query("per_page", "20"))
-
-	result, err := h.schoolService.List(c.Context(), page, perPage)
+	allSchools, err := h.schoolService.ListAll(c.Context())
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).SendString("Gagal memuat data sekolah")
 	}
 
 	return h.inertiaService.Render(c, "app/Schools", fiber.Map{
 		"user":    user,
-		"schools": result,
+		"schools": allSchools,
 	})
 }
 
@@ -93,75 +90,73 @@ func (h *SchoolHandler) Index(c *fiber.Ctx) error {
 func (h *SchoolHandler) Store(c *fiber.Ctx) error {
 	_, _, err := h.authUser(c)
 	if err != nil {
-		return c.Redirect("/login")
+		return c.Redirect("/login", fiber.StatusSeeOther)
 	}
 
-	input := services.SchoolInput{
-		Name:      c.FormValue("name"),
-		Level:     c.FormValue("level"),
-		Status:    c.FormValue("status"),
-		Kecamatan: c.FormValue("kecamatan"),
+	var input services.SchoolInput
+	if err := c.BodyParser(&input); err != nil {
+		h.store.Flash(c, "error", "Gagal membaca data: "+err.Error())
+		return c.Redirect("/admin/schools", fiber.StatusSeeOther)
 	}
 
 	_, err = h.schoolService.Create(c.Context(), input)
 	if err != nil {
 		h.store.Flash(c, "error", "Gagal menambah sekolah: "+err.Error())
-		return c.Redirect("/admin/schools")
+		return c.Redirect("/admin/schools", fiber.StatusSeeOther)
 	}
 
 	h.store.Flash(c, "success", "Sekolah berhasil ditambahkan")
-	return c.Redirect("/admin/schools")
+	return c.Redirect("/admin/schools", fiber.StatusSeeOther)
 }
 
 // Update — handle PUT /admin/schools/:id.
 func (h *SchoolHandler) Update(c *fiber.Ctx) error {
 	_, _, err := h.authUser(c)
 	if err != nil {
-		return c.Redirect("/login")
+		return c.Redirect("/login", fiber.StatusSeeOther)
 	}
 
 	id, err := strconv.ParseInt(c.Params("id"), 10, 64)
 	if err != nil {
 		h.store.Flash(c, "error", "ID sekolah tidak valid")
-		return c.Redirect("/admin/schools")
+		return c.Redirect("/admin/schools", fiber.StatusSeeOther)
 	}
 
-	input := services.SchoolInput{
-		Name:      c.FormValue("name"),
-		Level:     c.FormValue("level"),
-		Status:    c.FormValue("status"),
-		Kecamatan: c.FormValue("kecamatan"),
+	var input services.SchoolInput
+	if err := c.BodyParser(&input); err != nil {
+		h.store.Flash(c, "error", "Gagal membaca data: "+err.Error())
+		return c.Redirect("/admin/schools", fiber.StatusSeeOther)
 	}
 
 	err = h.schoolService.Update(c.Context(), id, input)
 	if err != nil {
 		h.store.Flash(c, "error", "Gagal mengupdate sekolah: "+err.Error())
-		return c.Redirect("/admin/schools")
+		return c.Redirect("/admin/schools", fiber.StatusSeeOther)
 	}
 
 	h.store.Flash(c, "success", "Sekolah berhasil diupdate")
-	return c.Redirect("/admin/schools")
+	return c.Redirect("/admin/schools", fiber.StatusSeeOther)
 }
 
 // Destroy — handle DELETE /admin/schools/:id.
 func (h *SchoolHandler) Destroy(c *fiber.Ctx) error {
 	_, _, err := h.authUser(c)
 	if err != nil {
-		return c.Redirect("/login")
+		return c.Redirect("/login", fiber.StatusSeeOther)
 	}
 
 	id, err := strconv.ParseInt(c.Params("id"), 10, 64)
 	if err != nil {
 		h.store.Flash(c, "error", "ID sekolah tidak valid")
-		return c.Redirect("/admin/schools")
+		return c.Redirect("/admin/schools", fiber.StatusSeeOther)
 	}
 
 	err = h.schoolService.Delete(c.Context(), id)
 	if err != nil {
 		h.store.Flash(c, "error", "Gagal menghapus sekolah")
-		return c.Redirect("/admin/schools")
+		return c.Redirect("/admin/schools", fiber.StatusSeeOther)
 	}
 
 	h.store.Flash(c, "success", "Sekolah berhasil dihapus")
-	return c.Redirect("/admin/schools")
+	return c.Redirect("/admin/schools", fiber.StatusSeeOther)
 }

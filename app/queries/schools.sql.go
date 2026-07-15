@@ -131,6 +131,52 @@ func (q *Queries) GetSchoolByID(ctx context.Context, id int64) (RenjanaSchool, e
 	return i, err
 }
 
+const listAllSchools = `-- name: ListAllSchools :many
+SELECT id, name, level, status, kecamatan, is_active
+FROM renjana_schools
+WHERE is_active = 1
+ORDER BY name
+`
+
+type ListAllSchoolsRow struct {
+	ID        int64  `json:"id"`
+	Name      string `json:"name"`
+	Level     string `json:"level"`
+	Status    string `json:"status"`
+	Kecamatan string `json:"kecamatan"`
+	IsActive  int64  `json:"is_active"`
+}
+
+func (q *Queries) ListAllSchools(ctx context.Context) ([]ListAllSchoolsRow, error) {
+	rows, err := q.db.QueryContext(ctx, listAllSchools)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListAllSchoolsRow
+	for rows.Next() {
+		var i ListAllSchoolsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Level,
+			&i.Status,
+			&i.Kecamatan,
+			&i.IsActive,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listSchoolsPaginated = `-- name: ListSchoolsPaginated :many
 SELECT id, name, level, status, kecamatan, is_active, created_at, updated_at
 FROM renjana_schools

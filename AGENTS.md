@@ -169,6 +169,26 @@ Kalau ragu dengan visual, minta screenshot via agent_browser — saya review dan
 - **🔴 CRITICAL: Handlers must NEVER call queries directly.** Semua akses database harus melalui services. Handler → Service → Query. Tidak ada shortcut dari handler ke query. Ini adalah aturan paling penting di project ini — jangan pernah dilanggar.
 - **Pengecualian**: File test (`*_test.go`) BOLEH panggil queries langsung untuk setup data test.
 - **Handler hanya**: Parse request → Panggil service → Return response. Tidak ada business logic. All database access goes through services. Handler → Service → Query. No shortcut from handler to query.
+- **🔴 CRITICAL: WAJIB pake `c.BodyParser()` untuk baca request body**, bukan `c.FormValue()`. Inertia's `router.post()/put()` kirim data sebagai **JSON** (`Content-Type: application/json`), bukan form-urlencoded. `c.FormValue()` cuma baca form-urlencoded — bakal return string kosong untuk JSON body. `c.BodyParser()` handle JSON dan form-urlencoded.
+
+  ✅ **Benar:**
+
+  ```go
+  var input services.SchoolInput
+  if err := c.BodyParser(&input); err != nil {
+      return c.Redirect("/path", fiber.StatusSeeOther)
+  }
+  ```
+
+  ❌ **Salah:**
+
+  ```go
+  input := services.SchoolInput{
+      Name:  c.FormValue("name"),     // ❌ selalu kosong untuk JSON
+      Level: c.FormValue("level"),    // ❌
+  }
+  ```
+
 - **POST/PUT handlers that redirect**: Use `c.Redirect(path, fiber.StatusSeeOther)` (303). Inertia does not follow 302 correctly for form submissions — it needs 303 to change POST/PUT to GET on redirect.
 - **PUT/PATCH**: Return JSON for `fetch()` calls, redirect for `router.put()` calls. If redirecting, always 303.
 - Sessions are database-backed (SQLite table). Auth middleware checks `session.Store`.
@@ -190,6 +210,9 @@ Copy `.env.example` → `.env`. Minimum required:
 - `dist/` is gitignored except `.gitkeep`. Build artifacts are not committed.
 - Cross-compile for Linux: `make build-linux` (requires `brew install zig` for CGO cross-compile via `zig cc`).
 - Air's `include_ext` does not include `.templ` — regenerate templ components manually when editing templates.
+- **Flash cookie `ClearCookie` harus punya atribut sama** — `Flash()` set cookie dengan `Path="/"`, `HTTPOnly=true`, `SameSite="Lax"`. `c.ClearCookie()` gak set atribut-atribut ini, jadi browser treat expired cookie sebagai cookie beda dan flash gak kehapus. Kalau mau clear flash cookie, pake `c.Cookie(...)` eksplisit dengan atribut yang sama persis, `MaxAge=-1`.
+- **Flash message di frontend harus auto-dismiss** — Flash banner dari server redirect harus ilang otomatis dalam 3 detik. Pake `$effect` + `setTimeout` di Svelte. Jangan biar flash nempel terus sampai user refresh.
+- **Frontend-side pagination untuk dataset <1000 items** — Jangan pake pagination di backend kalau datanya cuma ratusan. Load semua, filter/search/paginate di frontend pake `$derived`. Lebih cepat (no round-trip), UX lebih instant.
 
 ## Testing Strategy
 

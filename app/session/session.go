@@ -457,8 +457,19 @@ func (s *Store) GetFlash(c *fiber.Ctx, key string) string {
 	value := c.Cookies(cookieName)
 
 	if value != "" {
-		// Clear the flash cookie after reading (one-time use)
-		c.ClearCookie(cookieName)
+		// Clear the flash cookie after reading (one-time use).
+		// MUST match the same Path/SameSite/HTTPOnly as Flash() so browser
+		// properly overwrites the original cookie. c.ClearCookie() alone
+		// doesn't set Path="/", causing a cookie mismatch in the browser.
+		c.Cookie(&fiber.Cookie{
+			Name:     cookieName,
+			Value:    "",
+			Path:     "/",
+			HTTPOnly: true,
+			Secure:   false,
+			SameSite: "Lax",
+			MaxAge:   -1,
+		})
 	}
 
 	return value

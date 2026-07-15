@@ -28,6 +28,12 @@ FROM renjana_schools
 ORDER BY name
 LIMIT ? OFFSET ?;
 
+-- name: ListAllSchools :many
+SELECT id, name, level, status, kecamatan, is_active
+FROM renjana_schools
+WHERE is_active = 1
+ORDER BY name;
+
 -- name: CountSchools :one
 SELECT COUNT(*) FROM renjana_schools;
 

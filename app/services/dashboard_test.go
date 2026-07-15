@@ -85,8 +85,8 @@ func TestDashboardServiceGetData(t *testing.T) {
 	assert.Equal(t, "Capaian Program", data.Achievements[0].MetricName)
 
 	// Latest announcement
-	assert.NotNil(t, data.LatestAnnouncement)
-	assert.Equal(t, "Latest News", data.LatestAnnouncement.Title)
+	assert.Greater(t, len(data.LatestAnnouncements), 0)
+	assert.Equal(t, "Latest News", data.LatestAnnouncements[0].Title)
 
 	// Upcoming activities
 	assert.Greater(t, len(data.UpcomingActivities), 0)

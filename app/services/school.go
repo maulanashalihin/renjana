@@ -72,14 +72,9 @@ func (s *SchoolService) Search(ctx context.Context, query string) ([]SchoolSearc
 	return items, nil
 }
 
-// List returns paginated schools for admin CRUD.
-func (s *SchoolService) List(ctx context.Context, page, perPage int) (*PaginationResult, error) {
-	page, perPage, offset := NormalizePagination(page, perPage)
-
-	rows, err := s.querier.ListSchoolsPaginated(ctx, queries.ListSchoolsPaginatedParams{
-		Limit:  int64(perPage),
-		Offset: int64(offset),
-	})
+// ListAll returns all active schools (for frontend-side filtering/pagination).
+func (s *SchoolService) ListAll(ctx context.Context) ([]SchoolItem, error) {
+	rows, err := s.querier.ListAllSchools(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -95,13 +90,7 @@ func (s *SchoolService) List(ctx context.Context, page, perPage int) (*Paginatio
 			IsActive:  r.IsActive == 1,
 		})
 	}
-
-	total, err := s.querier.CountSchools(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return BuildPagination(items, page, perPage, total), nil
+	return items, nil
 }
 
 // Get returns a single school by ID.
