@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { router } from "@inertiajs/svelte";
     import AppLayout from "../../components/AppLayout.svelte";
     import PageHeader from "../../lib/components/PageHeader.svelte";
     import EmptyState from "../../lib/components/EmptyState.svelte";
@@ -108,6 +109,23 @@
         selectedRole = c.role;
     }
 
+    function handleSubmit(e: Event) {
+        e.preventDefault();
+        const form = e.target as HTMLFormElement;
+        const data = new FormData(form);
+        const obj: Record<string, any> = {};
+        data.forEach((v, k) => { obj[k] = v; });
+        if (actionType === "create") {
+            router.post("/kontak", obj, {
+                onSuccess: () => closeModal(),
+            });
+        } else if (actionType === "edit" && editTarget) {
+            router.put(`/kontak/${editTarget.id}`, obj, {
+                onSuccess: () => closeModal(),
+            });
+        }
+    }
+
     function closeModal() {
         actionType = "";
         editTarget = null;
@@ -116,11 +134,7 @@
 
     function handleDelete(id: number) {
         if (!confirm("Hapus kontak ini?")) return;
-        const form = document.createElement("form");
-        form.method = "POST";
-        form.action = `/kontak/${id}?_method=DELETE`;
-        document.body.appendChild(form);
-        form.submit();
+        router.delete(`/kontak/${id}`);
     }
 
 
@@ -327,10 +341,7 @@
                     <h2 class="text-xl font-bold text-neutral-900 dark:text-white">{actionType === "create" ? "Tambah Kontak" : "Edit Kontak"}</h2>
                     <button onclick={closeModal} class="text-neutral-500 hover:text-neutral-700"><X class="w-5 h-5" /></button>
                 </div>
-                <form method="POST" action={actionType === "create" ? "/kontak" : `/kontak/${editTarget?.id}`} class="p-6 space-y-4">
-                    {#if actionType === "edit"}
-                        <input type="hidden" name="_method" value="PUT" />
-                    {/if}
+                <form onsubmit={handleSubmit} class="p-6 space-y-4">
                     <div>
                         <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Nama *</label>
                         <input type="text" name="name" required value={editTarget?.name ?? ""} class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />

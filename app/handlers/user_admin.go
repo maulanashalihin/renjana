@@ -90,19 +90,25 @@ func (h *UserAdminHandler) Store(c *fiber.Ctx) error {
 		return c.Redirect("/login")
 	}
 
-	name := c.FormValue("name")
-	email := c.FormValue("email")
-	password := c.FormValue("password")
-	role := models.UserRole(c.FormValue("role"))
-	districtID, _ := strconv.ParseInt(c.FormValue("district_id", "0"), 10, 64)
-	volunteerID, _ := strconv.ParseInt(c.FormValue("volunteer_id", "0"), 10, 64)
+	var input struct {
+		Name        string          `json:"name"`
+		Email       string          `json:"email"`
+		Password    string          `json:"password"`
+		Role        models.UserRole `json:"role"`
+		DistrictID  int64           `json:"district_id"`
+		VolunteerID int64           `json:"volunteer_id"`
+	}
+	if err := c.BodyParser(&input); err != nil {
+		h.store.Flash(c, "error", "Invalid input")
+		return c.Redirect("/admin/users")
+	}
 
-	if name == "" || email == "" || password == "" {
+	if input.Name == "" || input.Email == "" || input.Password == "" {
 		h.store.Flash(c, "error", "Name, email, and password are required")
 		return c.Redirect("/admin/users?action=create")
 	}
 
-	_, err = h.userAdminSvc.CreateUser(c.Context(), name, email, password, role, districtID, volunteerID)
+	_, err = h.userAdminSvc.CreateUser(c.Context(), input.Name, input.Email, input.Password, input.Role, input.DistrictID, input.VolunteerID)
 	if err != nil {
 		h.store.Flash(c, "error", "Failed to create user: "+err.Error())
 		return c.Redirect("/admin/users?action=create")
@@ -126,11 +132,16 @@ func (h *UserAdminHandler) UpdateRole(c *fiber.Ctx) error {
 	}
 	id, _ := strconv.ParseInt(c.Params("id"), 10, 64)
 
-	role := models.UserRole(c.FormValue("role"))
-	districtID, _ := strconv.ParseInt(c.FormValue("district_id", "0"), 10, 64)
-	volunteerID, _ := strconv.ParseInt(c.FormValue("volunteer_id", "0"), 10, 64)
+	var input struct {
+		Role        models.UserRole `json:"role"`
+		DistrictID  int64           `json:"district_id"`
+		VolunteerID int64           `json:"volunteer_id"`
+	}
+	if err := c.BodyParser(&input); err != nil {
+		return c.Redirect("/admin/users")
+	}
 
-	if err := h.userAdminSvc.UpdateUserRole(c.Context(), id, role, districtID, volunteerID); err != nil {
+	if err := h.userAdminSvc.UpdateUserRole(c.Context(), id, input.Role, input.DistrictID, input.VolunteerID); err != nil {
 		h.store.Flash(c, "error", "Failed to update role: "+err.Error())
 		return c.Redirect(fmt.Sprintf("/admin/users?action=edit&id=%d", id))
 	}
@@ -146,9 +157,15 @@ func (h *UserAdminHandler) ToggleActive(c *fiber.Ctx) error {
 		return c.Redirect("/login")
 	}
 	id, _ := strconv.ParseInt(c.Params("id"), 10, 64)
-	isActive := c.FormValue("active") == "true"
 
-	if err := h.userAdminSvc.SetActive(c.Context(), id, isActive); err != nil {
+	var input struct {
+		Active bool `json:"active"`
+	}
+	if err := c.BodyParser(&input); err != nil {
+		return c.Redirect("/admin/users")
+	}
+
+	if err := h.userAdminSvc.SetActive(c.Context(), id, input.Active); err != nil {
 		h.store.Flash(c, "error", "Failed to toggle active: "+err.Error())
 		return c.Redirect("/admin/users?error=" + err.Error())
 	}

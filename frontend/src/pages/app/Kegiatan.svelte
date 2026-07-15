@@ -1,9 +1,9 @@
 <script lang="ts">
+    import { router, inertia } from "@inertiajs/svelte";
     import AppLayout from "../../components/AppLayout.svelte";
     import PageHeader from "../../lib/components/PageHeader.svelte";
     import EmptyState from "../../lib/components/EmptyState.svelte";
     import { CalendarDays, Calendar, Clock, MapPin, Sparkles, Plus, Pencil, Trash2, X } from "lucide-svelte";
-    import { inertia } from "@inertiajs/svelte";
 
     interface User {
         id: number;
@@ -158,17 +158,26 @@
         formError = "";
     }
 
-    function handleSubmit() {
-        // form has its own action; let it submit normally
+    function handleSubmit(e: Event) {
+        e.preventDefault();
+        const form = e.target as HTMLFormElement;
+        const data = new FormData(form);
+        const obj: Record<string, any> = {};
+        data.forEach((v, k) => { obj[k] = v; });
+        if (actionType === "create") {
+            router.post("/kegiatan", obj, {
+                onSuccess: () => closeModal(),
+            });
+        } else if (actionType === "edit" && editTarget) {
+            router.put(`/kegiatan/${editTarget.id}`, obj, {
+                onSuccess: () => closeModal(),
+            });
+        }
     }
 
     function handleDelete(id: number) {
         if (!confirm("Hapus kegiatan ini?")) return;
-        const form = document.createElement("form");
-        form.method = "POST";
-        form.action = `/kegiatan/${id}?_method=DELETE`;
-        document.body.appendChild(form);
-        form.submit();
+        router.delete(`/kegiatan/${id}`);
     }
 
     const tabs = $derived([
@@ -371,10 +380,7 @@
                 {#if formError}
                     <div class="mx-6 mt-4 p-3 rounded-lg bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-400 text-sm">{formError}</div>
                 {/if}
-                <form method="POST" action={actionType === "create" ? "/kegiatan" : `/kegiatan/${editTarget?.id}`} onsubmit={handleSubmit} class="p-6 space-y-4">
-                    {#if actionType === "edit"}
-                        <input type="hidden" name="_method" value="PUT" />
-                    {/if}
+                <form onsubmit={handleSubmit} class="p-6 space-y-4">
                     <div>
                         <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Judul *</label>
                         <input type="text" name="title" required value={editTarget?.title ?? ""} class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
