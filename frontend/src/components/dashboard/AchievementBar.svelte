@@ -17,7 +17,7 @@
         year?: number;
     }
 
-    let { achievements, year = 2024 }: Props = $props();
+    let { achievements, year = 2025 }: Props = $props();
 </script>
 
 <div
