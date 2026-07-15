@@ -328,5 +328,4 @@ INSERT INTO renjana_schools (name, level, status, kecamatan) VALUES
 -- +goose Down
 -- +goose StatementBegin
 DELETE FROM renjana_schools;
--- +goose Down hanya kosongin tabel — data akan diisi ulang oleh migration 0018
 -- +goose StatementEnd
