@@ -61,12 +61,14 @@ type VolunteerDetail struct {
 
 // VolunteerStats — banner stats for the list page.
 type VolunteerStats struct {
-	Total    int64 `json:"total"`
-	Active   int64 `json:"active"`
-	Inactive int64 `json:"inactive"`
-	Pending  int64 `json:"pending"`
-	Rejected int64 `json:"rejected"`
-	Schools  int64 `json:"schools"`
+	Total           int64 `json:"total"`
+	Active          int64 `json:"active"`
+	Inactive        int64 `json:"inactive"`
+	Pending         int64 `json:"pending"`
+	Rejected        int64 `json:"rejected"`
+	Schools         int64 `json:"schools"`
+	TotalKegiatan   int64 `json:"total_kegiatan"`
+	TotalKecamatan  int64 `json:"total_kecamatan"`
 }
 
 // CreateVolunteerRequest — input for create.
@@ -410,13 +412,19 @@ func (s *VolunteerService) GetStats(ctx context.Context) (*VolunteerStats, error
 	if err != nil {
 		return nil, err
 	}
+
+	totalKegiatan, _ := s.querier.CountAllActivities(ctx)
+	totalKecamatan, _ := s.querier.CountActiveDistricts(ctx)
+
 	return &VolunteerStats{
-		Total:    r.Total,
-		Active:   nullFloatToInt(r.Active),
-		Inactive: nullFloatToInt(r.Inactive),
-		Pending:  nullFloatToInt(r.Pending),
-		Rejected: nullFloatToInt(r.Rejected),
-		Schools:  r.Schools,
+		Total:           r.Total,
+		Active:          nullFloatToInt(r.Active),
+		Inactive:        nullFloatToInt(r.Inactive),
+		Pending:         nullFloatToInt(r.Pending),
+		Rejected:        nullFloatToInt(r.Rejected),
+		Schools:         r.Schools,
+		TotalKegiatan:   totalKegiatan,
+		TotalKecamatan:  totalKecamatan,
 	}, nil
 }
 

@@ -30,6 +30,8 @@
         total: number;
         active: number;
         schools: number;
+        total_kegiatan: number;
+        total_kecamatan: number;
     }
 
     interface Props {
@@ -91,7 +93,7 @@
 
     const vision = $derived(org.vision || "Visi RENJANA belum diisi.");
     const missionItems = $derived(parseMission(org.mission));
-    const stats = $derived(volunteer_stats ?? { total: 0, active: 0, schools: 0 });
+    const stats = $derived(volunteer_stats ?? { total: 0, active: 0, schools: 0, total_kegiatan: 0, total_kecamatan: 0 });
 </script>
 
 <AppLayout {user} pageTitle="Profil RENJANA" pageSubtitle="Informasi organisasi RENJANA" activeMenu="Profil RENJANA">
@@ -142,17 +144,17 @@
                 </div>
                 <div class="bg-white/10 backdrop-blur rounded-2xl p-5 border border-white/20">
                     <MapPin class="w-6 h-6 mb-2" />
-                    <p class="text-3xl font-bold">12</p>
+                    <p class="text-3xl font-bold">{stats.total_kecamatan.toLocaleString("id-ID")}</p>
                     <p class="text-sm text-white/80">Kecamatan</p>
                 </div>
                 <div class="bg-white/10 backdrop-blur rounded-2xl p-5 border border-white/20">
                     <Award class="w-6 h-6 mb-2" />
-                    <p class="text-3xl font-bold">{stats.schools}</p>
+                    <p class="text-3xl font-bold">{stats.schools.toLocaleString("id-ID")}</p>
                     <p class="text-sm text-white/80">Sekolah</p>
                 </div>
                 <div class="bg-white/10 backdrop-blur rounded-2xl p-5 border border-white/20">
                     <Clock class="w-6 h-6 mb-2" />
-                    <p class="text-3xl font-bold">128+</p>
+                    <p class="text-3xl font-bold">{stats.total_kegiatan.toLocaleString("id-ID")}</p>
                     <p class="text-sm text-white/80">Kegiatan</p>
                 </div>
             </div>
