@@ -110,7 +110,7 @@ func readBody(t *testing.T, resp *http.Response) string {
 // TestAdminRequired_AllowsAdmin
 func TestAdminRequired_AllowsAdmin(t *testing.T) {
 	q := setupRBACTestDB(t)
-	store := session.New(q, cache.NewSessionCache(time.Minute), time.Hour)
+	store := session.New(q, cache.NewSessionCache(nil, time.Minute), time.Hour)
 	admin := createRBACUser(t, q, "admin@x.com", "Admin User", models.RoleAdmin)
 
 	app := fiber.New()
@@ -128,7 +128,7 @@ func TestAdminRequired_AllowsAdmin(t *testing.T) {
 // TestAdminRequired_Returns403ForRelawan
 func TestAdminRequired_Returns403ForRelawan(t *testing.T) {
 	q := setupRBACTestDB(t)
-	store := session.New(q, cache.NewSessionCache(time.Minute), time.Hour)
+	store := session.New(q, cache.NewSessionCache(nil, time.Minute), time.Hour)
 	user := createRBACUser(t, q, "relawan@x.com", "Relawan User", models.RoleRelawan)
 
 	app := fiber.New()
@@ -145,7 +145,7 @@ func TestAdminRequired_Returns403ForRelawan(t *testing.T) {
 // TestAdminRequired_BlocksKoordinator (only admin/super_admin pass)
 func TestAdminRequired_BlocksKoordinator(t *testing.T) {
 	q := setupRBACTestDB(t)
-	store := session.New(q, cache.NewSessionCache(time.Minute), time.Hour)
+	store := session.New(q, cache.NewSessionCache(nil, time.Minute), time.Hour)
 	koord := createRBACUser(t, q, "koord@x.com", "Koordinator User", models.RoleKoordinator)
 
 	app := fiber.New()
@@ -162,7 +162,7 @@ func TestAdminRequired_BlocksKoordinator(t *testing.T) {
 // TestAdminRequired_BlocksAnonymous
 func TestAdminRequired_BlocksAnonymous(t *testing.T) {
 	q := setupRBACTestDB(t)
-	store := session.New(q, cache.NewSessionCache(time.Minute), time.Hour)
+	store := session.New(q, cache.NewSessionCache(nil, time.Minute), time.Hour)
 
 	app := fiber.New()
 	applyAuthChain(app, store, true)
@@ -180,7 +180,7 @@ func TestAdminRequired_BlocksAnonymous(t *testing.T) {
 // TestAuthRequired_AllowsAuthenticated
 func TestAuthRequired_AllowsAuthenticated(t *testing.T) {
 	q := setupRBACTestDB(t)
-	store := session.New(q, cache.NewSessionCache(time.Minute), time.Hour)
+	store := session.New(q, cache.NewSessionCache(nil, time.Minute), time.Hour)
 	user := createRBACUser(t, q, "auth@x.com", "Auth User", models.RoleRelawan)
 
 	app := fiber.New()
@@ -197,7 +197,7 @@ func TestAuthRequired_AllowsAuthenticated(t *testing.T) {
 // TestAuthRequired_BlocksAnonymous
 func TestAuthRequired_BlocksAnonymous(t *testing.T) {
 	q := setupRBACTestDB(t)
-	store := session.New(q, cache.NewSessionCache(time.Minute), time.Hour)
+	store := session.New(q, cache.NewSessionCache(nil, time.Minute), time.Hour)
 
 	app := fiber.New()
 	applyAuthChain(app, store, false)
@@ -251,7 +251,7 @@ func TestRoleCanCRUDAll(t *testing.T) {
 // TestKoordinatorRequired_AllowsKoordinator
 func TestKoordinatorRequired_AllowsKoordinator(t *testing.T) {
 	q := setupRBACTestDB(t)
-	store := session.New(q, cache.NewSessionCache(time.Minute), time.Hour)
+	store := session.New(q, cache.NewSessionCache(nil, time.Minute), time.Hour)
 	koord := createRBACUser(t, q, "koord@x.com", "K User", models.RoleKoordinator)
 
 	app := fiber.New()
@@ -272,7 +272,7 @@ func TestKoordinatorRequired_AllowsKoordinator(t *testing.T) {
 // TestKoordinatorRequired_AllowsAdmin (admin supersedes koordinator)
 func TestKoordinatorRequired_AllowsAdmin(t *testing.T) {
 	q := setupRBACTestDB(t)
-	store := session.New(q, cache.NewSessionCache(time.Minute), time.Hour)
+	store := session.New(q, cache.NewSessionCache(nil, time.Minute), time.Hour)
 	admin := createRBACUser(t, q, "admin@x.com", "A User", models.RoleAdmin)
 
 	app := fiber.New()
@@ -293,7 +293,7 @@ func TestKoordinatorRequired_AllowsAdmin(t *testing.T) {
 // TestKoordinatorRequired_BlocksRelawan
 func TestKoordinatorRequired_BlocksRelawan(t *testing.T) {
 	q := setupRBACTestDB(t)
-	store := session.New(q, cache.NewSessionCache(time.Minute), time.Hour)
+	store := session.New(q, cache.NewSessionCache(nil, time.Minute), time.Hour)
 	user := createRBACUser(t, q, "rel@x.com", "R User", models.RoleRelawan)
 
 	app := fiber.New()
@@ -314,7 +314,7 @@ func TestKoordinatorRequired_BlocksRelawan(t *testing.T) {
 // TestRelawanRequired_AllowsRelawan
 func TestRelawanRequired_AllowsRelawan(t *testing.T) {
 	q := setupRBACTestDB(t)
-	store := session.New(q, cache.NewSessionCache(time.Minute), time.Hour)
+	store := session.New(q, cache.NewSessionCache(nil, time.Minute), time.Hour)
 	user := createRBACUser(t, q, "rel@x.com", "R User", models.RoleRelawan)
 
 	app := fiber.New()
@@ -335,7 +335,7 @@ func TestRelawanRequired_AllowsRelawan(t *testing.T) {
 // TestRelawanRequired_AllowsAdmin (any auth user passes)
 func TestRelawanRequired_AllowsAdmin(t *testing.T) {
 	q := setupRBACTestDB(t)
-	store := session.New(q, cache.NewSessionCache(time.Minute), time.Hour)
+	store := session.New(q, cache.NewSessionCache(nil, time.Minute), time.Hour)
 	admin := createRBACUser(t, q, "admin@x.com", "A User", models.RoleAdmin)
 
 	app := fiber.New()
@@ -356,7 +356,7 @@ func TestRelawanRequired_AllowsAdmin(t *testing.T) {
 // TestScopeDistrict_AdminBypass
 func TestScopeDistrict_AdminBypass(t *testing.T) {
 	q := setupRBACTestDB(t)
-	store := session.New(q, cache.NewSessionCache(time.Minute), time.Hour)
+	store := session.New(q, cache.NewSessionCache(nil, time.Minute), time.Hour)
 	admin := createRBACUser(t, q, "admin@x.com", "A User", models.RoleAdmin)
 
 	app := fiber.New()

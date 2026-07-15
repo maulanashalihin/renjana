@@ -32,8 +32,9 @@ type Config struct {
 	// Session
 	SessionTTL time.Duration
 	// Cache
-	UserCacheTTL    time.Duration
-	SessionCacheTTL time.Duration
+	SessionCacheBuffer time.Duration
+	UserCacheTTL       time.Duration
+	NutsDBPath         string
 	// Argon2id
 	Argon2Memory     uint32 // KiB
 	Argon2Iterations uint32
@@ -68,7 +69,9 @@ func Load() *Config {
 		// Session
 		SessionTTL: getSessionTTL(),
 		// Cache
-		SessionCacheTTL: getSessionCacheTTL(),
+		SessionCacheBuffer: getSessionCacheBuffer(),
+		UserCacheTTL:       getUserCacheTTL(),
+		NutsDBPath:         getEnv("NUTSDB_PATH", "./data/cache"),
 		// Argon2id
 		Argon2Memory:     getArgon2Memory(),
 		Argon2Iterations: getArgon2Iterations(),
@@ -132,10 +135,11 @@ func getSessionTTL() time.Duration {
 	return d
 }
 
-// getSessionCacheTTL returns the session cache TTL from env.
-// Default: 5 minutes. Shorter than user cache because sessions update more frequently.
-func getSessionCacheTTL() time.Duration {
-	val := getEnv("SESSION_CACHE_TTL", "5m")
+// getSessionCacheBuffer returns the session cache buffer duration from env.
+// This buffer is added to the remaining session lifetime as NutsDB TTL.
+// Default: 5 minutes.
+func getSessionCacheBuffer() time.Duration {
+	val := getEnv("SESSION_CACHE_BUFFER", "5m")
 	d, err := time.ParseDuration(val)
 	if err != nil {
 		return 5 * time.Minute

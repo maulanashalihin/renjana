@@ -73,8 +73,9 @@ func (h *SurveyHandler) Index(c *fiber.Ctx) error {
 
 func (h *SurveyHandler) publicIndex(c *fiber.Ctx, user *fiber.Map) error {
 	return h.inertiaService.Render(c, "app/Survey", fiber.Map{
-		"user":    user,
-		"isAdmin": false,
+		"user":      user,
+		"isAdmin":   false,
+		"submitted": c.Query("success") == "true",
 	})
 }
 
@@ -104,26 +105,26 @@ func (h *SurveyHandler) adminIndex(c *fiber.Ctx, user *fiber.Map) error {
 
 // Store — public submission.
 func (h *SurveyHandler) Store(c *fiber.Ctx) error {
-	name := c.FormValue("name")
-	phone := c.FormValue("phone")
-	serviceType := c.FormValue("service_type")
-	ratingStr := c.FormValue("rating")
-	feedback := c.FormValue("feedback")
-
-	if serviceType == "" || ratingStr == "" {
+	var input struct {
+		Name        string `json:"name"`
+		Phone       string `json:"phone"`
+		ServiceType string `json:"service_type"`
+		Rating      int64  `json:"rating"`
+		Feedback    string `json:"feedback"`
+	}
+	if err := c.BodyParser(&input); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Jenis layanan dan rating harus diisi",
+			"error": "Invalid input format",
 		})
 	}
 
-	rating, err := strconv.ParseInt(ratingStr, 10, 64)
-	if err != nil || rating < 1 || rating > 5 {
+	if input.ServiceType == "" || input.Rating < 1 || input.Rating > 5 {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Rating harus antara 1-5",
+			"error": "Jenis layanan dan rating harus diisi (1-5)",
 		})
 	}
 
-	_, err = h.surveySvc.Create(c.Context(), name, phone, serviceType, rating, feedback)
+	_, err := h.surveySvc.Create(c.Context(), input.Name, input.Phone, input.ServiceType, input.Rating, input.Feedback)
 	if err != nil {
 		slog.Error("survey create error", "err", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{

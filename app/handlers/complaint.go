@@ -79,8 +79,9 @@ func (h *ComplaintHandler) Index(c *fiber.Ctx) error {
 
 func (h *ComplaintHandler) publicIndex(c *fiber.Ctx, user *fiber.Map) error {
 	return h.inertiaService.Render(c, "app/Pengaduan", fiber.Map{
-		"user":    user,
-		"isAdmin": false,
+		"user":      user,
+		"isAdmin":   false,
+		"submitted": c.Query("success") == "true",
 	})
 }
 
@@ -108,18 +109,25 @@ func (h *ComplaintHandler) adminIndex(c *fiber.Ctx, user *fiber.Map) error {
 
 // Store — public submission.
 func (h *ComplaintHandler) Store(c *fiber.Ctx) error {
-	name := c.FormValue("name")
-	phone := c.FormValue("phone")
-	category := c.FormValue("category")
-	message := c.FormValue("message")
+	var input struct {
+		Name     string `json:"name"`
+		Phone    string `json:"phone"`
+		Category string `json:"category"`
+		Message  string `json:"message"`
+	}
+	if err := c.BodyParser(&input); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid input format",
+		})
+	}
 
-	if name == "" || message == "" {
+	if input.Name == "" || input.Message == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Nama dan pesan harus diisi",
 		})
 	}
 
-	_, err := h.complaintSvc.Create(c.Context(), name, "", phone, category, message)
+	_, err := h.complaintSvc.Create(c.Context(), input.Name, "", input.Phone, input.Category, input.Message)
 	if err != nil {
 		slog.Error("complaint create error", "err", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -137,12 +145,19 @@ func (h *ComplaintHandler) UpdateStatus(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid ID"})
 	}
 
-	status := c.FormValue("status")
-	response := c.FormValue("response")
+	var input struct {
+		Status   string `json:"status"`
+		Response string `json:"response"`
+	}
+	if err := c.BodyParser(&input); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid input format",
+		})
+	}
 
 	userID := c.Locals("user_id").(int64)
 
-	_, err = h.complaintSvc.UpdateStatus(c.Context(), id, status, response, userID)
+	_, err = h.complaintSvc.UpdateStatus(c.Context(), id, input.Status, input.Response, userID)
 	if err != nil {
 		slog.Error("complaint update error", "err", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{

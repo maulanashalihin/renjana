@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { router } from "@inertiajs/svelte";
     import AppLayout from "../../components/AppLayout.svelte";
     import PageHeader from "../../lib/components/PageHeader.svelte";
     import EmptyState from "../../lib/components/EmptyState.svelte";
@@ -44,16 +45,16 @@
         isAdmin?: boolean;
         complaints?: Pagination;
         stats?: ComplaintStats;
+        submitted?: boolean;
     }
 
-    let { user, isAdmin = false, complaints, stats }: Props = $props();
+    let { user, isAdmin = false, complaints, stats, submitted = false }: Props = $props();
 
     // Form state (public)
     let formName = $state("");
     let formPhone = $state("");
     let formCategory = $state("Lainnya");
     let formMessage = $state("");
-    let submitted = $state(false);
 
     // Admin state
     let activeTab = $state<string>("pending");
@@ -61,49 +62,37 @@
     let respondText = $state("");
     let loading = $state<number | null>(null);
 
-    function getCSRFToken(): string {
-        const name = "XSRF-TOKEN";
-        const value = `; ${document.cookie}`;
-        const parts = value.split(`; ${name}=`);
-        if (parts.length === 2) return decodeURIComponent(parts.pop()?.split(";").shift() ?? "");
-        return "";
+    function submitPengaduan(e: Event) {
+        e.preventDefault();
+        router.post("/pengaduan", {
+            name: formName,
+            phone: formPhone,
+            category: formCategory,
+            message: formMessage,
+        });
     }
 
-    async function markResolved(id: number) {
+    function markResolved(id: number) {
         loading = id;
-        try {
-            await fetch(`/pengaduan/${id}`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded",
-                    "X-XSRF-TOKEN": getCSRFToken(),
-                    "X-Requested-With": "XMLHttpRequest",
-                },
-                body: new URLSearchParams({ status: "resolved", response: "" }),
-            });
-            window.location.reload();
-        } catch {
-            loading = null;
-        }
+        router.put(`/pengaduan/${id}`, {
+            status: "resolved",
+            response: "",
+        }, {
+            onFinish: () => { loading = null; },
+        });
     }
 
-    async function submitResponse(id: number) {
+    function submitResponse(id: number) {
         loading = id;
-        try {
-            await fetch(`/pengaduan/${id}`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded",
-                    "X-XSRF-TOKEN": getCSRFToken(),
-                    "X-Requested-With": "XMLHttpRequest",
-                },
-                body: new URLSearchParams({ status: "processed", response: respondText }),
-            });
-            respondModal = null;
-            window.location.reload();
-        } catch {
-            loading = null;
-        }
+        router.put(`/pengaduan/${id}`, {
+            status: "processed",
+            response: respondText,
+        }, {
+            onFinish: () => {
+                respondModal = null;
+                loading = null;
+            },
+        });
     }
 
     const categories = ["Sarana", "Pelayanan", "Program", "Lainnya"];
@@ -225,7 +214,7 @@
                 <p class="text-emerald-600 dark:text-emerald-400">Terima kasih, pengaduan Anda akan segera kami proses.</p>
             </div>
         {:else}
-            <form method="POST" action="/pengaduan" class="max-w-2xl space-y-4">
+            <form onsubmit={submitPengaduan} class="max-w-2xl space-y-4">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Nama <span class="text-red-500">*</span></label>

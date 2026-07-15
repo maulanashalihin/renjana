@@ -30,7 +30,7 @@ func setupUserAdminTestDB(t *testing.T) (*queries.Querier, *UserAdminService) {
 	require.NoError(t, err)
 
 	q := queries.NewQuerier(db)
-	_ = cache.NewUserCache(0) // not used but ensures import
+	_ = cache.NewUserCache(nil, 0) // not used but ensures import
 	svc := NewUserAdminService(q)
 	return q, svc
 }

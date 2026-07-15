@@ -55,7 +55,7 @@ func setupTestApp(t *testing.T) (*fiber.App, *queries.Querier) {
 	authSvc := services.NewAuthService(querier, services.AuthServiceConfig{
 		SessionSecret: "test-secret-32-chars-long-for-testing!!",
 	})
-	userSvc := services.NewUserService(querier, cache.NewUserCache(5*time.Minute))
+	userSvc := services.NewUserService(querier, cache.NewUserCache(nil, 5*time.Minute))
 	inertiaSvc := services.NewInertiaService(services.NewAssetService("", "", false), store)
 
 	app := fiber.New()

@@ -1,0 +1,13 @@
+{
+  "concepts/agent-browser-testing": [],
+  "concepts/deployment": [],
+  "concepts/design-standards": [],
+  "concepts/environment-config": [],
+  "concepts/handler-structure": [],
+  "concepts/http-conventions": [],
+  "concepts/migration-convention": [],
+  "concepts/rbac-roles": [],
+  "concepts/svelte-conventions": [],
+  "concepts/three-tier-rule": [],
+  "sources/obs-2026-07-15-agents-md-simplified-and-llm-wiki-bootstrapped": []
+}

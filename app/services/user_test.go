@@ -29,7 +29,7 @@ func setupUserTestDB(t *testing.T) (*queries.Querier, *cache.UserCache, *UserSer
 	require.NoError(t, err)
 
 	q := queries.NewQuerier(db)
-	uc := cache.NewUserCache(5 * time.Minute)
+	uc := cache.NewUserCache(nil, 5*time.Minute)
 	svc := NewUserService(q, uc)
 	return q, uc, svc
 }

@@ -1,0 +1,82 @@
+{
+  "version": "1.0",
+  "last_updated": "2026-07-15T09:00:17.467Z",
+  "pages": {
+    "concepts/agent-browser-testing": {
+      "type": "page",
+      "title": "agent-browser-testing",
+      "created": "2026-07-15",
+      "updated": "2026-07-15"
+    },
+    "concepts/deployment": {
+      "type": "page",
+      "title": "deployment",
+      "created": "2026-07-15",
+      "updated": "2026-07-15"
+    },
+    "concepts/design-standards": {
+      "type": "page",
+      "title": "design-standards",
+      "created": "2026-07-15",
+      "updated": "2026-07-15"
+    },
+    "concepts/environment-config": {
+      "type": "page",
+      "title": "environment-config",
+      "created": "2026-07-15",
+      "updated": "2026-07-15"
+    },
+    "concepts/handler-structure": {
+      "type": "page",
+      "title": "handler-structure",
+      "created": "2026-07-15",
+      "updated": "2026-07-15"
+    },
+    "concepts/http-conventions": {
+      "type": "page",
+      "title": "http-conventions",
+      "created": "2026-07-15",
+      "updated": "2026-07-15"
+    },
+    "concepts/migration-convention": {
+      "type": "page",
+      "title": "migration-convention",
+      "created": "2026-07-15",
+      "updated": "2026-07-15"
+    },
+    "concepts/rbac-roles": {
+      "type": "page",
+      "title": "rbac-roles",
+      "created": "2026-07-15",
+      "updated": "2026-07-15"
+    },
+    "concepts/svelte-conventions": {
+      "type": "page",
+      "title": "svelte-conventions",
+      "created": "2026-07-15",
+      "updated": "2026-07-15"
+    },
+    "concepts/three-tier-rule": {
+      "type": "page",
+      "title": "three-tier-rule",
+      "created": "2026-07-15",
+      "updated": "2026-07-15"
+    },
+    "sources/obs-2026-07-15-agents-md-simplified-and-llm-wiki-bootstrapped": {
+      "type": "source",
+      "title": "\"Observation: AGENTS.md simplified and .llm-wiki bootstrapped\"",
+      "created": "2026-07-15",
+      "updated": "2026-07-15",
+      "slug": "obs-2026-07-15-agents-md-simplified-and-llm-wiki-bootstrapped",
+      "status": "observation",
+      "relevance": "high",
+      "observed_at": "2026-07-15T09:00:17.431Z",
+      "tags": [
+        "wiki",
+        "agents.md",
+        "documentation"
+      ],
+      "source_context": "\"Simplifying AGENTS.md and bootstrapping .llm-wiki\""
+    }
+  }
+}

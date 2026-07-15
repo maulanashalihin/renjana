@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { router } from "@inertiajs/svelte";
     import AppLayout from "../../components/AppLayout.svelte";
     import PageHeader from "../../lib/components/PageHeader.svelte";
     import EmptyState from "../../lib/components/EmptyState.svelte";
@@ -50,9 +51,10 @@
         surveys?: Pagination;
         stats?: SurveyStats;
         by_service?: ByService[];
+        submitted?: boolean;
     }
 
-    let { user, isAdmin = false, surveys, stats, by_service = [] }: Props = $props();
+    let { user, isAdmin = false, surveys, stats, by_service = [], submitted = false }: Props = $props();
 
     // Form state (public)
     let formName = $state("");
@@ -60,8 +62,18 @@
     let formService = $state("Pelayanan Administrasi");
     let formRating = $state<number>(0);
     let formFeedback = $state("");
-    let submitted = $state(false);
     let hoverRating = $state<number>(0);
+
+    function submitSurvey(e: Event) {
+        e.preventDefault();
+        router.post("/survey", {
+            name: formName,
+            phone: formPhone,
+            service_type: formService,
+            rating: formRating,
+            feedback: formFeedback,
+        });
+    }
 
     const serviceTypes = ["Pelayanan Administrasi", "Informasi Bencana", "Pelatihan", "Tanggap Darurat", "Lainnya"];
 
@@ -168,7 +180,7 @@
                     <p class="text-emerald-600 dark:text-emerald-400">Terima kasih atas partisipasi Anda dalam meningkatkan pelayanan RENJANA.</p>
                 </div>
             {:else}
-                <form method="POST" action="/survey" class="max-w-2xl space-y-5">
+                <form onsubmit={submitSurvey} class="max-w-2xl space-y-5">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Nama</label>

@@ -1,0 +1,13 @@
+{"timestamp":"2026-07-15T08:59:08.455Z","kind":"bootstrap","topic":"RENJANA — SPBE Disaster Management Platform","mode":"personal"}
+{"timestamp":"2026-07-15T08:59:18.713Z","kind":"ensure_page","page_type":"concept","title":"three-tier-rule","path":"concepts/three-tier-rule"}
+{"timestamp":"2026-07-15T08:59:18.713Z","kind":"ensure_page","page_type":"concept","title":"handler-structure","path":"concepts/handler-structure"}
+{"timestamp":"2026-07-15T08:59:18.748Z","kind":"ensure_page","page_type":"concept","title":"migration-convention","path":"concepts/migration-convention"}
+{"timestamp":"2026-07-15T08:59:18.749Z","kind":"ensure_page","page_type":"concept","title":"design-standards","path":"concepts/design-standards"}
+{"timestamp":"2026-07-15T08:59:31.847Z","kind":"ensure_page","page_type":"concept","title":"svelte-conventions","path":"concepts/svelte-conventions"}
+{"timestamp":"2026-07-15T08:59:31.848Z","kind":"ensure_page","page_type":"concept","title":"http-conventions","path":"concepts/http-conventions"}
+{"timestamp":"2026-07-15T08:59:31.883Z","kind":"ensure_page","page_type":"concept","title":"agent-browser-testing","path":"concepts/agent-browser-testing"}
+{"timestamp":"2026-07-15T08:59:31.883Z","kind":"ensure_page","page_type":"concept","title":"deployment","path":"concepts/deployment"}
+{"timestamp":"2026-07-15T08:59:31.883Z","kind":"ensure_page","page_type":"concept","title":"environment-config","path":"concepts/environment-config"}
+{"timestamp":"2026-07-15T09:00:03.089Z","kind":"ensure_page","page_type":"concept","title":"rbac-roles","path":"concepts/rbac-roles"}
+{"timestamp":"2026-07-15T09:00:03.306Z","kind":"lint","orphans":10,"missing_pages":0,"contradictions":0,"auto_fix":true}
+{"timestamp":"2026-07-15T09:00:17.431Z","kind":"observe","slug":"obs-2026-07-15-agents-md-simplified-and-llm-wiki-bootstrapped","title":"AGENTS.md simplified and .llm-wiki bootstrapped","relevance":"high"}
