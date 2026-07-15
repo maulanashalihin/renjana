@@ -75,6 +75,14 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Ensure storage directories exist for file uploads
+	for _, dir := range []string{"storage/avatars", "storage/media", "storage/documents"} {
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			slog.Error("failed to create storage directory", "dir", dir, "error", err)
+			os.Exit(1)
+		}
+	}
+
 	// Initialize querier
 	querier := queries.NewQuerier(db)
 
