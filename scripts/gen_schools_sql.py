@@ -26,13 +26,15 @@ KECAMATAN_MAP = {
 def detect_level(nama, nama_kec):
     up = nama.upper()
     # Must check specific prefixes in order
-    if up.startswith("SD ") or up.startswith("SDN ") or up.startswith("SDIT ") or up.startswith("SDTQ ") or up.startswith("SD "):
+    if up.startswith("SD ") or up.startswith("SDN ") or up.startswith("SDIT ") or up.startswith("SDTQ "):
         return "SD"
     if up.startswith("MI ") or up.startswith("MIN ") or up.startswith("MIS "):
         return "MI"
-    if up.startswith("SMP ") or up.startswith("SMPN ") or "SMP " in up[:10] or up.startswith("SMP IT") or up.startswith("SMP ISLAM"):
+    if up.startswith("SMP ") or up.startswith("SMPN ") or up.startswith("SMP IT") or up.startswith("SMP I"):
         return "SMP"
-    if up.startswith("MTs") or up.startswith("MTSS ") or up.startswith("MTsN "):
+    # CRITICAL: cek ORIGINAL name (bukan .upper()) karena 'MTs' punya s kecil
+    # .upper() ngubah 'MTs' jadi 'MTS' yang gak cocok sama pattern 'MTs'
+    if nama.startswith("MTs") or up.startswith("MTSS "):
         return "MTs"
     if up.startswith("SMA ") or up.startswith("SMAN ") or up.startswith("SMAIT ") or up.startswith("SMAS "):
         return "SMA"
