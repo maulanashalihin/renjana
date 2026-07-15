@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-07-15T09:25:56.288Z",
+  "last_updated": "2026-07-15T13:36:11.702Z",
   "pages": {
     "concepts/agent-browser-testing": {
       "type": "page",
@@ -87,6 +87,40 @@
       ],
       "source_context": "\"Simplifying AGENTS.md and bootstrapping .llm-wiki\""
     },
+    "sources/obs-2026-07-15-perubahan-usercache-session-diterapkan-ke-laju-go-boilerplat": {
+      "type": "source",
+      "title": "\"Observation: Perubahan UserCache→Session diterapkan ke laju-go boilerplate\"",
+      "created": "2026-07-15",
+      "updated": "2026-07-15",
+      "slug": "obs-2026-07-15-perubahan-usercache-session-diterapkan-ke-laju-go-boilerplat",
+      "status": "observation",
+      "relevance": "high",
+      "observed_at": "2026-07-15T13:36:11.654Z",
+      "tags": [
+        "cache",
+        "architecture",
+        "refactor",
+        "boilerplate"
+      ],
+      "source_context": "\"Mensinkronisasi boilerplate laju-go dengan perubahan arsitektur cache dari renjana\""
+    },
+    "sources/obs-2026-07-15-sessiondata-diperkaya-dengan-name-avatar-email-verified": {
+      "type": "source",
+      "title": "\"Observation: SessionData diperkaya dengan name, avatar, email_verified\"",
+      "created": "2026-07-15",
+      "updated": "2026-07-15",
+      "slug": "obs-2026-07-15-sessiondata-diperkaya-dengan-name-avatar-email-verified",
+      "status": "observation",
+      "relevance": "high",
+      "observed_at": "2026-07-15T13:30:46.856Z",
+      "tags": [
+        "session",
+        "auth",
+        "profile",
+        "refactor"
+      ],
+      "source_context": "\"Menambahkan field profil ke session data\""
+    },
     "sources/obs-2026-07-15-storage-directories-auto-created-at-startup": {
       "type": "source",
       "title": "\"Observation: Storage directories auto-created at startup\"",
@@ -102,6 +136,24 @@
         "upload"
       ],
       "source_context": "\"Debugging BeritaEditor upload failure\""
+    },
+    "sources/obs-2026-07-15-usercache-dihapus-data-profil-disimpan-di-session": {
+      "type": "source",
+      "title": "\"Observation: UserCache dihapus — data profil disimpan di Session\"",
+      "created": "2026-07-15",
+      "updated": "2026-07-15",
+      "slug": "obs-2026-07-15-usercache-dihapus-data-profil-disimpan-di-session",
+      "status": "observation",
+      "relevance": "high",
+      "observed_at": "2026-07-15T13:30:42.059Z",
+      "tags": [
+        "cache",
+        "nustdb",
+        "session",
+        "architecture",
+        "refactor"
+      ],
+      "source_context": "\"Menggabungkan data profil user ke session cache, menghapus UserCache\""
     }
   }
 }

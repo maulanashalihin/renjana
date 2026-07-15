@@ -57,3 +57,9 @@ docs/guide/cover.png
 docs/guide/panduan.html
 docs/guide/prompt-cover-chatgpt.md
 docs/guide/*.pdf
+
+# NutsDB cache data
+data/cache/
+
+# Compiled binary
+main

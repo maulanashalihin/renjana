@@ -7,7 +7,6 @@ import (
 
 	_ "modernc.org/sqlite"
 
-	"github.com/maulanashalihin/laju-go/app/cache"
 	"github.com/maulanashalihin/laju-go/app/models"
 	"github.com/maulanashalihin/laju-go/app/queries"
 	"github.com/stretchr/testify/assert"
@@ -30,7 +29,6 @@ func setupUserAdminTestDB(t *testing.T) (*queries.Querier, *UserAdminService) {
 	require.NoError(t, err)
 
 	q := queries.NewQuerier(db)
-	_ = cache.NewUserCache(nil, 0) // not used but ensures import
 	svc := NewUserAdminService(q)
 	return q, svc
 }

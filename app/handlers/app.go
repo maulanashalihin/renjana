@@ -37,16 +37,13 @@ func (h *AppHandler) Dashboard(c *fiber.Ctx) error {
 	sess, sessErr := h.store.Get(c)
 	if sessErr == nil {
 		if uid := sess.Get("user_id"); uid != nil {
-			rawUser, _ := h.userService.GetProfile(uid.(int64))
-			if rawUser != nil {
-				user = &models.User{
-					ID:            rawUser.ID,
-					Name:          rawUser.Name,
-					Email:         rawUser.Email,
-					Avatar:        rawUser.Avatar,
-					Role:          models.UserRole(rawUser.Role),
-					EmailVerified: rawUser.EmailVerified,
-				}
+			user = &models.User{
+				ID:            uid.(int64),
+				Name:          toStr(sess.Get("name")),
+				Email:         toStr(sess.Get("email")),
+				Avatar:        toStr(sess.Get("avatar")),
+				Role:          models.UserRole(toStr(sess.Get("role"))),
+				EmailVerified: toBool(sess.Get("email_verified")),
 			}
 		}
 	}
@@ -75,16 +72,22 @@ func (h *AppHandler) Dashboard(c *fiber.Ctx) error {
 // It parses the menu name from the request path itself (e.g. /app/profil -> "profil")
 // and renders the appropriate Inertia page.
 func (h *AppHandler) Menu(c *fiber.Ctx) error {
-	userID := c.Locals("user_id")
-	if userID == nil {
+	sess, sessErr := h.store.Get(c)
+	if sessErr != nil {
+		return c.Redirect("/login")
+	}
+	uid := sess.Get("user_id")
+	if uid == nil {
 		return c.Redirect("/login")
 	}
 
-	user, err := h.userService.GetProfile(userID.(int64))
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to load profile: " + err.Error(),
-		})
+	user := &models.UserResponse{
+		ID:            uid.(int64),
+		Name:          toStr(sess.Get("name")),
+		Email:         toStr(sess.Get("email")),
+		Avatar:        toStr(sess.Get("avatar")),
+		Role:          models.UserRole(toStr(sess.Get("role"))),
+		EmailVerified: toBool(sess.Get("email_verified")),
 	}
 
 	// Parse the menu from the URL path: /app/{menu}
@@ -140,16 +143,13 @@ func (h *AppHandler) Profile(c *fiber.Ctx) error {
 	sess, sessErr := h.store.Get(c)
 	if sessErr == nil {
 		if uid := sess.Get("user_id"); uid != nil {
-			rawUser, _ := h.userService.GetProfile(uid.(int64))
-			if rawUser != nil {
-				user = &models.User{
-					ID:            rawUser.ID,
-					Name:          rawUser.Name,
-					Email:         rawUser.Email,
-					Avatar:        rawUser.Avatar,
-					Role:          models.UserRole(rawUser.Role),
-					EmailVerified: rawUser.EmailVerified,
-				}
+			user = &models.User{
+				ID:            uid.(int64),
+				Name:          toStr(sess.Get("name")),
+				Email:         toStr(sess.Get("email")),
+				Avatar:        toStr(sess.Get("avatar")),
+				Role:          models.UserRole(toStr(sess.Get("role"))),
+				EmailVerified: toBool(sess.Get("email_verified")),
 			}
 		}
 	}
@@ -183,6 +183,16 @@ func (h *AppHandler) UpdateProfile(c *fiber.Ctx) error {
 			"error": "Failed to update profile",
 		})
 	}
+
+	// Sync session with updated name/avatar
+	sess, _ := h.store.Get(c)
+	if req.Name != "" {
+		sess.Set("name", user.Name)
+	}
+	if req.Avatar != "" {
+		sess.Set("avatar", user.Avatar)
+	}
+	sess.Save()
 
 	return h.inertiaService.Render(c, "app/Profile", fiber.Map{
 		"user":    user,
@@ -227,22 +237,49 @@ func (h *AppHandler) UpdatePassword(c *fiber.Ctx) error {
 	}
 
 	// Change password
-	err := h.userService.ChangePassword(userID.(int64), req.CurrentPassword, req.NewPassword)
-	if err != nil {
+	if err := h.userService.ChangePassword(userID.(int64), req.CurrentPassword, req.NewPassword); err != nil {
 		return h.inertiaService.Render(c, "app/Profile", fiber.Map{
 			"error": err.Error(),
 		})
 	}
 
-	user, err := h.userService.GetProfile(userID.(int64))
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to load profile",
-		})
+	// Build user from session after password change
+	sess, _ := h.store.Get(c)
+	user := &models.UserResponse{
+		ID:            userID.(int64),
+		Name:          toStr(sess.Get("name")),
+		Email:         toStr(sess.Get("email")),
+		Avatar:        toStr(sess.Get("avatar")),
+		Role:          models.UserRole(toStr(sess.Get("role"))),
+		EmailVerified: toBool(sess.Get("email_verified")),
 	}
 
 	return h.inertiaService.Render(c, "app/Profile", fiber.Map{
 		"user":    user,
 		"success": "Password changed successfully",
 	})
+}
+
+// toStr safely extracts a string from an interface{}, defaulting to empty string.
+func toStr(v interface{}) string {
+	if v == nil {
+		return ""
+	}
+	s, ok := v.(string)
+	if !ok {
+		return ""
+	}
+	return s
+}
+
+// toBool safely extracts a bool from an interface{}, defaulting to false.
+func toBool(v interface{}) bool {
+	if v == nil {
+		return false
+	}
+	b, ok := v.(bool)
+	if !ok {
+		return false
+	}
+	return b
 }

@@ -13,3 +13,6 @@
 {"timestamp":"2026-07-15T09:00:17.431Z","kind":"observe","slug":"obs-2026-07-15-agents-md-simplified-and-llm-wiki-bootstrapped","title":"AGENTS.md simplified and .llm-wiki bootstrapped","relevance":"high"}
 {"timestamp":"2026-07-15T09:17:03.787Z","kind":"observe","slug":"obs-2026-07-15-storage-directories-auto-created-at-startup","title":"Storage directories auto-created at startup","relevance":"medium"}
 {"timestamp":"2026-07-15T09:22:24.535Z","kind":"retro","slug":"deployment-read-all-before-action","title":"Deploy: baca semua config sebelum action","category":"devops"}
+{"timestamp":"2026-07-15T13:30:42.099Z","kind":"observe","slug":"obs-2026-07-15-usercache-dihapus-data-profil-disimpan-di-session","title":"UserCache dihapus — data profil disimpan di Session","relevance":"high"}
+{"timestamp":"2026-07-15T13:30:46.856Z","kind":"observe","slug":"obs-2026-07-15-sessiondata-diperkaya-dengan-name-avatar-email-verified","title":"SessionData diperkaya dengan name, avatar, email_verified","relevance":"high"}
+{"timestamp":"2026-07-15T13:36:11.655Z","kind":"observe","slug":"obs-2026-07-15-perubahan-usercache-session-diterapkan-ke-laju-go-boilerplat","title":"Perubahan UserCache→Session diterapkan ke laju-go boilerplate","relevance":"high"}

@@ -202,7 +202,10 @@ func (h *AuthHandler) GoogleLogin(c *fiber.Ctx) error {
 // Must be called BEFORE sess.Save().
 func populateSession(sess *session.Session, user *models.User) {
 	sess.Set("user_id", user.ID)
+	sess.Set("name", user.Name)
 	sess.Set("email", user.Email)
+	sess.Set("avatar", user.Avatar)
+	sess.Set("email_verified", user.EmailVerified)
 	sess.Set("role", string(user.Role))
 	if user.DistrictID.Valid {
 		sess.Set("district_id", user.DistrictID.Int64)

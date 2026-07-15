@@ -33,7 +33,6 @@ type Config struct {
 	SessionTTL time.Duration
 	// Cache
 	SessionCacheBuffer time.Duration
-	UserCacheTTL       time.Duration
 	NutsDBPath         string
 	// Argon2id
 	Argon2Memory     uint32 // KiB
@@ -70,7 +69,6 @@ func Load() *Config {
 		SessionTTL: getSessionTTL(),
 		// Cache
 		SessionCacheBuffer: getSessionCacheBuffer(),
-		UserCacheTTL:       getUserCacheTTL(),
 		NutsDBPath:         getEnv("NUTSDB_PATH", "./data/cache"),
 		// Argon2id
 		Argon2Memory:     getArgon2Memory(),
@@ -178,15 +176,4 @@ func getArgon2Threads() uint8 {
 		return 4
 	}
 	return uint8(v)
-}
-
-// getUserCacheTTL returns the user profile cache TTL from env.
-// Default: 15 minutes. Set to 0 to disable caching.
-func getUserCacheTTL() time.Duration {
-	val := getEnv("USER_CACHE_TTL", "15m")
-	d, err := time.ParseDuration(val)
-	if err != nil {
-		return 15 * time.Minute
-	}
-	return d
 }

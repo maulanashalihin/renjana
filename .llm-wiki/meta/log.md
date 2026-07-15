@@ -47,3 +47,12 @@
 ## [2026-07-15T09:22:24.535Z] retro
 - slug: "deployment-read-all-before-action", title: "Deploy: baca semua config sebelum action", category: "devops"
 
+## [2026-07-15T13:30:42.099Z] observe
+- slug: "obs-2026-07-15-usercache-dihapus-data-profil-disimpan-di-session", title: "UserCache dihapus — data profil disimpan di Session", relevance: "high"
+
+## [2026-07-15T13:30:46.856Z] observe
+- slug: "obs-2026-07-15-sessiondata-diperkaya-dengan-name-avatar-email-verified", title: "SessionData diperkaya dengan name, avatar, email_verified", relevance: "high"
+
+## [2026-07-15T13:36:11.655Z] observe
+- slug: "obs-2026-07-15-perubahan-usercache-session-diterapkan-ke-laju-go-boilerplat", title: "Perubahan UserCache→Session diterapkan ke laju-go boilerplate", relevance: "high"
+

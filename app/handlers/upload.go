@@ -162,6 +162,10 @@ func (h *UploadHandler) handleUpload(c *fiber.Ctx, purpose string) error {
 				"error": "Failed to update avatar",
 			})
 		}
+
+		// Sync session with new avatar URL
+		sess.Set("avatar", url)
+		sess.Save()
 	}
 
 	slog.Info("upload success", "purpose", purpose, "url", url, "size", file.Size)

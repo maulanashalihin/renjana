@@ -4,18 +4,16 @@ import (
 	"context"
 	"database/sql"
 	"testing"
-	"time"
 
 	_ "modernc.org/sqlite"
 
-	"github.com/maulanashalihin/laju-go/app/cache"
 	"github.com/maulanashalihin/laju-go/app/models"
 	"github.com/maulanashalihin/laju-go/app/queries"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func setupUserTestDB(t *testing.T) (*queries.Querier, *cache.UserCache, *UserService) {
+func setupUserTestDB(t *testing.T) (*queries.Querier, *UserService) {
 	t.Helper()
 	db, err := sql.Open("sqlite", ":memory:?_pragma=journal_mode(WAL)")
 	require.NoError(t, err)
@@ -29,9 +27,8 @@ func setupUserTestDB(t *testing.T) (*queries.Querier, *cache.UserCache, *UserSer
 	require.NoError(t, err)
 
 	q := queries.NewQuerier(db)
-	uc := cache.NewUserCache(nil, 5*time.Minute)
-	svc := NewUserService(q, uc)
-	return q, uc, svc
+	svc := NewUserService(q)
+	return q, svc
 }
 
 func createTestUser(t *testing.T, q *queries.Querier, email, name string) *models.User {
@@ -51,17 +48,15 @@ func createTestUser(t *testing.T, q *queries.Querier, email, name string) *model
 }
 
 func TestUserServiceGetProfile(t *testing.T) {
-	_, _, svc := setupUserTestDB(t)
+	_, svc := setupUserTestDB(t)
 
 	// GetProfile needs a real user in DB
-	result, err := svc.GetProfile(0)
+	_, err := svc.GetProfile(0)
 	assert.Error(t, err)
-	// Not found is fine — validates error propagation
-	_ = result
 }
 
 func TestUserServiceGetProfileByEmail(t *testing.T) {
-	q, _, svc := setupUserTestDB(t)
+	q, svc := setupUserTestDB(t)
 	_ = createTestUser(t, q, "find@example.com", "Find Me")
 
 	user, err := svc.GetProfileByEmail("find@example.com")
@@ -73,7 +68,7 @@ func TestUserServiceGetProfileByEmail(t *testing.T) {
 }
 
 func TestUserServiceUpdatePassword(t *testing.T) {
-	q, _, svc := setupUserTestDB(t)
+	q, svc := setupUserTestDB(t)
 	user := createTestUser(t, q, "pass@example.com", "Pass User")
 
 	newHash, err := hashPassword("newpassword")
@@ -89,7 +84,7 @@ func TestUserServiceUpdatePassword(t *testing.T) {
 }
 
 func TestUserServiceUpdateAvatar(t *testing.T) {
-	q, _, svc := setupUserTestDB(t)
+	q, svc := setupUserTestDB(t)
 	user := createTestUser(t, q, "avatar@example.com", "Avatar User")
 
 	err := svc.UpdateAvatar(user.ID, "/storage/avatars/test.jpg")
@@ -101,7 +96,7 @@ func TestUserServiceUpdateAvatar(t *testing.T) {
 }
 
 func TestUserServiceUpdateProfile(t *testing.T) {
-	q, _, svc := setupUserTestDB(t)
+	q, svc := setupUserTestDB(t)
 	user := createTestUser(t, q, "profile@example.com", "Original Name")
 
 	resp, err := svc.UpdateProfile(user.ID, models.UpdateProfileRequest{
@@ -112,7 +107,7 @@ func TestUserServiceUpdateProfile(t *testing.T) {
 }
 
 func TestUserServiceChangePassword(t *testing.T) {
-	q, _, svc := setupUserTestDB(t)
+	q, svc := setupUserTestDB(t)
 	user := createTestUser(t, q, "changepass@example.com", "Change Pass")
 
 	// Correct old password
@@ -138,7 +133,7 @@ func TestUserServiceChangePassword(t *testing.T) {
 }
 
 func TestUserServiceDeleteAccount(t *testing.T) {
-	q, _, svc := setupUserTestDB(t)
+	q, svc := setupUserTestDB(t)
 	user := createTestUser(t, q, "delete@example.com", "Delete Me")
 
 	err := svc.DeleteAccount(user.ID)
@@ -149,7 +144,7 @@ func TestUserServiceDeleteAccount(t *testing.T) {
 }
 
 func TestUserServiceIsAdmin(t *testing.T) {
-	q, uc, svc := setupUserTestDB(t)
+	q, svc := setupUserTestDB(t)
 	user := createTestUser(t, q, "admincheck@example.com", "Admin Check")
 
 	// Default user
@@ -157,8 +152,7 @@ func TestUserServiceIsAdmin(t *testing.T) {
 	require.NoError(t, err)
 	assert.False(t, isAdmin)
 
-	// Set admin — also invalidate cache so IsAdmin re-reads from DB
-	uc.Invalidate(user.ID)
+	// Set admin
 	err = q.SetUserRoleAdmin(context.Background(), user.ID)
 	require.NoError(t, err)
 

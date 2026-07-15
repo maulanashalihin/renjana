@@ -11,5 +11,8 @@
   "concepts/three-tier-rule": [],
   "sources/deployment-read-all-before-action": [],
   "sources/obs-2026-07-15-agents-md-simplified-and-llm-wiki-bootstrapped": [],
-  "sources/obs-2026-07-15-storage-directories-auto-created-at-startup": []
+  "sources/obs-2026-07-15-perubahan-usercache-session-diterapkan-ke-laju-go-boilerplat": [],
+  "sources/obs-2026-07-15-sessiondata-diperkaya-dengan-name-avatar-email-verified": [],
+  "sources/obs-2026-07-15-storage-directories-auto-created-at-startup": [],
+  "sources/obs-2026-07-15-usercache-dihapus-data-profil-disimpan-di-session": []
 }

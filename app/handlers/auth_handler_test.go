@@ -12,7 +12,6 @@ import (
 	_ "modernc.org/sqlite"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/maulanashalihin/laju-go/app/cache"
 	"github.com/maulanashalihin/laju-go/app/models"
 	"github.com/maulanashalihin/laju-go/app/queries"
 	"github.com/maulanashalihin/laju-go/app/services"
@@ -55,7 +54,7 @@ func setupTestApp(t *testing.T) (*fiber.App, *queries.Querier) {
 	authSvc := services.NewAuthService(querier, services.AuthServiceConfig{
 		SessionSecret: "test-secret-32-chars-long-for-testing!!",
 	})
-	userSvc := services.NewUserService(querier, cache.NewUserCache(nil, 5*time.Minute))
+	userSvc := services.NewUserService(querier)
 	inertiaSvc := services.NewInertiaService(services.NewAssetService("", "", false), store)
 
 	app := fiber.New()

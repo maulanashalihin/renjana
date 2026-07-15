@@ -19,7 +19,10 @@
 
 - [[sources/deployment-read-all-before-action]] — "Deploy: baca semua config sebelum action" *(created: 2026-07-15)*
 - [[sources/obs-2026-07-15-agents-md-simplified-and-llm-wiki-bootstrapped]] — "Observation: AGENTS.md simplified and .llm-wiki bootstrapped" *(created: 2026-07-15)*
+- [[sources/obs-2026-07-15-perubahan-usercache-session-diterapkan-ke-laju-go-boilerplat]] — "Observation: Perubahan UserCache→Session diterapkan ke laju-go boilerplate" *(created: 2026-07-15)*
+- [[sources/obs-2026-07-15-sessiondata-diperkaya-dengan-name-avatar-email-verified]] — "Observation: SessionData diperkaya dengan name, avatar, email_verified" *(created: 2026-07-15)*
 - [[sources/obs-2026-07-15-storage-directories-auto-created-at-startup]] — "Observation: Storage directories auto-created at startup" *(created: 2026-07-15)*
+- [[sources/obs-2026-07-15-usercache-dihapus-data-profil-disimpan-di-session]] — "Observation: UserCache dihapus — data profil disimpan di Session" *(created: 2026-07-15)*
 
 ---
-*Last updated: 2026-07-15T09:25:56.288Z* | *Total pages: 13*
+*Last updated: 2026-07-15T13:36:11.702Z* | *Total pages: 16*
