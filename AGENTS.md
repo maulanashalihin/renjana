@@ -83,7 +83,7 @@ CREATE TABLE password_resets (...);
 Alasan:
 
 1. **Isolasi migrasi** — Jika migrasi `sessions` gagal, tabel `users` tetap ter-migrasi. Dengan satu file besar, semua gagal.
-2. **Rollback granular** — `goose down` bisa rollback tabel spesifik.
+2. **Rollback granular** — `go run github.com/pressly/goose/v3/cmd/goose@latest down` bisa rollback tabel spesifik.
 3. **History jelas** — Setiap tabel punya timestamp migrasi sendiri.
 4. **sqlc schema source** — sqlc membaca `migrations/` untuk schema. File terpisah = lebih mudah di-debug.
 

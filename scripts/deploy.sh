@@ -21,7 +21,7 @@ npm run build:all
 
 # 4. Migrate (if new migrations exist)
 echo "🗄️  Migrating DB..."
-~/go/bin/goose -dir migrations sqlite ./data/app.db up 2>&1
+go run github.com/pressly/goose/v3/cmd/goose@latest -dir migrations sqlite ./data/app.db up 2>&1
 
 # 5. Restart service
 echo "🔄 Restarting service..."
@@ -32,9 +32,9 @@ sleep 1
 ACTIVE=$(systemctl is-active renjana.service)
 echo ""
 if [ "$ACTIVE" = "active" ]; then
-    echo "✅ Deploy success! renjana.service is $ACTIVE"
-    curl -s -o /dev/null -w "   HTTP %{http_code} — https://renjana.maulanabuilds.com\n" https://renjana.maulanabuilds.com
+	echo "✅ Deploy success! renjana.service is $ACTIVE"
+	curl -s -o /dev/null -w "   HTTP %{http_code} — https://renjana.maulanabuilds.com\n" https://renjana.maulanabuilds.com
 else
-    echo "❌ Service is $ACTIVE — check journalctl -u renjana.service"
-    exit 1
+	echo "❌ Service is $ACTIVE — check journalctl -u renjana.service"
+	exit 1
 fi
