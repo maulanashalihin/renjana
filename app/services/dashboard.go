@@ -292,9 +292,7 @@ func (s *DashboardService) getActivityBreakdown(ctx context.Context) ([]Activity
 }
 
 func (s *DashboardService) getAchievementsForCurrentYear(ctx context.Context) ([]Achievement, error) {
-	// Use the most recent year available. Until query supports MAX(),
-	// hardcode 2024 — matches seed data and is a stable default.
-	const year int64 = 2024
+	const year int64 = 2025
 
 	rows, err := s.querier.GetAchievementsByYear(ctx, year)
 	if err != nil {
