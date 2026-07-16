@@ -24,6 +24,8 @@
 - [[sources/obs-2026-07-15-storage-directories-auto-created-at-startup]] — "Observation: Storage directories auto-created at startup" *(created: 2026-07-15)*
 - [[sources/obs-2026-07-15-usercache-dihapus-data-profil-disimpan-di-session]] — "Observation: UserCache dihapus — data profil disimpan di Session" *(created: 2026-07-15)*
 - [[sources/obs-2026-07-16-14-item-perbaikan-renjana-selesai-diverifikasi]] — "Observation: 14 item perbaikan RENJANA selesai diverifikasi" *(created: 2026-07-16)*
+- [[sources/obs-2026-07-16-bpbd-tanah-bumbu-logos-added-to-certificate]] — "Observation: BPBD & Tanah Bumbu logos added to certificate" *(created: 2026-07-16)*
+- [[sources/obs-2026-07-16-complaint-ticket-dark-mode-fix-implemented]] — "Observation: Complaint ticket & dark mode fix implemented" *(created: 2026-07-16)*
 
 ---
-*Last updated: 2026-07-16T02:01:18.874Z* | *Total pages: 17*
+*Last updated: 2026-07-16T06:53:40.558Z* | *Total pages: 19*

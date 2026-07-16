@@ -82,6 +82,16 @@ type RenjanaComplaint struct {
 	RespondedBy sql.NullInt64  `json:"responded_by"`
 	RespondedAt sql.NullTime   `json:"responded_at"`
 	CreatedAt   time.Time      `json:"created_at"`
+	Token       sql.NullString `json:"token"`
+}
+
+type RenjanaComplaintMessage struct {
+	ID          int64     `json:"id"`
+	ComplaintID int64     `json:"complaint_id"`
+	SenderType  string    `json:"sender_type"`
+	SenderName  string    `json:"sender_name"`
+	Message     string    `json:"message"`
+	CreatedAt   time.Time `json:"created_at"`
 }
 
 type RenjanaContact struct {

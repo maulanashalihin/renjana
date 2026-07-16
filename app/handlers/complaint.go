@@ -99,11 +99,16 @@ func (h *ComplaintHandler) adminIndex(c *fiber.Ctx, user *fiber.Map) error {
 
 	stats, _ := h.complaintSvc.GetStats(c.Context())
 
+	// Get resolved complaints for report
+	resolvedPage, _ := strconv.Atoi(c.Query("resolved_page", "1"))
+	resolvedResult, _ := h.complaintSvc.ListResolved(c.Context(), resolvedPage, 20)
+
 	return h.inertiaService.Render(c, "app/Pengaduan", fiber.Map{
 		"user":       user,
 		"isAdmin":    true,
 		"complaints": result,
 		"stats":      stats,
+		"resolved":   resolvedResult,
 	})
 }
 
@@ -127,7 +132,17 @@ func (h *ComplaintHandler) Store(c *fiber.Ctx) error {
 		})
 	}
 
-	_, err := h.complaintSvc.Create(c.Context(), input.Name, "", input.Phone, input.Category, input.Message)
+	// Generate unique token for ticket URL
+	token, err := h.complaintSvc.GenerateToken()
+	if err != nil {
+		slog.Error("token generation error", "err", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Gagal membuat tiket pengaduan",
+		})
+	}
+
+	// Create complaint with token
+	complaint, err := h.complaintSvc.Create(c.Context(), input.Name, "", input.Phone, input.Category, input.Message, token)
 	if err != nil {
 		slog.Error("complaint create error", "err", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -135,7 +150,141 @@ func (h *ComplaintHandler) Store(c *fiber.Ctx) error {
 		})
 	}
 
-	return c.Redirect("/pengaduan?success=true", fiber.StatusSeeOther)
+	// Add the initial complaint message as the first message in the conversation
+	_, err = h.complaintSvc.AddMessage(c.Context(), complaint.ID, "user", input.Name, input.Message)
+	if err != nil {
+		slog.Error("failed to add initial message", "err", err)
+	}
+
+	// Redirect to the ticket page
+	return c.Redirect("/pengaduan/tiket/"+token, fiber.StatusSeeOther)
+}
+
+// ShowTicket — display a complaint ticket with conversation.
+func (h *ComplaintHandler) ShowTicket(c *fiber.Ctx) error {
+	token := c.Params("token")
+	if token == "" {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Token tidak ditemukan"})
+	}
+
+	complaint, err := h.complaintSvc.GetByToken(c.Context(), token)
+	if err != nil {
+		slog.Error("get complaint by token error", "err", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Gagal memuat pengaduan: " + err.Error(),
+		})
+	}
+	if complaint == nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Pengaduan tidak ditemukan"})
+	}
+
+	// Get messages
+	messages, err := h.complaintSvc.GetMessages(c.Context(), complaint.ID)
+	if err != nil {
+		slog.Error("get messages error", "err", err)
+		messages = []services.ComplaintMessageItem{}
+	}
+
+	user := h.getUser(c)
+	isAdmin := false
+	if user != nil {
+		if role, ok := (*user)["role"].(string); ok {
+			isAdmin = role == "admin"
+		}
+	}
+
+	return h.inertiaService.Render(c, "app/PengaduanTicket", fiber.Map{
+		"user":      user,
+		"isAdmin":   isAdmin,
+		"complaint": complaint,
+		"messages":  messages,
+	})
+}
+
+// AddReply — add a message to the complaint conversation (via ticket).
+func (h *ComplaintHandler) AddReply(c *fiber.Ctx) error {
+	token := c.Params("token")
+	if token == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Token diperlukan"})
+	}
+
+	complaint, err := h.complaintSvc.GetByToken(c.Context(), token)
+	if err != nil || complaint == nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Pengaduan tidak ditemukan"})
+	}
+
+	var input struct {
+		SenderName string `json:"sender_name"`
+		Message    string `json:"message"`
+	}
+	if err := c.BodyParser(&input); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid input format",
+		})
+	}
+
+	if input.Message == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Pesan harus diisi",
+		})
+	}
+
+	// Determine sender type and name
+	senderType := "user"
+	senderName := input.SenderName
+
+	user := h.getUser(c)
+	isAdmin := false
+	if user != nil {
+		if role, ok := (*user)["role"].(string); ok {
+			isAdmin = role == "admin"
+		}
+		if isAdmin {
+			senderType = "admin"
+			if name, ok := (*user)["name"].(string); ok && name != "" {
+				senderName = name
+			} else {
+				senderName = "Admin"
+			}
+		}
+	}
+
+	if senderName == "" {
+		senderName = "Pengguna"
+	}
+
+	_, err = h.complaintSvc.AddMessage(c.Context(), complaint.ID, senderType, senderName, input.Message)
+	if err != nil {
+		slog.Error("add reply error", "err", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Gagal mengirim balasan",
+		})
+	}
+
+	return c.Redirect("/pengaduan/tiket/"+token, fiber.StatusSeeOther)
+}
+
+// PublicResolve — user marks complaint as resolved via ticket.
+func (h *ComplaintHandler) PublicResolve(c *fiber.Ctx) error {
+	token := c.Params("token")
+	if token == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Token diperlukan"})
+	}
+
+	complaint, err := h.complaintSvc.GetByToken(c.Context(), token)
+	if err != nil || complaint == nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Pengaduan tidak ditemukan"})
+	}
+
+	_, err = h.complaintSvc.ResolveByUser(c.Context(), complaint.ID)
+	if err != nil {
+		slog.Error("resolve by user error", "err", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Gagal menyelesaikan pengaduan",
+		})
+	}
+
+	return c.Redirect("/pengaduan/tiket/"+token, fiber.StatusSeeOther)
 }
 
 // UpdateStatus — admin respond/resolve.
@@ -163,6 +312,19 @@ func (h *ComplaintHandler) UpdateStatus(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Gagal memperbarui pengaduan: " + err.Error(),
 		})
+	}
+
+	// Also add the response as a message in the conversation thread
+	if input.Response != "" {
+		user, _ := h.querier.GetUserByID(c.Context(), userID)
+		adminName := "Admin"
+		if user != nil && user.Name != "" {
+			adminName = user.Name
+		}
+		_, err = h.complaintSvc.AddMessage(c.Context(), id, "admin", adminName, input.Response)
+		if err != nil {
+			slog.Error("failed to add admin response as message", "err", err)
+		}
 	}
 
 	return c.Redirect("/pengaduan", fiber.StatusSeeOther)

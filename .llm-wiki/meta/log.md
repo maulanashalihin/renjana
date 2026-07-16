@@ -59,3 +59,9 @@
 ## [2026-07-16T02:01:18.826Z] observe
 - slug: "obs-2026-07-16-14-item-perbaikan-renjana-selesai-diverifikasi", title: "14 item perbaikan RENJANA selesai diverifikasi", relevance: "high"
 
+## [2026-07-16T06:52:15.134Z] observe
+- slug: "obs-2026-07-16-complaint-ticket-dark-mode-fix-implemented", title: "Complaint ticket & dark mode fix implemented", relevance: "high"
+
+## [2026-07-16T06:53:40.508Z] observe
+- slug: "obs-2026-07-16-bpbd-tanah-bumbu-logos-added-to-certificate", title: "BPBD & Tanah Bumbu logos added to certificate", relevance: "medium"
+

@@ -3,7 +3,7 @@
     import AppLayout from "../../components/AppLayout.svelte";
     import PageHeader from "../../lib/components/PageHeader.svelte";
     import EmptyState from "../../lib/components/EmptyState.svelte";
-    import { MessageSquareWarning, Send, CheckCircle2 } from "lucide-svelte";
+    import { MessageSquareWarning, Send, CheckCircle2, ExternalLink, FileText } from "lucide-svelte";
 
     interface AppUser {
         id: number;
@@ -22,6 +22,7 @@
         message: string;
         status: string;
         response?: string;
+        token?: string;
         responded_by?: number;
         responded_at?: string;
         created_at: string;
@@ -45,16 +46,22 @@
         isAdmin?: boolean;
         complaints?: Pagination;
         stats?: ComplaintStats;
+        resolved?: Pagination;
         submitted?: boolean;
     }
 
-    let { user, isAdmin = false, complaints, stats, submitted = false }: Props = $props();
+    let { user, isAdmin = false, complaints, stats, resolved, submitted = false }: Props = $props();
 
-    // Form state (public)
-    let formName = $state("");
+    // Form state (public) — load name from localStorage
+    let formName = $state(localStorage.getItem("pengaduan_name") ?? "");
     let formPhone = $state("");
     let formCategory = $state("Lainnya");
     let formMessage = $state("");
+
+    // Save name to localStorage whenever it changes
+    $effect(() => {
+        if (formName) localStorage.setItem("pengaduan_name", formName);
+    });
 
     // Admin state
     let activeTab = $state<string>("pending");
@@ -105,6 +112,7 @@
 
     const items = $derived(complaints?.data ?? []);
     const filtered = $derived(activeTab === "all" ? items : items.filter(c => c.status === activeTab));
+    const resolvedItems = $derived(resolved?.data ?? []);
 </script>
 
 <AppLayout {user} pageTitle="Pengaduan" pageSubtitle="Sampaikan pengaduan, saran, atau masukan" activeMenu="Pengaduan">
@@ -135,14 +143,63 @@
         {/if}
 
         <div class="flex flex-wrap items-center gap-2 mb-4">
-            {#each ["pending", "processed", "resolved", "all"] as tab}
+            {#each ["pending", "processed", "resolved", "all", "laporan"] as tab}
                 <button onclick={() => activeTab = tab} class="px-3 py-1.5 rounded-lg text-xs font-medium border transition {activeTab === tab ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 border-transparent' : 'bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-700'}">
-                    {tab === "pending" ? "Pending" : tab === "processed" ? "Diproses" : tab === "resolved" ? "Selesai" : "Semua"}
+                    {tab === "pending" ? "Pending" : tab === "processed" ? "Diproses" : tab === "resolved" ? "Selesai" : tab === "all" ? "Semua" : "📋 Laporan"}
                 </button>
             {/each}
         </div>
 
-        {#if filtered.length > 0}
+        {#if activeTab === "laporan"}
+            <!-- Laporan Selesai -->
+            <div class="rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 mb-6">
+                <div class="flex items-center gap-2 mb-4">
+                    <FileText class="w-5 h-5 text-emerald-500" />
+                    <h2 class="text-base font-bold text-neutral-900 dark:text-white">Laporan Pengaduan Selesai</h2>
+                </div>
+
+                {#if resolvedItems.length > 0}
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="border-b border-neutral-200 dark:border-neutral-700">
+                                    <th class="text-left py-3 px-2 font-semibold text-neutral-600 dark:text-neutral-400">No. Tiket</th>
+                                    <th class="text-left py-3 px-2 font-semibold text-neutral-600 dark:text-neutral-400">Nama</th>
+                                    <th class="text-left py-3 px-2 font-semibold text-neutral-600 dark:text-neutral-400">Kategori</th>
+                                    <th class="text-left py-3 px-2 font-semibold text-neutral-600 dark:text-neutral-400">Keluhan</th>
+                                    <th class="text-left py-3 px-2 font-semibold text-neutral-600 dark:text-neutral-400">Respon Admin</th>
+                                    <th class="text-left py-3 px-2 font-semibold text-neutral-600 dark:text-neutral-400">Tanggal Selesai</th>
+                                    <th class="text-left py-3 px-2 font-semibold text-neutral-600 dark:text-neutral-400">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {#each resolvedItems as item}
+                                    <tr class="border-b border-neutral-100 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
+                                        <td class="py-3 px-2 font-mono text-xs text-neutral-700 dark:text-neutral-300">{item.token || "-"}</td>
+                                        <td class="py-3 px-2 font-medium text-neutral-900 dark:text-white">{item.name}</td>
+                                        <td class="py-3 px-2 text-neutral-600 dark:text-neutral-400">{item.category}</td>
+                                        <td class="py-3 px-2 text-neutral-600 dark:text-neutral-400 max-w-[200px] truncate">{item.message}</td>
+                                        <td class="py-3 px-2 text-neutral-600 dark:text-neutral-400 max-w-[200px] truncate">{item.response || "-"}</td>
+                                        <td class="py-3 px-2 text-neutral-500 dark:text-neutral-400 text-xs">
+                                            {item.responded_at ? new Date(item.responded_at).toLocaleDateString("id-ID") : "-"}
+                                        </td>
+                                        <td class="py-3 px-2">
+                                            {#if item.token}
+                                                <a href={`/pengaduan/tiket/${item.token}`} class="inline-flex items-center gap-1 text-renjana-500 hover:text-renjana-600 text-xs font-medium transition">
+                                                    <ExternalLink class="w-3 h-3" /> Tiket
+                                                </a>
+                                            {/if}
+                                        </td>
+                                    </tr>
+                                {/each}
+                            </tbody>
+                        </table>
+                    </div>
+                {:else}
+                    <p class="text-sm text-neutral-500 dark:text-neutral-400 text-center py-4">Belum ada pengaduan yang selesai.</p>
+                {/if}
+            </div>
+        {:else if filtered.length > 0}
             <div class="space-y-3">
                 {#each filtered as complaint}
                     {@const colors = statusColors[complaint.status] || { bg: "bg-neutral-100 dark:bg-neutral-800", text: "text-neutral-700 dark:text-neutral-300" }}
@@ -152,13 +209,23 @@
                                 <p class="font-semibold text-neutral-900 dark:text-white">{complaint.name}</p>
                                 <p class="text-xs text-neutral-500 dark:text-neutral-400">{complaint.email}{#if complaint.phone} · {complaint.phone}{/if}</p>
                             </div>
-                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold {colors.bg} {colors.text}">
-                                {complaint.status === "pending" ? "Pending" : complaint.status === "processed" ? "Diproses" : "Selesai"}
-                            </span>
+                            <div class="flex items-center gap-2">
+                                {#if complaint.token}
+                                    <a href={`/pengaduan/tiket/${complaint.token}`} class="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium text-renjana-500 hover:bg-renjana-50 dark:hover:bg-renjana-900/20 transition">
+                                        <ExternalLink class="w-3 h-3" /> Tiket
+                                    </a>
+                                {/if}
+                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold {colors.bg} {colors.text}">
+                                    {complaint.status === "pending" ? "Pending" : complaint.status === "processed" ? "Diproses" : "Selesai"}
+                                </span>
+                            </div>
                         </div>
                         <div class="flex items-center gap-2 mb-2">
                             <span class="text-xs px-2 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">{complaint.category}</span>
                             <span class="text-xs text-neutral-400">{new Date(complaint.created_at).toLocaleDateString("id-ID")}</span>
+                            {#if complaint.token}
+                                <span class="text-xs font-mono text-neutral-400">#{complaint.token}</span>
+                            {/if}
                         </div>
                         <p class="text-sm text-neutral-700 dark:text-neutral-300 mb-3">{complaint.message}</p>
                         {#if complaint.response}
@@ -189,10 +256,13 @@
                     <h3 class="text-lg font-bold text-neutral-900 dark:text-white mb-4">Respon Pengaduan</h3>
                     <p class="text-sm text-neutral-500 dark:text-neutral-400 mb-4">
                         Dari: <strong>{respondModal.name}</strong> · {respondModal.category}
+                        {#if respondModal.token}
+                            · Tiket: <span class="font-mono">#{respondModal.token}</span>
+                        {/if}
                     </p>
                     <p class="text-sm text-neutral-700 dark:text-neutral-300 mb-4 bg-neutral-50 dark:bg-neutral-800 p-3 rounded-lg">{respondModal.message}</p>
                     <div>
-                        <textarea bind:value={respondText} rows={4} disabled={loading !== null} class="w-full px-3 py-2.5 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none mb-4" placeholder="Tulis respon..."></textarea>
+                        <textarea bind:value={respondText} rows={4} disabled={loading !== null} class="w-full px-3 py-2.5 rounded-lg bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none mb-4 placeholder-neutral-400 dark:placeholder-neutral-500" placeholder="Tulis respon..."></textarea>
                         <div class="flex gap-2 justify-end">
                             <button onclick={() => { if (loading === null) respondModal = null; }} disabled={loading !== null} class="px-4 py-2 rounded-lg text-sm font-medium border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition">Batal</button>
                             <button onclick={() => submitResponse(respondModal!.id)} disabled={loading !== null} class="px-4 py-2 rounded-lg bg-renjana-500 hover:bg-renjana-600 disabled:bg-neutral-400 text-white text-sm font-semibold transition">
@@ -219,17 +289,17 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Nama <span class="text-red-500">*</span></label>
-                        <input type="text" name="name" bind:value={formName} required class="w-full px-3 py-2.5 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" placeholder="Nama lengkap" />
+                        <input type="text" name="name" bind:value={formName} required class="w-full px-3 py-2.5 rounded-lg bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none placeholder-neutral-400 dark:placeholder-neutral-500" placeholder="Nama lengkap" />
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">No. HP <span class="text-red-500">*</span></label>
-                        <input type="tel" name="phone" bind:value={formPhone} required class="w-full px-3 py-2.5 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" placeholder="08xxxxxxxxxx" />
+                        <input type="tel" name="phone" bind:value={formPhone} required class="w-full px-3 py-2.5 rounded-lg bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none placeholder-neutral-400 dark:placeholder-neutral-500" placeholder="08xxxxxxxxxx" />
                     </div>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Kategori <span class="text-red-500">*</span></label>
-                        <select name="category" bind:value={formCategory} class="w-full px-3 py-2.5 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none">
+                        <select name="category" bind:value={formCategory} class="w-full px-3 py-2.5 rounded-lg bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none">
                             {#each categories as cat}
                                 <option value={cat}>{cat}</option>
                             {/each}
@@ -238,7 +308,7 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Pesan <span class="text-red-500">*</span></label>
-                    <textarea name="message" bind:value={formMessage} required rows={5} class="w-full px-3 py-2.5 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" placeholder="Tulis pengaduan, saran, atau masukan Anda..."></textarea>
+                    <textarea name="message" bind:value={formMessage} required rows={5} class="w-full px-3 py-2.5 rounded-lg bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none placeholder-neutral-400 dark:placeholder-neutral-500" placeholder="Tulis pengaduan, saran, atau masukan Anda..."></textarea>
                 </div>
                 <button type="submit" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg bg-renjana-500 hover:bg-renjana-600 text-white text-sm font-semibold transition">
                     <Send class="w-4 h-4" /> Kirim Pengaduan

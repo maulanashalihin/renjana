@@ -104,6 +104,11 @@ func setupPublicFormRoutes(app *fiber.App, complaintHandler *handlers.ComplaintH
 	app.Get("/pengaduan", complaintHandler.Index)
 	app.Post("/pengaduan", complaintHandler.Store)
 
+	// Tiket pengaduan — ticket view, replies (public, no auth required)
+	app.Get("/pengaduan/tiket/:token", complaintHandler.ShowTicket)
+	app.Post("/pengaduan/tiket/:token/reply", complaintHandler.AddReply)
+	app.Put("/pengaduan/tiket/:token/resolve", complaintHandler.PublicResolve)
+
 	// Survey Pelayanan Publik — public submit, admin results
 	app.Get("/survey", surveyHandler.Index)
 	app.Post("/survey", surveyHandler.Store)

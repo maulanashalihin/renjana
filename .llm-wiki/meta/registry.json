@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-07-16T02:01:18.874Z",
+  "last_updated": "2026-07-16T06:53:40.558Z",
   "pages": {
     "concepts/agent-browser-testing": {
       "type": "page",
@@ -164,6 +164,40 @@
       "status": "observation",
       "relevance": "high",
       "observed_at": "2026-07-16T02:01:18.826Z"
+    },
+    "sources/obs-2026-07-16-bpbd-tanah-bumbu-logos-added-to-certificate": {
+      "type": "source",
+      "title": "\"Observation: BPBD & Tanah Bumbu logos added to certificate\"",
+      "created": "2026-07-16",
+      "updated": "2026-07-16",
+      "slug": "obs-2026-07-16-bpbd-tanah-bumbu-logos-added-to-certificate",
+      "status": "observation",
+      "relevance": "medium",
+      "observed_at": "2026-07-16T06:53:40.508Z",
+      "tags": [
+        "assets",
+        "images",
+        "certificate",
+        "logos"
+      ],
+      "source_context": "\"Adding BPBD and Tanah Bumbu logos to EdukasiCertificate.svelte\""
+    },
+    "sources/obs-2026-07-16-complaint-ticket-dark-mode-fix-implemented": {
+      "type": "source",
+      "title": "\"Observation: Complaint ticket & dark mode fix implemented\"",
+      "created": "2026-07-16",
+      "updated": "2026-07-16",
+      "slug": "obs-2026-07-16-complaint-ticket-dark-mode-fix-implemented",
+      "status": "observation",
+      "relevance": "high",
+      "observed_at": "2026-07-16T06:52:15.133Z",
+      "tags": [
+        "pengaduan",
+        "complaint",
+        "ticket",
+        "dark-mode",
+        "conversation"
+      ]
     }
   }
 }

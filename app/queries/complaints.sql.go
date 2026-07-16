@@ -10,6 +10,38 @@ import (
 	"database/sql"
 )
 
+const addComplaintMessage = `-- name: AddComplaintMessage :one
+INSERT INTO renjana_complaint_messages (complaint_id, sender_type, sender_name, message)
+VALUES (?1, ?2, ?3, ?4)
+RETURNING id, complaint_id, sender_type, sender_name, message, created_at
+`
+
+type AddComplaintMessageParams struct {
+	ComplaintID int64  `json:"complaint_id"`
+	SenderType  string `json:"sender_type"`
+	SenderName  string `json:"sender_name"`
+	Message     string `json:"message"`
+}
+
+func (q *Queries) AddComplaintMessage(ctx context.Context, arg AddComplaintMessageParams) (RenjanaComplaintMessage, error) {
+	row := q.db.QueryRowContext(ctx, addComplaintMessage,
+		arg.ComplaintID,
+		arg.SenderType,
+		arg.SenderName,
+		arg.Message,
+	)
+	var i RenjanaComplaintMessage
+	err := row.Scan(
+		&i.ID,
+		&i.ComplaintID,
+		&i.SenderType,
+		&i.SenderName,
+		&i.Message,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const countComplaints = `-- name: CountComplaints :one
 SELECT COUNT(*) AS total
 FROM renjana_complaints
@@ -22,10 +54,23 @@ func (q *Queries) CountComplaints(ctx context.Context) (int64, error) {
 	return total, err
 }
 
+const countResolvedComplaints = `-- name: CountResolvedComplaints :one
+SELECT COUNT(*) AS total
+FROM renjana_complaints
+WHERE status = 'resolved'
+`
+
+func (q *Queries) CountResolvedComplaints(ctx context.Context) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countResolvedComplaints)
+	var total int64
+	err := row.Scan(&total)
+	return total, err
+}
+
 const createComplaint = `-- name: CreateComplaint :one
-INSERT INTO renjana_complaints (name, email, phone, category, message)
-VALUES (?1, ?2, ?3, ?4, ?5)
-RETURNING id, name, email, phone, category, message, status, response, responded_by, responded_at, created_at
+INSERT INTO renjana_complaints (name, email, phone, category, message, token)
+VALUES (?1, ?2, ?3, ?4, ?5, ?6)
+RETURNING id, name, email, phone, category, message, status, response, responded_by, responded_at, created_at, token
 `
 
 type CreateComplaintParams struct {
@@ -34,6 +79,7 @@ type CreateComplaintParams struct {
 	Phone    sql.NullString `json:"phone"`
 	Category string         `json:"category"`
 	Message  string         `json:"message"`
+	Token    sql.NullString `json:"token"`
 }
 
 func (q *Queries) CreateComplaint(ctx context.Context, arg CreateComplaintParams) (RenjanaComplaint, error) {
@@ -43,6 +89,7 @@ func (q *Queries) CreateComplaint(ctx context.Context, arg CreateComplaintParams
 		arg.Phone,
 		arg.Category,
 		arg.Message,
+		arg.Token,
 	)
 	var i RenjanaComplaint
 	err := row.Scan(
@@ -57,6 +104,7 @@ func (q *Queries) CreateComplaint(ctx context.Context, arg CreateComplaintParams
 		&i.RespondedBy,
 		&i.RespondedAt,
 		&i.CreatedAt,
+		&i.Token,
 	)
 	return i, err
 }
@@ -71,7 +119,7 @@ func (q *Queries) DeleteComplaint(ctx context.Context, id int64) error {
 }
 
 const getComplaintByID = `-- name: GetComplaintByID :one
-SELECT id, name, email, phone, category, message, status, response, responded_by, responded_at, created_at
+SELECT id, name, email, phone, category, message, status, response, responded_by, responded_at, created_at, token
 FROM renjana_complaints
 WHERE id = ?
 `
@@ -91,6 +139,33 @@ func (q *Queries) GetComplaintByID(ctx context.Context, id int64) (RenjanaCompla
 		&i.RespondedBy,
 		&i.RespondedAt,
 		&i.CreatedAt,
+		&i.Token,
+	)
+	return i, err
+}
+
+const getComplaintByToken = `-- name: GetComplaintByToken :one
+SELECT id, name, email, phone, category, message, status, response, responded_by, responded_at, created_at, token
+FROM renjana_complaints
+WHERE token = ?
+`
+
+func (q *Queries) GetComplaintByToken(ctx context.Context, token sql.NullString) (RenjanaComplaint, error) {
+	row := q.db.QueryRowContext(ctx, getComplaintByToken, token)
+	var i RenjanaComplaint
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Email,
+		&i.Phone,
+		&i.Category,
+		&i.Message,
+		&i.Status,
+		&i.Response,
+		&i.RespondedBy,
+		&i.RespondedAt,
+		&i.CreatedAt,
+		&i.Token,
 	)
 	return i, err
 }
@@ -123,8 +198,45 @@ func (q *Queries) GetComplaintStats(ctx context.Context) (GetComplaintStatsRow, 
 	return i, err
 }
 
+const listComplaintMessages = `-- name: ListComplaintMessages :many
+SELECT id, complaint_id, sender_type, sender_name, message, created_at
+FROM renjana_complaint_messages
+WHERE complaint_id = ?1
+ORDER BY created_at ASC
+`
+
+func (q *Queries) ListComplaintMessages(ctx context.Context, complaintID int64) ([]RenjanaComplaintMessage, error) {
+	rows, err := q.db.QueryContext(ctx, listComplaintMessages, complaintID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []RenjanaComplaintMessage
+	for rows.Next() {
+		var i RenjanaComplaintMessage
+		if err := rows.Scan(
+			&i.ID,
+			&i.ComplaintID,
+			&i.SenderType,
+			&i.SenderName,
+			&i.Message,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listComplaintsPaginated = `-- name: ListComplaintsPaginated :many
-SELECT id, name, email, phone, category, message, status, response, responded_by, responded_at, created_at
+SELECT id, name, email, phone, category, message, status, response, responded_by, responded_at, created_at, token
 FROM renjana_complaints
 ORDER BY created_at DESC
 LIMIT ?1 OFFSET ?2
@@ -156,6 +268,7 @@ func (q *Queries) ListComplaintsPaginated(ctx context.Context, arg ListComplaint
 			&i.RespondedBy,
 			&i.RespondedAt,
 			&i.CreatedAt,
+			&i.Token,
 		); err != nil {
 			return nil, err
 		}
@@ -170,11 +283,87 @@ func (q *Queries) ListComplaintsPaginated(ctx context.Context, arg ListComplaint
 	return items, nil
 }
 
+const listResolvedComplaints = `-- name: ListResolvedComplaints :many
+SELECT id, name, email, phone, category, message, status, response, responded_by, responded_at, created_at, token
+FROM renjana_complaints
+WHERE status = 'resolved'
+ORDER BY responded_at DESC
+LIMIT ?1 OFFSET ?2
+`
+
+type ListResolvedComplaintsParams struct {
+	Limit  int64 `json:"limit"`
+	Offset int64 `json:"offset"`
+}
+
+func (q *Queries) ListResolvedComplaints(ctx context.Context, arg ListResolvedComplaintsParams) ([]RenjanaComplaint, error) {
+	rows, err := q.db.QueryContext(ctx, listResolvedComplaints, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []RenjanaComplaint
+	for rows.Next() {
+		var i RenjanaComplaint
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Email,
+			&i.Phone,
+			&i.Category,
+			&i.Message,
+			&i.Status,
+			&i.Response,
+			&i.RespondedBy,
+			&i.RespondedAt,
+			&i.CreatedAt,
+			&i.Token,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const resolveComplaint = `-- name: ResolveComplaint :one
+UPDATE renjana_complaints
+SET status = 'resolved', responded_at = CURRENT_TIMESTAMP
+WHERE id = ?1
+RETURNING id, name, email, phone, category, message, status, response, responded_by, responded_at, created_at, token
+`
+
+func (q *Queries) ResolveComplaint(ctx context.Context, id int64) (RenjanaComplaint, error) {
+	row := q.db.QueryRowContext(ctx, resolveComplaint, id)
+	var i RenjanaComplaint
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Email,
+		&i.Phone,
+		&i.Category,
+		&i.Message,
+		&i.Status,
+		&i.Response,
+		&i.RespondedBy,
+		&i.RespondedAt,
+		&i.CreatedAt,
+		&i.Token,
+	)
+	return i, err
+}
+
 const updateComplaintStatus = `-- name: UpdateComplaintStatus :one
 UPDATE renjana_complaints
 SET status = ?2, response = ?3, responded_by = ?4, responded_at = CURRENT_TIMESTAMP
 WHERE id = ?1
-RETURNING id, name, email, phone, category, message, status, response, responded_by, responded_at, created_at
+RETURNING id, name, email, phone, category, message, status, response, responded_by, responded_at, created_at, token
 `
 
 type UpdateComplaintStatusParams struct {
@@ -204,6 +393,7 @@ func (q *Queries) UpdateComplaintStatus(ctx context.Context, arg UpdateComplaint
 		&i.RespondedBy,
 		&i.RespondedAt,
 		&i.CreatedAt,
+		&i.Token,
 	)
 	return i, err
 }
