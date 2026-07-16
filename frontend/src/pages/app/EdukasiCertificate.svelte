@@ -113,11 +113,6 @@
                             <img src="/public/img/bpbd-logo.webp" alt="BPBD" class="sl" />
                             <p>BPBD Kab. Tanah Bumbu</p>
                         </div>
-                        <div class="fc">
-                            <div class="sign-line"></div>
-                            <p class="sign-title">Kepala Pelaksana</p>
-                            <p class="sign-org">BPBD Kab. Tanah Bumbu</p>
-                        </div>
                     </div>
                     <div class="vfy">
                         <p>Sertifikat ini dapat diverifikasi di:</p>
@@ -236,20 +231,12 @@
 
     /* ── Footer ── */
     .foot { border-top: 1px solid #f0f0f0; padding: 1.25rem 2.5rem 1.5rem; }
-    .frow { display: flex; align-items: flex-end; justify-content: center; gap: 2.5rem; }
+    .frow { display: flex; align-items: center; justify-content: center; gap: 3rem; }
     .fc { text-align: center; }
     .fc p { font-size: 10px; color: #a3a3a3; margin-top: 0.3rem; }
     .qr { width: 96px; height: 96px; }
     .qr-ph { width: 96px; height: 96px; background: #fafafa; border: 1px solid #e5e5e5; }
     .sl { width: 60px; height: 60px; opacity: 0.4; }
-
-    .sign-line {
-        width: 120px; height: 0;
-        border-top: 1.5px solid #262626;
-        margin: 0 auto 0.4rem;
-    }
-    .sign-title { font-size: 10px; color: #262626; font-weight: 600; }
-    .sign-org   { font-size: 9px; color: #737373; }
 
     .vfy { text-align: center; margin-top: 0.75rem; }
     .vfy p { font-size: 10px; color: #a3a3a3; margin-bottom: 0.15rem; }
