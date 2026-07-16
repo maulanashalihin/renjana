@@ -1,6 +1,6 @@
 <script lang="ts">
     import AppLayout from "../../components/AppLayout.svelte";
-    import { ArrowLeft, Calendar, Share2, Check, Bookmark, MessageCircle } from "lucide-svelte";
+    import { ArrowLeft, Calendar, Share2, Check, Bookmark, MessageCircle, Eye } from "lucide-svelte";
     import { inertia } from "@inertiajs/svelte";
     import MarkdownIt from "markdown-it";
     const md = new MarkdownIt({ breaks: true, linkify: true });
@@ -25,6 +25,7 @@
         published_at: string;
         is_published: boolean;
         created_at: string;
+        view_count: number;
     }
 
     interface Props {
@@ -132,6 +133,10 @@
                 <span class="flex items-center gap-1.5">
                     <Calendar class="w-4 h-4" />
                     {dateLong(announcement.published_at)}
+                </span>
+                <span class="flex items-center gap-1.5">
+                    <Eye class="w-4 h-4" />
+                    {announcement.view_count.toLocaleString("id-ID")} dilihat
                 </span>
                 <div class="flex items-center gap-2">
                     <button

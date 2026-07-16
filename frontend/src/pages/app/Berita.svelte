@@ -2,8 +2,8 @@
     import AppLayout from "../../components/AppLayout.svelte";
     import PageHeader from "../../lib/components/PageHeader.svelte";
     import EmptyState from "../../lib/components/EmptyState.svelte";
-    import { Newspaper, Search, Calendar, Sparkles, Plus, Pencil, Trash2, Clock } from "lucide-svelte";
-    import { inertia } from "@inertiajs/svelte";
+    import { Newspaper, Search, Calendar, Sparkles, Plus, Pencil, Trash2, Clock, Eye } from "lucide-svelte";
+    import { inertia, router } from "@inertiajs/svelte";
 
     interface User {
         id: number;
@@ -25,6 +25,7 @@
         published_at: string;
         is_published: boolean;
         created_at: string;
+        view_count: number;
     }
 
     interface Pagination {
@@ -111,11 +112,7 @@
 
     function handleDelete(id: number) {
         if (!confirm("Hapus berita ini?")) return;
-        const form = document.createElement("form");
-        form.method = "POST";
-        form.action = `/berita/${id}?_method=DELETE`;
-        document.body.appendChild(form);
-        form.submit();
+        router.delete(`/berita/${id}`);
     }
 
     // First item is featured, rest are regular
@@ -229,6 +226,10 @@
                         <Clock class="w-3.5 h-3.5" />
                         {readMinutes(f.body)} menit baca
                     </span>
+                    <span class="flex items-center gap-1.5">
+                        <Eye class="w-3.5 h-3.5" />
+                        {f.view_count.toLocaleString("id-ID")} dilihat
+                    </span>
                 </div>
             </div>
             {#if user?.role === "admin"}
@@ -286,6 +287,10 @@
                             <span class="flex items-center gap-1">
                                 <Clock class="w-3 h-3" />
                                 {readMinutes(b.body)} menit
+                            </span>
+                            <span class="flex items-center gap-1">
+                                <Eye class="w-3 h-3" />
+                                {b.view_count.toLocaleString("id-ID")}
                             </span>
                         </div>
                         <h3 class="text-lg sm:text-xl font-bold tracking-tight text-neutral-900 dark:text-white mb-2 leading-snug group-hover:text-renjana-600 dark:group-hover:text-renjana-400 transition-colors line-clamp-2">

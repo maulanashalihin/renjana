@@ -6,7 +6,7 @@ ORDER BY published_at DESC
 LIMIT 1;
 
 -- name: GetLatestPublishedAnnouncements :many
-SELECT id, title, excerpt, published_at, is_published, created_at
+SELECT id, title, excerpt, cover_url, published_at, is_published, created_at
 FROM renjana_announcements
 WHERE is_published = 1
 ORDER BY published_at DESC
@@ -16,15 +16,18 @@ LIMIT ?;
 -- CRUD queries for Berita page
 -- ============================================================================
 
+-- name: IncrementAnnouncementView :exec
+UPDATE renjana_announcements SET view_count = view_count + 1 WHERE id = ?;
+
 -- name: GetAnnouncementByID :one
 SELECT id, title, excerpt, category, slug, body, cover_url, author_id,
-       published_at, is_published, created_at
+       published_at, is_published, created_at, view_count
 FROM renjana_announcements
 WHERE id = ?;
 
 -- name: ListAnnouncementsPaginated :many
 SELECT id, title, excerpt, category, slug, body, cover_url, author_id,
-       published_at, is_published, created_at
+       published_at, is_published, created_at, view_count
 FROM renjana_announcements
 WHERE (?1 IS NULL OR ?1 = ''
        OR title LIKE '%' || ?1 || '%'
@@ -45,9 +48,9 @@ WHERE (?1 IS NULL OR ?1 = ''
 
 -- name: CreateAnnouncement :one
 INSERT INTO renjana_announcements (
-    title, excerpt, category, slug, body, cover_url, author_id, published_at, is_published
+    title, excerpt, category, slug, body, cover_url, author_id, published_at, is_published, view_count
 )
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
 RETURNING id;
 
 -- name: UpdateAnnouncement :execrows

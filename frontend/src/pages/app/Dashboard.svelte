@@ -76,6 +76,7 @@
         id: number;
         title: string;
         excerpt: string;
+        cover_url: string;
         published_at: string;
     }
 
@@ -211,6 +212,7 @@
                 year: "numeric",
             }),
             excerpt: a.excerpt,
+            cover_url: a.cover_url,
         }))
     );
 

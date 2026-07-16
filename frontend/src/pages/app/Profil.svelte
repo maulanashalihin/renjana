@@ -53,19 +53,47 @@
     let editing = $state(false);
     let activeTab = $state<"tentang" | "kontak" | "sosial">("tentang");
 
+    // Local writable state for form fields (bound via bind:value)
+    let formVision = $state(organization?.vision ?? "");
+    let formMission = $state(organization?.mission ?? "");
+    let formHistory = $state(organization?.history ?? "");
+    let formStructure = $state(organization?.structure ?? "");
+    let formEmail = $state(organization?.contact_email ?? "");
+    let formPhone = $state(organization?.contact_phone ?? "");
+    let formAddress = $state(organization?.address ?? "");
+    let formInstagram = $state(organization?.social_instagram ?? "");
+    let formTiktok = $state(organization?.social_tiktok ?? "");
+    let formYoutube = $state(organization?.social_youtube ?? "");
+
+    // Sync form fields when not editing and organization changes
+    $effect(() => {
+        if (!editing && organization) {
+            formVision = organization.vision;
+            formMission = organization.mission;
+            formHistory = organization.history;
+            formStructure = organization.structure;
+            formEmail = organization.contact_email;
+            formPhone = organization.contact_phone;
+            formAddress = organization.address;
+            formInstagram = organization.social_instagram;
+            formTiktok = organization.social_tiktok;
+            formYoutube = organization.social_youtube;
+        }
+    });
+
     function submitEdit(e: Event) {
         e.preventDefault();
         router.post("/profil", {
-            vision: org.vision,
-            mission: org.mission,
-            history: org.history,
-            structure: org.structure,
-            contact_email: org.contact_email,
-            contact_phone: org.contact_phone,
-            address: org.address,
-            social_instagram: org.social_instagram,
-            social_tiktok: org.social_tiktok,
-            social_youtube: org.social_youtube,
+            vision: formVision,
+            mission: formMission,
+            history: formHistory,
+            structure: formStructure,
+            contact_email: formEmail,
+            contact_phone: formPhone,
+            address: formAddress,
+            social_instagram: formInstagram,
+            social_tiktok: formTiktok,
+            social_youtube: formYoutube,
         }, {
             onSuccess: () => { editing = false; },
         });
@@ -177,19 +205,19 @@
                     <div class="space-y-4">
                         <div>
                             <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Visi</label>
-                            <textarea name="vision" rows="3" class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none resize-none">{org.vision}</textarea>
+                            <textarea name="vision" rows="3" bind:value={formVision} class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none resize-none"></textarea>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Misi (satu per baris)</label>
-                            <textarea name="mission" rows="5" class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none resize-none">{org.mission}</textarea>
+                            <textarea name="mission" rows="5" bind:value={formMission} class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none resize-none"></textarea>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Sejarah</label>
-                            <textarea name="history" rows="4" class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none resize-none">{org.history}</textarea>
+                            <textarea name="history" rows="4" bind:value={formHistory} class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none resize-none"></textarea>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Struktur / Mitra (satu per baris)</label>
-                            <textarea name="structure" rows="4" class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none resize-none">{org.structure}</textarea>
+                            <textarea name="structure" rows="4" bind:value={formStructure} class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none resize-none"></textarea>
                         </div>
                     </div>
                 {:else if activeTab === "kontak"}
@@ -197,31 +225,31 @@
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Email</label>
-                                <input type="email" name="contact_email" value={org.contact_email} class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
+                                <input type="email" name="contact_email" bind:value={formEmail} class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Telepon</label>
-                                <input type="tel" name="contact_phone" value={org.contact_phone} class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
+                                <input type="tel" name="contact_phone" bind:value={formPhone} class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
                             </div>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Alamat</label>
-                            <textarea name="address" rows="3" class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none resize-none">{org.address}</textarea>
+                            <textarea name="address" rows="3" bind:value={formAddress} class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none resize-none"></textarea>
                         </div>
                     </div>
                 {:else}
                     <div class="space-y-4">
                         <div>
                             <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Instagram</label>
-                            <input type="text" name="social_instagram" value={org.social_instagram} placeholder="@renjana" class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
+                            <input type="text" name="social_instagram" bind:value={formInstagram} placeholder="@renjana" class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">TikTok</label>
-                            <input type="text" name="social_tiktok" value={org.social_tiktok} placeholder="@renjana" class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
+                            <input type="text" name="social_tiktok" bind:value={formTiktok} placeholder="@renjana" class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">YouTube</label>
-                            <input type="text" name="social_youtube" value={org.social_youtube} class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
+                            <input type="text" name="social_youtube" bind:value={formYoutube} class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
                         </div>
                     </div>
                 {/if}

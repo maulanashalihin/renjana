@@ -20,7 +20,7 @@ func setupAnnouncementTestDB(t *testing.T) *queries.Querier {
 
 	_, err = db.Exec(`
 		CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT NOT NULL UNIQUE, name TEXT NOT NULL, password TEXT, avatar TEXT DEFAULT '', role TEXT NOT NULL DEFAULT 'user', google_id TEXT UNIQUE, email_verified BOOLEAN NOT NULL DEFAULT 0, district_id INTEGER, volunteer_id INTEGER, is_active BOOLEAN NOT NULL DEFAULT 1, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP);
-		CREATE TABLE IF NOT EXISTS renjana_announcements (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, excerpt TEXT NOT NULL, published_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, is_published BOOLEAN NOT NULL DEFAULT 1, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, category TEXT NOT NULL DEFAULT 'Pengumuman', slug TEXT, body TEXT, cover_url TEXT, author_id INTEGER REFERENCES users(id));
+		CREATE TABLE IF NOT EXISTS renjana_announcements (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, excerpt TEXT NOT NULL, published_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, is_published BOOLEAN NOT NULL DEFAULT 1, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, category TEXT NOT NULL DEFAULT 'Pengumuman', slug TEXT, body TEXT, cover_url TEXT, author_id INTEGER REFERENCES users(id), view_count INTEGER NOT NULL DEFAULT 0);
 		CREATE INDEX idx_renjana_announcements_published ON renjana_announcements(is_published, published_at DESC);
 		CREATE INDEX idx_renjana_announcements_slug ON renjana_announcements(slug);
 	`)

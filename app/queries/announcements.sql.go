@@ -36,9 +36,9 @@ func (q *Queries) CountAnnouncementsFiltered(ctx context.Context, arg CountAnnou
 
 const createAnnouncement = `-- name: CreateAnnouncement :one
 INSERT INTO renjana_announcements (
-    title, excerpt, category, slug, body, cover_url, author_id, published_at, is_published
+    title, excerpt, category, slug, body, cover_url, author_id, published_at, is_published, view_count
 )
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
 RETURNING id
 `
 
@@ -84,16 +84,12 @@ func (q *Queries) DeleteAnnouncement(ctx context.Context, id int64) (int64, erro
 }
 
 const getAnnouncementByID = `-- name: GetAnnouncementByID :one
-
 SELECT id, title, excerpt, category, slug, body, cover_url, author_id,
-       published_at, is_published, created_at
+       published_at, is_published, created_at, view_count
 FROM renjana_announcements
 WHERE id = ?
 `
 
-// ============================================================================
-// CRUD queries for Berita page
-// ============================================================================
 func (q *Queries) GetAnnouncementByID(ctx context.Context, id int64) (RenjanaAnnouncement, error) {
 	row := q.db.QueryRowContext(ctx, getAnnouncementByID, id)
 	var i RenjanaAnnouncement
@@ -109,6 +105,7 @@ func (q *Queries) GetAnnouncementByID(ctx context.Context, id int64) (RenjanaAnn
 		&i.PublishedAt,
 		&i.IsPublished,
 		&i.CreatedAt,
+		&i.ViewCount,
 	)
 	return i, err
 }
@@ -145,7 +142,7 @@ func (q *Queries) GetLatestPublishedAnnouncement(ctx context.Context) (GetLatest
 }
 
 const getLatestPublishedAnnouncements = `-- name: GetLatestPublishedAnnouncements :many
-SELECT id, title, excerpt, published_at, is_published, created_at
+SELECT id, title, excerpt, cover_url, published_at, is_published, created_at
 FROM renjana_announcements
 WHERE is_published = 1
 ORDER BY published_at DESC
@@ -153,12 +150,13 @@ LIMIT ?
 `
 
 type GetLatestPublishedAnnouncementsRow struct {
-	ID          int64     `json:"id"`
-	Title       string    `json:"title"`
-	Excerpt     string    `json:"excerpt"`
-	PublishedAt time.Time `json:"published_at"`
-	IsPublished bool      `json:"is_published"`
-	CreatedAt   time.Time `json:"created_at"`
+	ID          int64          `json:"id"`
+	Title       string         `json:"title"`
+	Excerpt     string         `json:"excerpt"`
+	CoverUrl    sql.NullString `json:"cover_url"`
+	PublishedAt time.Time      `json:"published_at"`
+	IsPublished bool           `json:"is_published"`
+	CreatedAt   time.Time      `json:"created_at"`
 }
 
 func (q *Queries) GetLatestPublishedAnnouncements(ctx context.Context, limit int64) ([]GetLatestPublishedAnnouncementsRow, error) {
@@ -174,6 +172,7 @@ func (q *Queries) GetLatestPublishedAnnouncements(ctx context.Context, limit int
 			&i.ID,
 			&i.Title,
 			&i.Excerpt,
+			&i.CoverUrl,
 			&i.PublishedAt,
 			&i.IsPublished,
 			&i.CreatedAt,
@@ -191,9 +190,22 @@ func (q *Queries) GetLatestPublishedAnnouncements(ctx context.Context, limit int
 	return items, nil
 }
 
+const incrementAnnouncementView = `-- name: IncrementAnnouncementView :exec
+
+UPDATE renjana_announcements SET view_count = view_count + 1 WHERE id = ?
+`
+
+// ============================================================================
+// CRUD queries for Berita page
+// ============================================================================
+func (q *Queries) IncrementAnnouncementView(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, incrementAnnouncementView, id)
+	return err
+}
+
 const listAnnouncementsPaginated = `-- name: ListAnnouncementsPaginated :many
 SELECT id, title, excerpt, category, slug, body, cover_url, author_id,
-       published_at, is_published, created_at
+       published_at, is_published, created_at, view_count
 FROM renjana_announcements
 WHERE (?1 IS NULL OR ?1 = ''
        OR title LIKE '%' || ?1 || '%'
@@ -239,6 +251,7 @@ func (q *Queries) ListAnnouncementsPaginated(ctx context.Context, arg ListAnnoun
 			&i.PublishedAt,
 			&i.IsPublished,
 			&i.CreatedAt,
+			&i.ViewCount,
 		); err != nil {
 			return nil, err
 		}

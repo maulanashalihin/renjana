@@ -58,6 +58,7 @@ type RenjanaAnnouncement struct {
 	PublishedAt time.Time      `json:"published_at"`
 	IsPublished bool           `json:"is_published"`
 	CreatedAt   time.Time      `json:"created_at"`
+	ViewCount   int64          `json:"view_count"`
 }
 
 type RenjanaCertificate struct {

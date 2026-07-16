@@ -67,7 +67,8 @@
     let search = $state(current_search);
     let districtFilter = $state(current_district);
     let statusFilter = $state<"all" | "aktif" | "nonaktif">(current_status as any || "all");
-    let appFilter = $state<"all" | "pending" | "approved" | "rejected">(current_app_status as any || "all");
+    // application_status filter removed per request — pending users are hidden by default
+    let appFilter = $state<"approved" | "rejected">(current_app_status as any || "approved");
 
     let actionType = $state<"create" | "edit" | "">("");
     let editTarget = $state<Volunteer | null>(null);
@@ -93,7 +94,7 @@
         if (search) params.set("search", search);
         if (districtFilter) params.set("district_id", String(districtFilter));
         if (statusFilter !== "all") params.set("status", statusFilter);
-        if (appFilter !== "all") params.set("application_status", appFilter);
+        params.set("application_status", appFilter);
         return params.toString();
     }
 
@@ -106,7 +107,7 @@
         search = "";
         districtFilter = 0;
         statusFilter = "all";
-        appFilter = "all";
+        appFilter = "approved";
         window.location.href = "/relawan";
     }
 
@@ -208,16 +209,9 @@
                     <option value="nonaktif">Nonaktif</option>
                 </select>
             </div>
-            <div class="relative">
-                <select bind:value={appFilter} onchange={applyFilter} class="pl-3 pr-8 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm appearance-none cursor-pointer focus:border-renjana-500 outline-none min-w-[140px]">
-                    <option value="all">Semua Aplikasi</option>
-                    <option value="approved">Approved</option>
-                    <option value="pending">Pending</option>
-                    <option value="rejected">Rejected</option>
-                </select>
-            </div>
+            <!-- application_status filter removed per request -->
             <button onclick={applyFilter} class="px-3 py-2.5 rounded-lg bg-renjana-500 hover:bg-renjana-600 text-white text-sm font-semibold transition">Cari</button>
-            {#if search || districtFilter || statusFilter !== "all" || appFilter !== "all"}
+            {#if search || districtFilter || statusFilter !== "all" || appFilter !== "approved"}
                 <button onclick={resetFilter} class="px-3 py-2.5 rounded-lg text-sm font-medium border border-neutral-200 dark:border-neutral-700 hover:border-renjana-500 transition">Reset</button>
             {/if}
         </div>

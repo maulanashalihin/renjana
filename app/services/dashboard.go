@@ -86,6 +86,7 @@ type Announcement struct {
 	ID          int64     `json:"id"`
 	Title       string    `json:"title"`
 	Excerpt     string    `json:"excerpt"`
+	CoverURL    string    `json:"cover_url"`
 	PublishedAt time.Time `json:"published_at"`
 }
 
@@ -181,10 +182,15 @@ func (s *DashboardService) GetDashboardData(ctx context.Context) (*DashboardResp
 	anns, err := s.querier.GetLatestPublishedAnnouncements(ctx, 3)
 	if err == nil {
 		for _, a := range anns {
+			cover := ""
+			if a.CoverUrl.Valid {
+				cover = a.CoverUrl.String
+			}
 			resp.LatestAnnouncements = append(resp.LatestAnnouncements, Announcement{
 				ID:          a.ID,
 				Title:       a.Title,
 				Excerpt:     a.Excerpt,
+				CoverURL:    cover,
 				PublishedAt: a.PublishedAt,
 			})
 		}

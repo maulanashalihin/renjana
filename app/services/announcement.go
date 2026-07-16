@@ -36,6 +36,7 @@ type AnnouncementListItem struct {
 	PublishedAt time.Time `json:"published_at"`
 	IsPublished bool      `json:"is_published"`
 	CreatedAt   time.Time `json:"created_at"`
+	ViewCount   int64     `json:"view_count"`
 }
 
 // AnnouncementDetail — full record (for show/edit).
@@ -51,6 +52,7 @@ type AnnouncementDetail struct {
 	PublishedAt time.Time `json:"published_at"`
 	IsPublished bool      `json:"is_published"`
 	CreatedAt   time.Time `json:"created_at"`
+	ViewCount   int64     `json:"view_count"`
 }
 
 // CreateAnnouncementRequest — input for create.
@@ -188,6 +190,7 @@ func (s *AnnouncementService) List(
 			PublishedAt: r.PublishedAt,
 			IsPublished: r.IsPublished,
 			CreatedAt:   r.CreatedAt,
+			ViewCount:   r.ViewCount,
 		})
 	}
 
@@ -243,6 +246,7 @@ func (s *AnnouncementService) Get(ctx context.Context, id int64) (*AnnouncementD
 		PublishedAt: r.PublishedAt,
 		IsPublished: r.IsPublished,
 		CreatedAt:   r.CreatedAt,
+		ViewCount:   r.ViewCount,
 	}, nil
 }
 
@@ -290,7 +294,18 @@ func (s *AnnouncementService) Update(ctx context.Context, id int64, req UpdateAn
 	if req.Body == "" {
 		req.Body = req.Excerpt
 	}
-	pubAt := parsePublishedAt(req.PublishedAt, time.Now())
+	// Preserve existing published_at when not provided in update request
+	var pubAt time.Time
+	if req.PublishedAt != "" {
+		pubAt = parsePublishedAt(req.PublishedAt, time.Now())
+	} else {
+		// Load existing announcement to preserve its published_at
+		existing, err := s.Get(ctx, id)
+		if err != nil {
+			return err
+		}
+		pubAt = existing.PublishedAt
+	}
 
 	rows, err := s.querier.UpdateAnnouncement(ctx, queries.UpdateAnnouncementParams{
 		Title:       req.Title,
@@ -367,6 +382,7 @@ func (s *AnnouncementService) ListByCategory(ctx context.Context, category strin
 			PublishedAt: r.PublishedAt,
 			IsPublished: r.IsPublished,
 			CreatedAt:   r.CreatedAt,
+			ViewCount:   r.ViewCount,
 		})
 	}
 	return items, nil

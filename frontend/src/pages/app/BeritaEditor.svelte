@@ -20,6 +20,7 @@
         category: string;
         body: string;
         cover_url: string;
+        published_at: string;
         is_published: boolean;
     }
 
@@ -148,6 +149,7 @@
             category,
             body,
             cover_url: coverUrl,
+            published_at: announcement?.published_at ?? undefined,
             is_published: isPublished,
         };
 

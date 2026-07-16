@@ -74,9 +74,10 @@
 
     function markResolved(id: number) {
         loading = id;
+        const complaint = items.find(c => c.id === id);
         router.put(`/pengaduan/${id}`, {
             status: "resolved",
-            response: "",
+            response: complaint?.response ?? "",
         }, {
             onFinish: () => { loading = null; },
         });

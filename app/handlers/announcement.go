@@ -244,6 +244,11 @@ func (h *AnnouncementHandler) Show(c *fiber.Ctx) error {
 		})
 	}
 
+	// Increment view count (non-admin only, ignore errors)
+	if !isAdmin {
+		_ = h.querier.IncrementAnnouncementView(c.Context(), id)
+	}
+
 	return h.inertiaService.Render(c, "app/AnnouncementDetail", fiber.Map{
 		"user":         user,
 		"announcement": ann,

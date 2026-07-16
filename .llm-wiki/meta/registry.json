@@ -1,66 +1,66 @@
 {
   "version": "1.0",
-  "last_updated": "2026-07-15T13:36:11.702Z",
+  "last_updated": "2026-07-16T02:01:18.874Z",
   "pages": {
     "concepts/agent-browser-testing": {
       "type": "page",
       "title": "agent-browser-testing",
-      "created": "2026-07-15",
-      "updated": "2026-07-15"
+      "created": "2026-07-16",
+      "updated": "2026-07-16"
     },
     "concepts/deployment": {
       "type": "page",
       "title": "deployment",
-      "created": "2026-07-15",
-      "updated": "2026-07-15"
+      "created": "2026-07-16",
+      "updated": "2026-07-16"
     },
     "concepts/design-standards": {
       "type": "page",
       "title": "design-standards",
-      "created": "2026-07-15",
-      "updated": "2026-07-15"
+      "created": "2026-07-16",
+      "updated": "2026-07-16"
     },
     "concepts/environment-config": {
       "type": "page",
       "title": "environment-config",
-      "created": "2026-07-15",
-      "updated": "2026-07-15"
+      "created": "2026-07-16",
+      "updated": "2026-07-16"
     },
     "concepts/handler-structure": {
       "type": "page",
       "title": "handler-structure",
-      "created": "2026-07-15",
-      "updated": "2026-07-15"
+      "created": "2026-07-16",
+      "updated": "2026-07-16"
     },
     "concepts/http-conventions": {
       "type": "page",
       "title": "http-conventions",
-      "created": "2026-07-15",
-      "updated": "2026-07-15"
+      "created": "2026-07-16",
+      "updated": "2026-07-16"
     },
     "concepts/migration-convention": {
       "type": "page",
       "title": "migration-convention",
-      "created": "2026-07-15",
-      "updated": "2026-07-15"
+      "created": "2026-07-16",
+      "updated": "2026-07-16"
     },
     "concepts/rbac-roles": {
       "type": "page",
       "title": "rbac-roles",
-      "created": "2026-07-15",
-      "updated": "2026-07-15"
+      "created": "2026-07-16",
+      "updated": "2026-07-16"
     },
     "concepts/svelte-conventions": {
       "type": "page",
       "title": "svelte-conventions",
-      "created": "2026-07-15",
-      "updated": "2026-07-15"
+      "created": "2026-07-16",
+      "updated": "2026-07-16"
     },
     "concepts/three-tier-rule": {
       "type": "page",
       "title": "three-tier-rule",
-      "created": "2026-07-15",
-      "updated": "2026-07-15"
+      "created": "2026-07-16",
+      "updated": "2026-07-16"
     },
     "sources/deployment-read-all-before-action": {
       "type": "source",
@@ -154,6 +154,16 @@
         "refactor"
       ],
       "source_context": "\"Menggabungkan data profil user ke session cache, menghapus UserCache\""
+    },
+    "sources/obs-2026-07-16-14-item-perbaikan-renjana-selesai-diverifikasi": {
+      "type": "source",
+      "title": "\"Observation: 14 item perbaikan RENJANA selesai diverifikasi\"",
+      "created": "2026-07-16",
+      "updated": "2026-07-16",
+      "slug": "obs-2026-07-16-14-item-perbaikan-renjana-selesai-diverifikasi",
+      "status": "observation",
+      "relevance": "high",
+      "observed_at": "2026-07-16T02:01:18.826Z"
     }
   }
 }

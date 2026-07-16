@@ -7,6 +7,7 @@
         title: string;
         date: string;
         excerpt: string;
+        cover_url?: string;
     }
 
     interface Props {
@@ -37,11 +38,17 @@
                     use:inertia
                     class="flex gap-3 p-2.5 rounded-xl transition-colors hover:bg-renjana-50/80 dark:hover:bg-renjana-500/5 border border-transparent hover:border-renjana-200/50 dark:hover:border-renjana-500/20"
                 >
-                    <div class="shrink-0 mt-0.5">
-                        <div class="w-8 h-8 rounded-lg bg-renjana-500/10 dark:bg-renjana-500/20 flex items-center justify-center">
-                            <Newspaper class="w-4 h-4 text-renjana-500" />
+                    {#if a.cover_url}
+                        <div class="shrink-0 w-12 h-12 rounded-lg overflow-hidden bg-neutral-100 dark:bg-neutral-800">
+                            <img src={a.cover_url} alt={a.title} class="w-full h-full object-cover" />
                         </div>
-                    </div>
+                    {:else}
+                        <div class="shrink-0 mt-0.5">
+                            <div class="w-8 h-8 rounded-lg bg-renjana-500/10 dark:bg-renjana-500/20 flex items-center justify-center">
+                                <Newspaper class="w-4 h-4 text-renjana-500" />
+                            </div>
+                        </div>
+                    {/if}
                     <div class="flex-1 min-w-0">
                         <p class="text-sm font-semibold text-slate-900 dark:text-white truncate">
                             {a.title}
