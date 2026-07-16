@@ -1,40 +1,74 @@
 #!/bin/bash
 set -e
 
-# Ensure Go and local tools are in PATH (non-interactive SSH doesn't source .bashrc)
-export PATH="/usr/local/go/bin:$HOME/go/bin:$HOME/.local/bin:$PATH"
+DIR="$(cd "$(dirname "$0")"/.. && pwd)"
 
+# ── Load SSH config ──
+if [ -f "$DIR/.deploy" ]; then
+    source "$DIR/.deploy"
+else
+    echo "❌ .deploy not found — copy .deploy.example to .deploy and fill in your server details"
+    exit 1
+fi
+
+APP_NAME="${renjana:-laju-go}"
+SERVICE="${SERVICE_NAME:-renjana}"
+
+# ── Validate ──
+if [ -z "$SERVER_USER" ] || [ -z "$SERVER_HOST" ] || [ -z "$SERVER_PATH" ]; then
+    echo "❌ .deploy is missing SERVER_USER, SERVER_HOST, or SERVER_PATH"
+    exit 1
+fi
+
+SSH_DEST="$SERVER_USER@$SERVER_HOST"
+
+# ── Header ──
 echo "🚀 Renjana Deploy"
 echo "━━━━━━━━━━━━━━━"
-
-# 1. Pull latest
-echo "📥 Pulling latest..."
-git pull
-
-# 2. Install dependencies (if needed)
-echo "📦 Installing deps..."
-npm install 2>&1 | tail -1
-
-# 3. Build
-echo "🔨 Building..."
-npm run build:all
-
-# 4. Migrate (if new migrations exist)
-echo "🗄️  Migrating DB..."
-go run github.com/pressly/goose/v3/cmd/goose@latest -dir migrations sqlite ./data/app.db up 2>&1
-
-# 5. Restart service
-echo "🔄 Restarting service..."
-sudo systemctl restart renjana.service
-
-# 6. Verify
-sleep 1
-ACTIVE=$(systemctl is-active renjana.service)
+echo "   Server:  $SSH_DEST"
+echo "   Path:    $SERVER_PATH"
+echo "   Service: $SERVICE"
 echo ""
-if [ "$ACTIVE" = "active" ]; then
-	echo "✅ Deploy success! renjana.service is $ACTIVE"
-	curl -s -o /dev/null -w "   HTTP %{http_code} — https://renjana.maulanabuilds.com\n" https://renjana.maulanabuilds.com
-else
-	echo "❌ Service is $ACTIVE — check journalctl -u renjana.service"
-	exit 1
-fi
+
+# ── Execute all commands on the remote server ──
+ssh -t "$SSH_DEST" "
+    set -e
+
+    # Ensure Go and tools are in PATH (non-interactive SSH doesn't source .bashrc)
+    export PATH=\"/usr/local/go/bin:\$HOME/go/bin:\$HOME/.local/bin:\$PATH\"
+
+    cd $SERVER_PATH
+
+    echo '📥 Pulling latest...'
+    git pull
+
+    echo ''
+    echo '📦 Installing deps...'
+    npm install 2>&1 | tail -1
+
+    echo ''
+    echo '🔨 Building...'
+    npm run build:all
+
+    echo ''
+    echo '🗄️  Migrating DB...'
+    go run github.com/pressly/goose/v3/cmd/goose@latest -dir migrations sqlite ./data/app.db up 2>&1
+
+    echo ''
+    echo '🔄 Restarting service...'
+    sudo systemctl restart $SERVICE.service
+
+    sleep 2
+    ACTIVE=\$(systemctl is-active $SERVICE.service)
+    echo ''
+    if [ \"\$ACTIVE\" = \"active\" ]; then
+        echo '✅ Deploy success! $SERVICE.service is active'
+        curl -s -o /dev/null -w \"   HTTP %{http_code} — https://renjana.maulanabuilds.com\\n\" https://renjana.maulanabuilds.com
+    else
+        echo '❌ Service is \$ACTIVE — check journalctl -u $SERVICE.service'
+        exit 1
+    fi
+"
+
+echo ""
+echo "✨ Done."
