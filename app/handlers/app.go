@@ -179,16 +179,23 @@ func (h *AppHandler) profilePropsWithVolunteer(c *fiber.Ctx, extra fiber.Map) fi
 	}
 
 	if u, ok := props["user"].(*models.UserResponse); ok && u != nil && u.Role == models.RoleRelawan {
+		slog.Debug("profile: fetching volunteer data", "user_id", u.ID, "role", u.Role)
+
 		// Fetch volunteer data
 		vol, err := h.volunteerService.GetByUserID(c.Context(), u.ID)
 		if err == nil && vol != nil {
 			props["volunteer"] = vol
+		} else if err != nil {
+			slog.Warn("profile: volunteer not found", "user_id", u.ID, "err", err)
 		}
 
 		// Fetch districts for school autocomplete kecamatan → district_id mapping
 		districts, err := h.querier.GetActiveDistricts(c.Context())
 		if err == nil {
+			slog.Debug("profile: districts loaded", "count", len(districts))
 			props["districts"] = districts
+		} else {
+			slog.Error("profile: failed to load districts", "err", err)
 		}
 	}
 
