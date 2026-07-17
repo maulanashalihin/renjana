@@ -5,6 +5,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/maulanashalihin/laju-go/app/models"
+	"github.com/maulanashalihin/laju-go/app/queries"
 	"github.com/maulanashalihin/laju-go/app/services"
 	"github.com/maulanashalihin/laju-go/app/session"
 )
@@ -15,6 +16,7 @@ type AppHandler struct {
 	store            *session.Store
 	inertiaService   *services.InertiaService
 	dashboardService *services.DashboardService
+	querier          *queries.Querier
 }
 
 func NewAppHandler(
@@ -23,6 +25,7 @@ func NewAppHandler(
 	store *session.Store,
 	inertiaService *services.InertiaService,
 	dashboardService *services.DashboardService,
+	querier *queries.Querier,
 ) *AppHandler {
 	return &AppHandler{
 		userService:      userService,
@@ -30,6 +33,7 @@ func NewAppHandler(
 		store:            store,
 		inertiaService:   inertiaService,
 		dashboardService: dashboardService,
+		querier:          querier,
 	}
 }
 
@@ -174,11 +178,17 @@ func (h *AppHandler) profilePropsWithVolunteer(c *fiber.Ctx, extra fiber.Map) fi
 		}
 	}
 
-	// Fetch volunteer data for relawan
 	if u, ok := props["user"].(*models.UserResponse); ok && u != nil && u.Role == models.RoleRelawan {
+		// Fetch volunteer data
 		vol, err := h.volunteerService.GetByUserID(c.Context(), u.ID)
 		if err == nil && vol != nil {
 			props["volunteer"] = vol
+		}
+
+		// Fetch districts for school autocomplete kecamatan → district_id mapping
+		districts, err := h.querier.GetActiveDistricts(c.Context())
+		if err == nil {
+			props["districts"] = districts
 		}
 	}
 

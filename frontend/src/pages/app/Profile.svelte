@@ -11,8 +11,8 @@
         MapPin,
         Phone,
         GraduationCap,
-        Building2,
     } from "lucide-svelte";
+    import SchoolAutocomplete from "../../lib/components/SchoolAutocomplete.svelte";
 
     interface User {
         id: number;
@@ -21,6 +21,14 @@
         avatar: string;
         role: string;
         email_verified: boolean;
+    }
+
+    interface SchoolResult {
+        id: number;
+        name: string;
+        level: string;
+        status: string;
+        kecamatan: string;
     }
 
     interface Volunteer {
@@ -33,21 +41,30 @@
         status: string;
     }
 
+    interface District {
+        id: number;
+        name: string;
+    }
+
     interface Props {
         user?: User;
         volunteer?: Volunteer | null;
+        districts?: District[];
         success?: string;
         error?: string;
     }
 
-    let { user, volunteer = null, success, error }: Props = $props();
+    let { user, volunteer = null, districts = [], success, error }: Props = $props();
 
     let profileForm = $state({
         name: "",
         avatar: "",
     });
 
+    let volSchool = $state("");
     let volPhone = $state("");
+    let volDistrictId = $state(0);
+    let selectedSchool = $state<SchoolResult | null>(null);
 
     let isProfileLoading = $state(false);
     let previewUrl = $state<string | null>(null);
@@ -62,7 +79,13 @@
 
     $effect(() => {
         if (volunteer) {
+            volSchool = volunteer.school || "";
             volPhone = volunteer.phone || "";
+            volDistrictId = volunteer.district_id || 0;
+            // Mark existing school as selected
+            if (volunteer.school) {
+                selectedSchool = { id: 0, name: volunteer.school, level: "", status: "", kecamatan: "" };
+            }
         }
     });
 
@@ -115,7 +138,13 @@
     function handleVolSubmit(e: Event) {
         e.preventDefault();
         isProfileLoading = true;
-        router.put("/profile", { phone: volPhone || "" }, {
+        const payload: Record<string, any> = {};
+        if (selectedSchool && selectedSchool.id > 0) {
+            payload.school = selectedSchool.name;
+        }
+        if (volDistrictId) payload.district_id = volDistrictId;
+        if (volPhone) payload.phone = volPhone;
+        router.put("/profile", payload, {
             onFinish: () => {
                 isProfileLoading = false;
             },
@@ -360,13 +389,22 @@
                         <div>
                             <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                                 <span class="inline-flex items-center gap-1.5">
-                                    <Building2 class="w-4 h-4 text-slate-400" />
+                                    <MapPin class="w-4 h-4 text-slate-400" />
                                     Sekolah
                                 </span>
                             </label>
-                            <p class="text-sm text-slate-900 dark:text-white py-2.5 px-1">
-                                {volunteer.school || "-"}
-                            </p>
+                            <SchoolAutocomplete
+                                bind:value={volSchool}
+                                bind:selectedEntry={selectedSchool}
+                                onSelect={(entry) => {
+                                    const match = districts.find(
+                                        (d) => d.name.toLowerCase() === entry.kecamatan.toLowerCase(),
+                                    );
+                                    if (match) {
+                                        volDistrictId = match.id;
+                                    }
+                                }}
+                            />
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
@@ -375,9 +413,15 @@
                                     Kecamatan
                                 </span>
                             </label>
-                            <p class="text-sm text-slate-900 dark:text-white py-2.5 px-1">
-                                {volunteer.district_name || "-"}
-                            </p>
+                            <select
+                                bind:value={volDistrictId}
+                                class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-renjana-500/20 focus:border-renjana-500 text-slate-900 dark:text-white transition-all outline-none"
+                            >
+                                <option value={0} disabled>Pilih kecamatan...</option>
+                                {#each districts as d}
+                                    <option value={d.id}>{d.name}</option>
+                                {/each}
+                            </select>
                         </div>
                     </div>
 
