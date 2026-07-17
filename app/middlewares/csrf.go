@@ -11,15 +11,15 @@ import (
 
 // CSRFConfig holds CSRF middleware configuration
 type CSRFConfig struct {
-	Secret       string        // Secret key for signing tokens
-	CookieName   string        // Name of the CSRF token cookie
-	HeaderName   string        // Name of the CSRF token header
-	TokenLength  int           // Length of the random token
-	Expiry       time.Duration // Token expiry duration
-	Secure       bool          // Secure cookie flag
-	SameSite     string        // SameSite cookie attribute
-	SkipPaths    []string      // Paths to skip CSRF check
-	SkipMethods  []string      // HTTP methods to skip CSRF check
+	Secret      string        // Secret key for signing tokens
+	CookieName  string        // Name of the CSRF token cookie
+	HeaderName  string        // Name of the CSRF token header
+	TokenLength int           // Length of the random token
+	Expiry      time.Duration // Token expiry duration
+	Secure      bool          // Secure cookie flag
+	SameSite    string        // SameSite cookie attribute
+	SkipPaths   []string      // Paths to skip CSRF check
+	SkipMethods []string      // HTTP methods to skip CSRF check
 }
 
 // CSRFMiddleware implements CSRF protection using double-submit cookie pattern.
