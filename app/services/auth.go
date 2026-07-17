@@ -229,10 +229,6 @@ func (s *AuthService) Login(email, password string) (*models.User, error) {
 	return user, nil
 }
 
-// GetUserByID retrieves a user by ID
-func (s *AuthService) GetUserByID(id int64) (*models.User, error) {
-	return s.querier.GetUserByID(context.Background(), id)
-}
 
 // hashPassword hashes a password using argon2id with the configured params.
 func (s *AuthService) hashPassword(password string) (string, error) {

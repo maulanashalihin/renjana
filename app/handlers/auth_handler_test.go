@@ -63,7 +63,6 @@ func setupTestApp(t *testing.T) (*fiber.App, *queries.Querier) {
 	app.Get("/register", h.ShowRegisterForm)
 	app.Post("/register", h.Register)
 	app.Post("/login", h.Login)
-	app.Get("/me", h.Me)
 	app.Get("/logout", h.Logout)
 
 	return app, querier
@@ -183,15 +182,6 @@ func TestLoginEndpoint(t *testing.T) {
 			assert.Equal(t, tt.wantLocation, resp.Header.Get("Location"))
 		})
 	}
-}
-
-func TestMeUnauthenticated(t *testing.T) {
-	app, _ := setupTestApp(t)
-
-	req := httptest.NewRequest(http.MethodGet, "/me", nil)
-	resp, err := app.Test(req)
-	require.NoError(t, err)
-	assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
 }
 
 func TestLogout(t *testing.T) {

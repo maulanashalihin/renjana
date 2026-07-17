@@ -127,35 +127,6 @@ func TestLogin(t *testing.T) {
 	}
 }
 
-func TestGetUserByID(t *testing.T) {
-	q := setupAuthTestDB(t)
-	svc := newAuthService(t, q)
-
-	created, err := svc.Register("Found User", "found@example.com", "pass123")
-	require.NoError(t, err)
-
-	tests := []struct {
-		name    string
-		userID  int64
-		wantErr error
-	}{
-		{"found", created.ID, nil},
-		{"not found", 999, queries.ErrUserNotFound},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			user, err := svc.GetUserByID(tt.userID)
-			if tt.wantErr != nil {
-				assert.ErrorIs(t, err, tt.wantErr)
-				return
-			}
-			require.NoError(t, err)
-			assert.Equal(t, created.ID, user.ID)
-			assert.Equal(t, "Found User", user.Name)
-		})
-	}
-}
 
 func TestPassword(t *testing.T) {
 	t.Run("hash produces different salts", func(t *testing.T) {
