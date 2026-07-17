@@ -4,7 +4,7 @@
     import AppLayout from "../../components/AppLayout.svelte";
     import DarkModeToggle from "../../components/DarkModeToggle.svelte";
     import { Toast } from "../../lib/utils/helpers";
-    import { Upload, Lock, User as UserIcon, Mail, Shield } from "lucide-svelte";
+    import { Upload, User as UserIcon, Mail } from "lucide-svelte";
 
     interface User {
         id: number;
@@ -25,26 +25,15 @@
 
     let profileForm = $state({
         name: "",
-        email: "",
         avatar: "",
     });
 
-    let passwordForm = $state({
-        current_password: "",
-        new_password: "",
-        confirm_password: "",
-    });
-
     let isProfileLoading = $state(false);
-    let isPasswordLoading = $state(false);
     let previewUrl = $state<string | null>(null);
-    let showCurrentPw = $state(false);
-    let showNewPw = $state(false);
 
     $effect(() => {
         if (user) {
             profileForm.name = user.name || "";
-            profileForm.email = user.email || "";
             profileForm.avatar = user.avatar || "";
             previewUrl = user.avatar || null;
         }
@@ -89,36 +78,9 @@
     function handleProfileSubmit(e: Event) {
         e.preventDefault();
         isProfileLoading = true;
-        router.put("/profile", profileForm, {
+        router.put("/profile", { name: profileForm.name }, {
             onFinish: () => {
                 isProfileLoading = false;
-            },
-        });
-    }
-
-    function handlePasswordSubmit(e: Event) {
-        e.preventDefault();
-
-        if (passwordForm.new_password !== passwordForm.confirm_password) {
-            Toast("Password tidak cocok", "error");
-            return;
-        }
-        if (!passwordForm.current_password || !passwordForm.new_password || !passwordForm.confirm_password) {
-            Toast("Mohon lengkapi semua field", "error");
-            return;
-        }
-        if (passwordForm.new_password.length < 8) {
-            Toast("Password minimal 8 karakter", "error");
-            return;
-        }
-
-        isPasswordLoading = true;
-        router.put("/profile/password", passwordForm, {
-            onFinish: () => {
-                isPasswordLoading = false;
-                passwordForm.current_password = "";
-                passwordForm.new_password = "";
-                passwordForm.confirm_password = "";
             },
         });
     }
@@ -212,10 +174,7 @@
                             <div class="w-1.5 h-1.5 rounded-full bg-renjana-500"></div>
                             {roleLabel}
                         </span>
-                        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
-                            <Shield class="w-3 h-3" />
-                            {user?.email_verified ? "Email Terverifikasi" : "Belum Verifikasi"}
-                        </span>
+
                     </div>
                 </div>
             </div>
@@ -238,7 +197,7 @@
                             Informasi Personal
                         </h3>
                         <p class="text-sm text-slate-500 dark:text-slate-400">
-                            Perbarui nama dan email Anda
+                            Perbarui nama Anda
                         </p>
                     </div>
                 </div>
@@ -256,6 +215,7 @@
                                 required
                                 class="w-full pl-11 pr-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-renjana-500/20 focus:border-renjana-500 text-slate-900 dark:text-white placeholder-slate-400 transition-all outline-none"
                                 placeholder="Nama lengkap Anda"
+                                maxlength="100"
                             />
                         </div>
                     </div>
@@ -268,12 +228,12 @@
                             <Mail class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                             <input
                                 type="email"
-                                bind:value={profileForm.email}
-                                required
-                                class="w-full pl-11 pr-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-renjana-500/20 focus:border-renjana-500 text-slate-900 dark:text-white placeholder-slate-400 transition-all outline-none"
-                                placeholder="nama@email.com"
+                                value={user?.email || ""}
+                                disabled
+                                class="w-full pl-11 pr-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-500 dark:text-slate-400 cursor-not-allowed transition-all outline-none"
                             />
                         </div>
+                        <p class="text-xs text-slate-400 mt-1">Email tidak dapat diubah. Login dengan Google.</p>
                     </div>
 
                     <div class="flex justify-end pt-2">
@@ -338,104 +298,6 @@
             </div>
         </div>
 
-        <!-- Password Change -->
-        <form
-            onsubmit={handlePasswordSubmit}
-            class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6"
-            in:fly={{ y: 20, duration: 600, delay: 200 }}
-        >
-            <div class="flex items-center gap-3 mb-6">
-                <div class="w-10 h-10 rounded-xl bg-renjana-500/10 flex items-center justify-center">
-                    <Lock class="w-5 h-5 text-renjana-500" />
-                </div>
-                <div>
-                    <h3 class="text-lg font-semibold text-slate-900 dark:text-white">
-                        Keamanan Akun
-                    </h3>
-                    <p class="text-sm text-slate-500 dark:text-slate-400">
-                        Ubah password Anda
-                    </p>
-                </div>
-            </div>
 
-            <div class="grid sm:grid-cols-3 gap-4">
-                <div>
-                    <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                        Password Saat Ini
-                    </label>
-                    <div class="relative">
-                        <Lock class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                        <input
-                            type={showCurrentPw ? "text" : "password"}
-                            bind:value={passwordForm.current_password}
-                            autocomplete="current-password"
-                            class="w-full pl-11 pr-11 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-renjana-500/20 focus:border-renjana-500 text-slate-900 dark:text-white placeholder-slate-400 transition-all outline-none"
-                            placeholder="••••••••"
-                        />
-                        <button
-                            type="button"
-                            onclick={() => (showCurrentPw = !showCurrentPw)}
-                            class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 text-xs font-medium"
-                        >
-                            {showCurrentPw ? "Hide" : "Show"}
-                        </button>
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                        Password Baru
-                    </label>
-                    <div class="relative">
-                        <Lock class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                        <input
-                            type={showNewPw ? "text" : "password"}
-                            bind:value={passwordForm.new_password}
-                            autocomplete="new-password"
-                            class="w-full pl-11 pr-11 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-renjana-500/20 focus:border-renjana-500 text-slate-900 dark:text-white placeholder-slate-400 transition-all outline-none"
-                            placeholder="Minimal 8 karakter"
-                        />
-                        <button
-                            type="button"
-                            onclick={() => (showNewPw = !showNewPw)}
-                            class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 text-xs font-medium"
-                        >
-                            {showNewPw ? "Hide" : "Show"}
-                        </button>
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                        Konfirmasi Password
-                    </label>
-                    <div class="relative">
-                        <Lock class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                        <input
-                            type="password"
-                            bind:value={passwordForm.confirm_password}
-                            autocomplete="new-password"
-                            class="w-full pl-11 pr-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-renjana-500/20 focus:border-renjana-500 text-slate-900 dark:text-white placeholder-slate-400 transition-all outline-none"
-                            placeholder="Ulangi password"
-                        />
-                    </div>
-                </div>
-            </div>
-
-            <div class="flex justify-end mt-4 pt-4 border-t border-slate-200 dark:border-slate-800">
-                <button
-                    type="submit"
-                    disabled={isPasswordLoading}
-                    class="px-5 py-2.5 rounded-xl bg-renjana-500 hover:bg-renjana-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold transition-all shadow-md hover:shadow-lg flex items-center gap-2"
-                >
-                    {#if isPasswordLoading}
-                        <span class="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                        Mengubah...
-                    {:else}
-                        Ubah Password
-                    {/if}
-                </button>
-            </div>
-        </form>
     </div>
 </AppLayout>

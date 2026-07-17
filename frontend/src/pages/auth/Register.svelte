@@ -1,17 +1,5 @@
 <script lang="ts">
-    import { router } from "@inertiajs/svelte";
-    import { Lock, Mail, User, Eye, EyeOff, Sparkles, UserPlus, Check } from "lucide-svelte";
-
-    let form = $state({
-        name: "",
-        email: "",
-        password: "",
-        password_confirmation: "",
-    });
-
-    let isLoading = $state(false);
-    let showPassword = $state(false);
-    let passwordError = $state("");
+    import { Check } from "lucide-svelte";
 
     interface Props {
         flash?: {
@@ -20,36 +8,6 @@
     }
 
     let { flash }: Props = $props();
-
-    function generatePassword() {
-        const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123456789!@#_";
-        let password = "";
-        for (let i = 0; i < 12; i++) {
-            password += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        form.password = password;
-        form.password_confirmation = password;
-        showPassword = true;
-    }
-
-    function submitForm(e: Event) {
-        e.preventDefault();
-
-        if (form.password !== form.password_confirmation) {
-            passwordError = "Password tidak cocok";
-            return;
-        }
-        passwordError = "";
-        isLoading = true;
-
-        router.post("/register", form, {
-            onFinish: () => {
-                setTimeout(() => {
-                    isLoading = false;
-                }, 500);
-            },
-        });
-    }
 </script>
 
 <svelte:head>
@@ -165,128 +123,6 @@
                     </svg>
                     Daftar dengan Google
                 </a>
-
-                <div class="relative my-5">
-                    <div class="absolute inset-0 flex items-center">
-                        <div class="w-full border-t border-slate-200 dark:border-slate-700"></div>
-                    </div>
-                    <div class="relative flex justify-center">
-                        <span class="px-4 text-sm text-slate-500 bg-white dark:bg-slate-800/50">atau daftar dengan email</span>
-                    </div>
-                </div>
-
-                <form class="space-y-4" onsubmit={submitForm}>
-                    <div class="space-y-2">
-                        <label for="name" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Nama Lengkap</label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                <User class="w-5 h-5 text-slate-400" />
-                            </div>
-                            <input
-                                bind:value={form.name}
-                                required
-                                type="text"
-                                name="name"
-                                id="name"
-                                class="w-full pl-12 pr-4 py-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-renjana-500 focus:ring-2 focus:ring-renjana-500/20 transition-colors duration-200"
-                                placeholder="Nama lengkap Anda"
-                            />
-                        </div>
-                    </div>
-
-                    <div class="space-y-2">
-                        <label for="email" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Email</label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                <Mail class="w-5 h-5 text-slate-400" />
-                            </div>
-                            <input
-                                bind:value={form.email}
-                                required
-                                type="email"
-                                name="email"
-                                id="email"
-                                class="w-full pl-12 pr-4 py-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-renjana-500 focus:ring-2 focus:ring-renjana-500/20 transition-colors duration-200"
-                                placeholder="nama@email.com"
-                            />
-                        </div>
-                    </div>
-
-                    <div class="space-y-2">
-                        <label for="password" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Password</label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                <Lock class="w-5 h-5 text-slate-400" />
-                            </div>
-                            <input
-                                bind:value={form.password}
-                                required
-                                type={showPassword ? 'text' : 'password'}
-                                name="password"
-                                id="password"
-                                placeholder="Minimal 8 karakter"
-                                class="w-full pl-12 pr-12 py-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-renjana-500 focus:ring-2 focus:ring-renjana-500/20 transition-colors duration-200"
-                            />
-                            <button
-                                type="button"
-                                onclick={() => showPassword = !showPassword}
-                                class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 transition-colors"
-                            >
-                                {#if showPassword}
-                                    <EyeOff class="w-5 h-5" />
-                                {:else}
-                                    <Eye class="w-5 h-5" />
-                                {/if}
-                            </button>
-                        </div>
-                        <button
-                            type="button"
-                            onclick={generatePassword}
-                            class="text-xs text-renjana-500 hover:text-renjana-600 transition-colors flex items-center gap-1"
-                        >
-                            <Sparkles class="w-3 h-3" />
-                            Generate password aman
-                        </button>
-                    </div>
-
-                    <div class="space-y-2">
-                        <label for="confirm-password" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Konfirmasi Password</label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                <Lock class="w-5 h-5 text-slate-400" />
-                            </div>
-                            <input
-                                bind:value={form.password_confirmation}
-                                required
-                                type={showPassword ? 'text' : 'password'}
-                                name="confirm-password"
-                                id="confirm-password"
-                                placeholder="Ulangi password"
-                                class="w-full pl-12 pr-4 py-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-renjana-500 focus:ring-2 focus:ring-renjana-500/20 transition-colors duration-200"
-                            />
-                        </div>
-                        {#if passwordError}
-                            <p class="text-xs text-red-400">{passwordError}</p>
-                        {/if}
-                    </div>
-
-                    <button
-                        type="submit"
-                        disabled={isLoading}
-                        class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-renjana-500 to-renjana-600 text-white font-semibold hover:from-renjana-600 hover:to-renjana-700 focus:outline-none focus:ring-2 focus:ring-renjana-500/50 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-800 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-6 shadow-lg shadow-renjana-500/20"
-                    >
-                        {#if isLoading}
-                            <svg class="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            Membuat akun...
-                        {:else}
-                            <UserPlus class="w-5 h-5" />
-                            Daftar Sekarang
-                        {/if}
-                    </button>
-                </form>
 
                 <p class="mt-6 text-center text-sm text-slate-600 dark:text-slate-400">
                     Sudah punya akun?
