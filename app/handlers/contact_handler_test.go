@@ -70,7 +70,7 @@ func TestContactHandlerStore(t *testing.T) {
 	req.Header.Set("X-Inertia", "true")
 	resp, err := app.Test(req)
 	require.NoError(t, err)
-	assert.Equal(t, http.StatusFound, resp.StatusCode)
+	assert.Equal(t, http.StatusSeeOther, resp.StatusCode)
 	assert.Contains(t, resp.Header.Get("Location"), "success=created")
 }
 
@@ -89,7 +89,7 @@ func TestContactHandlerUpdate(t *testing.T) {
 	req.Header.Set("X-Inertia", "true")
 	resp, err := app.Test(req)
 	require.NoError(t, err)
-	assert.Equal(t, http.StatusFound, resp.StatusCode)
+	assert.Equal(t, http.StatusSeeOther, resp.StatusCode)
 	assert.Contains(t, resp.Header.Get("Location"), "success=updated")
 }
 
@@ -106,6 +106,6 @@ func TestContactHandlerDelete(t *testing.T) {
 	req.Header.Set("X-Inertia", "true")
 	resp, err := app.Test(req)
 	require.NoError(t, err)
-	assert.Equal(t, http.StatusFound, resp.StatusCode)
+	assert.Equal(t, http.StatusSeeOther, resp.StatusCode)
 	assert.Contains(t, resp.Header.Get("Location"), "success=deleted")
 }

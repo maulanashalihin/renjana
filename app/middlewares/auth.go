@@ -214,7 +214,6 @@ func ScopeDistrict(store *session.Store) fiber.Handler {
 func Logger() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		// Simple logging - in production, use a proper logger
-		c.Next()
-		return nil
+		return c.Next()
 	}
 }

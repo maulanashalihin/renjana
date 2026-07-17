@@ -93,9 +93,9 @@ func TestUserAdminHandlerUpdateRole(t *testing.T) {
 	require.NoError(t, err)
 	_ = created
 
-	body := "role=koordinator&district_id=1"
+	body := `{"role":"koordinator","district_id":1}`
 	req := httptest.NewRequest(http.MethodPut, "/admin/users/"+strconv.FormatInt(other.ID, 10)+"/role", strings.NewReader(body))
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("X-Inertia", "true")
 	resp, err := app.Test(req)
 	require.NoError(t, err)

@@ -50,7 +50,7 @@ func setupDashboardTestDB(t *testing.T) *queries.Querier {
 	_, err = db.Exec(`INSERT INTO renjana_announcements (title, excerpt, is_published) VALUES ('Latest News', 'Content', 1)`)
 	require.NoError(t, err)
 
-	_, err = db.Exec(`INSERT INTO renjana_achievements (year, metric_key, metric_name, value, unit, display_order) VALUES (2024, 'program_achievement', 'Capaian Program', 85, '%', 1)`)
+	_, err = db.Exec(`INSERT INTO renjana_achievements (year, metric_key, metric_name, value, unit, display_order) VALUES (2025, 'program_achievement', 'Capaian Program', 85, '%', 1)`)
 	require.NoError(t, err)
 
 	return queries.NewQuerier(db)

@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-07-17T02:43:28.610Z",
+  "last_updated": "2026-07-17T03:02:17.806Z",
   "pages": {
     "concepts/agent-browser-testing": {
       "type": "page",
@@ -225,6 +225,23 @@
       "status": "observation",
       "relevance": "low",
       "observed_at": "2026-07-17T02:43:28.569Z"
+    },
+    "sources/obs-2026-07-17-unhandled-error-review-csrf-save-logger-c-next-sess-destroy": {
+      "type": "source",
+      "title": "\"Observation: Unhandled error review: CSRF Save, Logger c.Next, sess.Destroy\"",
+      "created": "2026-07-17",
+      "updated": "2026-07-17",
+      "slug": "obs-2026-07-17-unhandled-error-review-csrf-save-logger-c-next-sess-destroy",
+      "status": "observation",
+      "relevance": "medium",
+      "observed_at": "2026-07-17T03:02:17.754Z",
+      "tags": [
+        "code-review",
+        "session",
+        "csrf",
+        "auth",
+        "error-handling"
+      ]
     }
   }
 }

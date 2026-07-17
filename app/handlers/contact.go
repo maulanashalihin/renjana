@@ -92,20 +92,20 @@ func (h *ContactHandler) Create(c *fiber.Ctx) error {
 func (h *ContactHandler) Store(c *fiber.Ctx) error {
 	_, _, err := h.authUser(c)
 	if err != nil {
-		return c.Redirect("/login")
+		return c.Redirect("/login", fiber.StatusSeeOther)
 	}
 
 	var req services.CreateContactRequest
 	if err := c.BodyParser(&req); err != nil {
-		return c.Redirect("/kontak?action=create&error=" + err.Error())
+		return c.Redirect("/kontak?action=create&error="+err.Error(), fiber.StatusSeeOther)
 	}
 
 	_, err = h.contactService.Create(c.Context(), req)
 	if err != nil {
-		return c.Redirect("/kontak?action=create&error=" + err.Error())
+		return c.Redirect("/kontak?action=create&error="+err.Error(), fiber.StatusSeeOther)
 	}
 
-	return c.Redirect("/kontak?success=created")
+	return c.Redirect("/kontak?success=created", fiber.StatusSeeOther)
 }
 
 // Edit — render with edit modal opened.
@@ -118,20 +118,20 @@ func (h *ContactHandler) Edit(c *fiber.Ctx) error {
 func (h *ContactHandler) Update(c *fiber.Ctx) error {
 	_, _, err := h.authUser(c)
 	if err != nil {
-		return c.Redirect("/login")
+		return c.Redirect("/login", fiber.StatusSeeOther)
 	}
 	id, _ := strconv.ParseInt(c.Params("id"), 10, 64)
 
 	var req services.UpdateContactRequest
 	if err := c.BodyParser(&req); err != nil {
-		return c.Redirect(fmt.Sprintf("/kontak?action=edit&id=%d&error=invalid", id))
+		return c.Redirect(fmt.Sprintf("/kontak?action=edit&id=%d&error=invalid", id), fiber.StatusSeeOther)
 	}
 
 	if err := h.contactService.Update(c.Context(), id, req); err != nil {
-		return c.Redirect(fmt.Sprintf("/kontak?action=edit&id=%d&error=%s", id, err.Error()))
+		return c.Redirect(fmt.Sprintf("/kontak?action=edit&id=%d&error=%s", id, err.Error()), fiber.StatusSeeOther)
 	}
 
-	return c.Redirect("/kontak?success=updated")
+	return c.Redirect("/kontak?success=updated", fiber.StatusSeeOther)
 }
 
 // Destroy — handle DELETE /kontak/:id.
@@ -147,5 +147,5 @@ func (h *ContactHandler) Destroy(c *fiber.Ctx) error {
 			"error": err.Error(),
 		})
 	}
-	return c.Redirect("/kontak?success=deleted")
+	return c.Redirect("/kontak?success=deleted", fiber.StatusSeeOther)
 }

@@ -28,6 +28,7 @@
 - [[sources/obs-2026-07-16-complaint-ticket-dark-mode-fix-implemented]] — "Observation: Complaint ticket & dark mode fix implemented" *(created: 2026-07-16)*
 - [[sources/obs-2026-07-17-bomb-payload-prevention-maxlength-server-validation-added]] — "Observation: Bomb payload prevention: maxlength + server validation added" *(created: 2026-07-17)*
 - [[sources/obs-2026-07-17-brace-expansion-di-package-lock-json]] — "Observation: brace-expansion di package-lock.json" *(created: 2026-07-17)*
+- [[sources/obs-2026-07-17-unhandled-error-review-csrf-save-logger-c-next-sess-destroy]] — "Observation: Unhandled error review: CSRF Save, Logger c.Next, sess.Destroy" *(created: 2026-07-17)*
 
 ---
-*Last updated: 2026-07-17T02:43:28.610Z* | *Total pages: 21*
+*Last updated: 2026-07-17T03:02:17.806Z* | *Total pages: 22*

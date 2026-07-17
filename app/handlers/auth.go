@@ -175,7 +175,9 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 // Logout handles user logout
 func (h *AuthHandler) Logout(c *fiber.Ctx) error {
 	sess, _ := h.store.Get(c)
-	sess.Destroy()
+	if err := sess.Destroy(); err != nil {
+		slog.Error("failed to destroy session on logout", "error", err)
+	}
 
 	slog.Info("user logged out", "handler", "Auth.Logout", "redirect", "/login")
 

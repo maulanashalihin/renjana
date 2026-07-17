@@ -221,6 +221,8 @@ func TestActivityHandlerIndex_KoordinatorScope(t *testing.T) {
 	app := fiber.New()
 	app.Use(func(c *fiber.Ctx) error {
 		c.Locals("user_id", user.ID)
+		sess, _ := store.Get(c)
+		sess.Set("user_id", user.ID)
 		return c.Next()
 	})
 	app.Get("/kegiatan", handler.Index)

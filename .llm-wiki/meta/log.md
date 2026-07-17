@@ -71,3 +71,6 @@
 ## [2026-07-17T02:43:28.570Z] observe
 - slug: "obs-2026-07-17-brace-expansion-di-package-lock-json", title: "brace-expansion di package-lock.json", relevance: "low"
 
+## [2026-07-17T03:02:17.754Z] observe
+- slug: "obs-2026-07-17-unhandled-error-review-csrf-save-logger-c-next-sess-destroy", title: "Unhandled error review: CSRF Save, Logger c.Next, sess.Destroy", relevance: "medium"
+

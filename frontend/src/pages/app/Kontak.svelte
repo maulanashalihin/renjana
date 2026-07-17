@@ -58,6 +58,7 @@
     let actionType = $state<"create" | "edit" | "">("");
     let editTarget = $state<Contact | null>(null);
     let selectedRole = $state("Fasilitator");
+    let selectedDistrictId = $state(0);
 
     const items = $derived(contacts?.data ?? []);
 
@@ -107,6 +108,7 @@
         actionType = "edit";
         editTarget = c;
         selectedRole = c.role;
+        selectedDistrictId = c.district_id;
     }
 
     function handleSubmit(e: Event) {
@@ -114,7 +116,12 @@
         const form = e.target as HTMLFormElement;
         const data = new FormData(form);
         const obj: Record<string, any> = {};
-        data.forEach((v, k) => { obj[k] = v; });
+        data.forEach((v, k) => {
+            // Convert FormData strings to proper types for JSON
+            if (k === "is_active") obj[k] = v === "true";
+            else if (k === "district_id") obj[k] = parseInt(v as string) || 0;
+            else obj[k] = v;
+        });
         if (actionType === "create") {
             router.post("/kontak", obj, {
                 onSuccess: () => closeModal(),
@@ -130,6 +137,7 @@
         actionType = "";
         editTarget = null;
         selectedRole = "Fasilitator";
+        selectedDistrictId = 0;
     }
 
     function handleDelete(id: number) {
@@ -356,7 +364,7 @@
                     {#if selectedRole === "Fasilitator"}
                         <div>
                             <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Kecamatan *</label>
-                            <select name="district_id" class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none">
+                            <select name="district_id" bind:value={selectedDistrictId} class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none">
                                 <option value="0" disabled selected>Pilih kecamatan...</option>
                                 {#each districts as d}
                                     <option value={d.id}>{d.name}</option>
