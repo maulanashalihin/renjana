@@ -12,10 +12,11 @@
   interface Props {
     value?: string;
     error?: string;
+    selectedEntry?: SchoolResult | null;
     onSelect?: (school: SchoolResult) => void;
   }
 
-  let { value = $bindable(""), error = "", onSelect = undefined }: Props = $props();
+  let { value = $bindable(""), error = "", selectedEntry = $bindable(null), onSelect = undefined }: Props = $props();
 
   let isOpen = $state(false);
   let highlightedIndex = $state(-1);
@@ -48,12 +49,14 @@
 
   function selectSchool(entry: SchoolResult) {
     value = entry.name;
+    selectedEntry = entry;
     isOpen = false;
     highlightedIndex = -1;
     onSelect?.(entry);
   }
 
   function handleInput() {
+    selectedEntry = null;
     isOpen = true;
     highlightedIndex = -1;
 

@@ -54,14 +54,24 @@
         avatar_url: "",
     });
 
+    interface SchoolResult {
+        id: number;
+        name: string;
+        level: string;
+        status: string;
+        kecamatan: string;
+    }
+
+    let selectedSchool = $state<SchoolResult | null>(null);
+
     let isLoading = $state(false);
     let fieldErrors = $state<{ school?: string; district_id?: string; phone?: string }>({});
 
     function validate(): boolean {
         fieldErrors = {};
         let ok = true;
-        if (!form.school.trim()) {
-            fieldErrors.school = "Sekolah wajib diisi";
+        if (!selectedSchool) {
+            fieldErrors.school = "Pilih sekolah dari daftar yang muncul";
             ok = false;
         }
         if (!form.district_id) {
@@ -96,7 +106,7 @@
     let progress = $derived.by(() => {
         let filled = 0;
         const required = 3; // school, district, phone
-        if (form.school.trim()) filled++;
+        if (selectedSchool) filled++;
         if (form.district_id) filled++;
         if (form.phone.trim()) filled++;
         return Math.round((filled / required) * 100);
@@ -169,6 +179,7 @@
                     </label>
                     <SchoolAutocomplete
                         bind:value={form.school}
+                        bind:selectedEntry={selectedSchool}
                         error={fieldErrors.school}
                         onSelect={(entry) => {
                             const match = districts.find(

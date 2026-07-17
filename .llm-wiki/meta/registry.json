@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-07-17T03:02:17.806Z",
+  "last_updated": "2026-07-17T05:15:41.251Z",
   "pages": {
     "concepts/agent-browser-testing": {
       "type": "page",
@@ -199,6 +199,23 @@
         "conversation"
       ]
     },
+    "sources/obs-2026-07-17-avatar-dir-permission-tightened-from-0755-to-0750": {
+      "type": "source",
+      "title": "\"Observation: Avatar dir permission tightened from 0755 to 0750\"",
+      "created": "2026-07-17",
+      "updated": "2026-07-17",
+      "slug": "obs-2026-07-17-avatar-dir-permission-tightened-from-0755-to-0750",
+      "status": "observation",
+      "relevance": "low",
+      "observed_at": "2026-07-17T05:15:37.744Z",
+      "tags": [
+        "security",
+        "permission",
+        "avatar",
+        "auth"
+      ],
+      "source_context": "\"Security review and code simplification of auth service\""
+    },
     "sources/obs-2026-07-17-bomb-payload-prevention-maxlength-server-validation-added": {
       "type": "source",
       "title": "\"Observation: Bomb payload prevention: maxlength + server validation added\"",
@@ -225,6 +242,23 @@
       "status": "observation",
       "relevance": "low",
       "observed_at": "2026-07-17T02:43:28.569Z"
+    },
+    "sources/obs-2026-07-17-google-avatar-format-detection-simplified": {
+      "type": "source",
+      "title": "\"Observation: Google avatar format detection simplified\"",
+      "created": "2026-07-17",
+      "updated": "2026-07-17",
+      "slug": "obs-2026-07-17-google-avatar-format-detection-simplified",
+      "status": "observation",
+      "relevance": "low",
+      "observed_at": "2026-07-17T05:15:41.233Z",
+      "tags": [
+        "auth",
+        "avatar",
+        "cleanup",
+        "simplification"
+      ],
+      "source_context": "\"Code simplification of auth service avatar download\""
     },
     "sources/obs-2026-07-17-unhandled-error-review-csrf-save-logger-c-next-sess-destroy": {
       "type": "source",

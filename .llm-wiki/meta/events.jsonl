@@ -22,3 +22,5 @@
 {"timestamp":"2026-07-17T02:27:41.861Z","kind":"observe","slug":"obs-2026-07-17-bomb-payload-prevention-maxlength-server-validation-added","title":"Bomb payload prevention: maxlength + server validation added","relevance":"high"}
 {"timestamp":"2026-07-17T02:43:28.570Z","kind":"observe","slug":"obs-2026-07-17-brace-expansion-di-package-lock-json","title":"brace-expansion di package-lock.json","relevance":"low"}
 {"timestamp":"2026-07-17T03:02:17.754Z","kind":"observe","slug":"obs-2026-07-17-unhandled-error-review-csrf-save-logger-c-next-sess-destroy","title":"Unhandled error review: CSRF Save, Logger c.Next, sess.Destroy","relevance":"medium"}
+{"timestamp":"2026-07-17T05:15:37.745Z","kind":"observe","slug":"obs-2026-07-17-avatar-dir-permission-tightened-from-0755-to-0750","title":"Avatar dir permission tightened from 0755 to 0750","relevance":"low"}
+{"timestamp":"2026-07-17T05:15:41.234Z","kind":"observe","slug":"obs-2026-07-17-google-avatar-format-detection-simplified","title":"Google avatar format detection simplified","relevance":"low"}

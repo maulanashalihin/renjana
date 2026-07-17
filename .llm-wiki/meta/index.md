@@ -26,9 +26,11 @@
 - [[sources/obs-2026-07-16-14-item-perbaikan-renjana-selesai-diverifikasi]] — "Observation: 14 item perbaikan RENJANA selesai diverifikasi" *(created: 2026-07-16)*
 - [[sources/obs-2026-07-16-bpbd-tanah-bumbu-logos-added-to-certificate]] — "Observation: BPBD & Tanah Bumbu logos added to certificate" *(created: 2026-07-16)*
 - [[sources/obs-2026-07-16-complaint-ticket-dark-mode-fix-implemented]] — "Observation: Complaint ticket & dark mode fix implemented" *(created: 2026-07-16)*
+- [[sources/obs-2026-07-17-avatar-dir-permission-tightened-from-0755-to-0750]] — "Observation: Avatar dir permission tightened from 0755 to 0750" *(created: 2026-07-17)*
 - [[sources/obs-2026-07-17-bomb-payload-prevention-maxlength-server-validation-added]] — "Observation: Bomb payload prevention: maxlength + server validation added" *(created: 2026-07-17)*
 - [[sources/obs-2026-07-17-brace-expansion-di-package-lock-json]] — "Observation: brace-expansion di package-lock.json" *(created: 2026-07-17)*
+- [[sources/obs-2026-07-17-google-avatar-format-detection-simplified]] — "Observation: Google avatar format detection simplified" *(created: 2026-07-17)*
 - [[sources/obs-2026-07-17-unhandled-error-review-csrf-save-logger-c-next-sess-destroy]] — "Observation: Unhandled error review: CSRF Save, Logger c.Next, sess.Destroy" *(created: 2026-07-17)*
 
 ---
-*Last updated: 2026-07-17T03:02:17.806Z* | *Total pages: 22*
+*Last updated: 2026-07-17T05:15:41.251Z* | *Total pages: 24*

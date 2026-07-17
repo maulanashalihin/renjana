@@ -74,3 +74,9 @@
 ## [2026-07-17T03:02:17.754Z] observe
 - slug: "obs-2026-07-17-unhandled-error-review-csrf-save-logger-c-next-sess-destroy", title: "Unhandled error review: CSRF Save, Logger c.Next, sess.Destroy", relevance: "medium"
 
+## [2026-07-17T05:15:37.745Z] observe
+- slug: "obs-2026-07-17-avatar-dir-permission-tightened-from-0755-to-0750", title: "Avatar dir permission tightened from 0755 to 0750", relevance: "low"
+
+## [2026-07-17T05:15:41.234Z] observe
+- slug: "obs-2026-07-17-google-avatar-format-detection-simplified", title: "Google avatar format detection simplified", relevance: "low"
+

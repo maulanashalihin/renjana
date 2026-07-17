@@ -18,7 +18,9 @@
   "sources/obs-2026-07-16-14-item-perbaikan-renjana-selesai-diverifikasi": [],
   "sources/obs-2026-07-16-bpbd-tanah-bumbu-logos-added-to-certificate": [],
   "sources/obs-2026-07-16-complaint-ticket-dark-mode-fix-implemented": [],
+  "sources/obs-2026-07-17-avatar-dir-permission-tightened-from-0755-to-0750": [],
   "sources/obs-2026-07-17-bomb-payload-prevention-maxlength-server-validation-added": [],
   "sources/obs-2026-07-17-brace-expansion-di-package-lock-json": [],
+  "sources/obs-2026-07-17-google-avatar-format-detection-simplified": [],
   "sources/obs-2026-07-17-unhandled-error-review-csrf-save-logger-c-next-sess-destroy": []
 }
