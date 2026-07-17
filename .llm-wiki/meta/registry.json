@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-07-17T02:27:41.876Z",
+  "last_updated": "2026-07-17T02:43:28.610Z",
   "pages": {
     "concepts/agent-browser-testing": {
       "type": "page",
@@ -215,6 +215,16 @@
         "frontend"
       ],
       "source_context": "\"Verifikasi bom payload di form input\""
+    },
+    "sources/obs-2026-07-17-brace-expansion-di-package-lock-json": {
+      "type": "source",
+      "title": "\"Observation: brace-expansion di package-lock.json\"",
+      "created": "2026-07-17",
+      "updated": "2026-07-17",
+      "slug": "obs-2026-07-17-brace-expansion-di-package-lock-json",
+      "status": "observation",
+      "relevance": "low",
+      "observed_at": "2026-07-17T02:43:28.569Z"
     }
   }
 }

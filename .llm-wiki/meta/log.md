@@ -68,3 +68,6 @@
 ## [2026-07-17T02:27:41.861Z] observe
 - slug: "obs-2026-07-17-bomb-payload-prevention-maxlength-server-validation-added", title: "Bomb payload prevention: maxlength + server validation added", relevance: "high"
 
+## [2026-07-17T02:43:28.570Z] observe
+- slug: "obs-2026-07-17-brace-expansion-di-package-lock-json", title: "brace-expansion di package-lock.json", relevance: "low"
+

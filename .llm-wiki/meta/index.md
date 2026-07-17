@@ -27,6 +27,7 @@
 - [[sources/obs-2026-07-16-bpbd-tanah-bumbu-logos-added-to-certificate]] — "Observation: BPBD & Tanah Bumbu logos added to certificate" *(created: 2026-07-16)*
 - [[sources/obs-2026-07-16-complaint-ticket-dark-mode-fix-implemented]] — "Observation: Complaint ticket & dark mode fix implemented" *(created: 2026-07-16)*
 - [[sources/obs-2026-07-17-bomb-payload-prevention-maxlength-server-validation-added]] — "Observation: Bomb payload prevention: maxlength + server validation added" *(created: 2026-07-17)*
+- [[sources/obs-2026-07-17-brace-expansion-di-package-lock-json]] — "Observation: brace-expansion di package-lock.json" *(created: 2026-07-17)*
 
 ---
-*Last updated: 2026-07-17T02:27:41.876Z* | *Total pages: 20*
+*Last updated: 2026-07-17T02:43:28.610Z* | *Total pages: 21*
