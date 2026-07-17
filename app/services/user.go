@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 
 	"github.com/maulanashalihin/laju-go/app/models"
@@ -63,10 +64,36 @@ func (s *UserService) UpdateProfile(userID int64, req models.UpdateProfileReques
 		return nil, err
 	}
 
-	// Sync name & avatar ke volunteer record kalau user punya volunteer account
+	// Sync ke volunteer record kalau user punya volunteer account
 	vol, volErr := s.querier.GetVolunteerByUserID(context.Background(), userID)
 	if volErr == nil {
+		// Update nama & avatar
 		_ = s.querier.UpdateVolunteerProfile(context.Background(), vol.ID, req.Name, user.Avatar)
+
+		// Update school, phone, district_id kalau dikirim
+		if req.School != "" || req.Phone != "" || req.DistrictID != 0 {
+			phone := sql.NullString{}
+			if req.Phone != "" {
+				phone = sql.NullString{String: req.Phone, Valid: true}
+			}
+			school := vol.School
+			if req.School != "" {
+				school = req.School
+			}
+			districtID := vol.DistrictID
+			if req.DistrictID != 0 {
+				districtID = req.DistrictID
+			}
+			_, _ = s.querier.UpdateVolunteer(context.Background(), queries.UpdateVolunteerParams{
+				Name:       vol.Name,
+				School:     school,
+				DistrictID: districtID,
+				Phone:      phone,
+				Status:     vol.Status,
+				JoinedAt:   vol.JoinedAt,
+				ID:         vol.ID,
+			})
+		}
 	}
 
 	response := user.ToResponse()

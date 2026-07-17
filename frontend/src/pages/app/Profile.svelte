@@ -4,7 +4,15 @@
     import AppLayout from "../../components/AppLayout.svelte";
     import DarkModeToggle from "../../components/DarkModeToggle.svelte";
     import { Toast } from "../../lib/utils/helpers";
-    import { Upload, User as UserIcon, Mail } from "lucide-svelte";
+    import {
+        Upload,
+        User as UserIcon,
+        Mail,
+        MapPin,
+        Phone,
+        GraduationCap,
+        Building2,
+    } from "lucide-svelte";
 
     interface User {
         id: number;
@@ -15,18 +23,31 @@
         email_verified: boolean;
     }
 
+    interface Volunteer {
+        id: number;
+        name: string;
+        school: string;
+        district_id: number;
+        district_name: string;
+        phone: string;
+        status: string;
+    }
+
     interface Props {
         user?: User;
+        volunteer?: Volunteer | null;
         success?: string;
         error?: string;
     }
 
-    let { user, success, error }: Props = $props();
+    let { user, volunteer = null, success, error }: Props = $props();
 
     let profileForm = $state({
         name: "",
         avatar: "",
     });
+
+    let volPhone = $state("");
 
     let isProfileLoading = $state(false);
     let previewUrl = $state<string | null>(null);
@@ -36,6 +57,12 @@
             profileForm.name = user.name || "";
             profileForm.avatar = user.avatar || "";
             previewUrl = user.avatar || null;
+        }
+    });
+
+    $effect(() => {
+        if (volunteer) {
+            volPhone = volunteer.phone || "";
         }
     });
 
@@ -79,6 +106,16 @@
         e.preventDefault();
         isProfileLoading = true;
         router.put("/profile", { name: profileForm.name }, {
+            onFinish: () => {
+                isProfileLoading = false;
+            },
+        });
+    }
+
+    function handleVolSubmit(e: Event) {
+        e.preventDefault();
+        isProfileLoading = true;
+        router.put("/profile", { phone: volPhone || "" }, {
             onFinish: () => {
                 isProfileLoading = false;
             },
@@ -298,6 +335,85 @@
             </div>
         </div>
 
+        {#if user?.role === "relawan" && volunteer}
+            <form
+                onsubmit={handleVolSubmit}
+                class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6"
+                in:fly={{ y: 20, duration: 600, delay: 100 }}
+            >
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-10 h-10 rounded-xl bg-renjana-500/10 flex items-center justify-center">
+                        <GraduationCap class="w-5 h-5 text-renjana-500" />
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-slate-900 dark:text-white">
+                            Data Relawan
+                        </h3>
+                        <p class="text-sm text-slate-500 dark:text-slate-400">
+                            Informasi sekolah, kecamatan, dan nomor telepon
+                        </p>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                                <span class="inline-flex items-center gap-1.5">
+                                    <Building2 class="w-4 h-4 text-slate-400" />
+                                    Sekolah
+                                </span>
+                            </label>
+                            <p class="text-sm text-slate-900 dark:text-white py-2.5 px-1">
+                                {volunteer.school || "-"}
+                            </p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                                <span class="inline-flex items-center gap-1.5">
+                                    <MapPin class="w-4 h-4 text-slate-400" />
+                                    Kecamatan
+                                </span>
+                            </label>
+                            <p class="text-sm text-slate-900 dark:text-white py-2.5 px-1">
+                                {volunteer.district_name || "-"}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                            <span class="inline-flex items-center gap-1.5">
+                                <Phone class="w-4 h-4 text-slate-400" />
+                                Nomor Telepon
+                            </span>
+                        </label>
+                        <input
+                            type="tel"
+                            bind:value={volPhone}
+                            class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-renjana-500/20 focus:border-renjana-500 text-slate-900 dark:text-white placeholder-slate-400 transition-all outline-none"
+                            placeholder="081234567890"
+                            maxlength="15"
+                        />
+                    </div>
+
+                    <div class="flex justify-end pt-2">
+                        <button
+                            type="submit"
+                            disabled={isProfileLoading}
+                            class="px-5 py-2.5 rounded-xl bg-renjana-500 hover:bg-renjana-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold transition-all shadow-md hover:shadow-lg flex items-center gap-2"
+                        >
+                            {#if isProfileLoading}
+                                <span class="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                                Menyimpan...
+                            {:else}
+                                Simpan Data Relawan
+                            {/if}
+                        </button>
+                    </div>
+                </div>
+            </form>
+        {/if}
 
     </div>
 </AppLayout>

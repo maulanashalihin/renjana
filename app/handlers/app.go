@@ -11,6 +11,7 @@ import (
 
 type AppHandler struct {
 	userService      *services.UserService
+	volunteerService *services.VolunteerService
 	store            *session.Store
 	inertiaService   *services.InertiaService
 	dashboardService *services.DashboardService
@@ -18,12 +19,14 @@ type AppHandler struct {
 
 func NewAppHandler(
 	userService *services.UserService,
+	volunteerService *services.VolunteerService,
 	store *session.Store,
 	inertiaService *services.InertiaService,
 	dashboardService *services.DashboardService,
 ) *AppHandler {
 	return &AppHandler{
 		userService:      userService,
+		volunteerService: volunteerService,
 		store:            store,
 		inertiaService:   inertiaService,
 		dashboardService: dashboardService,
@@ -139,11 +142,11 @@ func lastIndex(s, substr string) int {
 // Menampilkan profil jika user login, atau null jika publik.
 func (h *AppHandler) Profile(c *fiber.Ctx) error {
 	// Detect user from session (works without AuthRequired middleware)
-	var user *models.User
+	var user *models.UserResponse
 	sess, sessErr := h.store.Get(c)
 	if sessErr == nil {
 		if uid := sess.Get("user_id"); uid != nil {
-			user = &models.User{
+			user = &models.UserResponse{
 				ID:            uid.(int64),
 				Name:          toStr(sess.Get("name")),
 				Email:         toStr(sess.Get("email")),
@@ -154,9 +157,32 @@ func (h *AppHandler) Profile(c *fiber.Ctx) error {
 		}
 	}
 
-	return h.inertiaService.Render(c, "app/Profile", fiber.Map{
+	props := h.profilePropsWithVolunteer(c, fiber.Map{
 		"user": user,
 	})
+
+	return h.inertiaService.Render(c, "app/Profile", props)
+}
+
+// profilePropsWithVolunteer builds the Inertia props map for the Profile page,
+// including volunteer data if the user is a relawan.
+func (h *AppHandler) profilePropsWithVolunteer(c *fiber.Ctx, extra fiber.Map) fiber.Map {
+	props := fiber.Map{}
+	if extra != nil {
+		for k, v := range extra {
+			props[k] = v
+		}
+	}
+
+	// Fetch volunteer data for relawan
+	if u, ok := props["user"].(*models.UserResponse); ok && u != nil && u.Role == models.RoleRelawan {
+		vol, err := h.volunteerService.GetByUserID(c.Context(), u.ID)
+		if err == nil && vol != nil {
+			props["volunteer"] = vol
+		}
+	}
+
+	return props
 }
 
 // UpdateProfile updates user profile (Inertia)
@@ -201,10 +227,11 @@ func (h *AppHandler) UpdateProfile(c *fiber.Ctx) error {
 	}
 	sess.Save()
 
-	return h.inertiaService.Render(c, "app/Profile", fiber.Map{
+	props := h.profilePropsWithVolunteer(c, fiber.Map{
 		"user":    user,
 		"success": "Profile updated successfully",
 	})
+	return h.inertiaService.Render(c, "app/Profile", props)
 }
 
 // UpdatePassword updates user password (Inertia)
@@ -261,10 +288,11 @@ func (h *AppHandler) UpdatePassword(c *fiber.Ctx) error {
 		EmailVerified: toBool(sess.Get("email_verified")),
 	}
 
-	return h.inertiaService.Render(c, "app/Profile", fiber.Map{
+	props := h.profilePropsWithVolunteer(c, fiber.Map{
 		"user":    user,
 		"success": "Password changed successfully",
 	})
+	return h.inertiaService.Render(c, "app/Profile", props)
 }
 
 // toStr safely extracts a string from an interface{}, defaulting to empty string.

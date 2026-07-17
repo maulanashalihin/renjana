@@ -14,8 +14,11 @@ type LoginRequest struct {
 }
 
 type UpdateProfileRequest struct {
-	Name   string `json:"name"`
-	Avatar string `json:"avatar"`
+	Name       string `json:"name"`
+	Avatar     string `json:"avatar"`
+	School     string `json:"school,omitempty"`
+	Phone      string `json:"phone,omitempty"`
+	DistrictID int64  `json:"district_id,omitempty"`
 }
 
 type UserResponse struct {
