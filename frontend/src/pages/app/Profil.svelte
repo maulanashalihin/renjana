@@ -142,7 +142,7 @@
                 <FileDown class="w-4 h-4" />
                 Panduan
             </a>
-            {#if user}
+            {#if user?.role === "admin"}
                 <button onclick={() => editing = !editing} class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-renjana-500 hover:bg-renjana-600 text-white text-sm font-semibold transition">
                     <Pencil class="w-4 h-4" />
                     {editing ? "Batal Edit" : "Edit"}
