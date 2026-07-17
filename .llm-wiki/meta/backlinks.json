@@ -17,5 +17,6 @@
   "sources/obs-2026-07-15-usercache-dihapus-data-profil-disimpan-di-session": [],
   "sources/obs-2026-07-16-14-item-perbaikan-renjana-selesai-diverifikasi": [],
   "sources/obs-2026-07-16-bpbd-tanah-bumbu-logos-added-to-certificate": [],
-  "sources/obs-2026-07-16-complaint-ticket-dark-mode-fix-implemented": []
+  "sources/obs-2026-07-16-complaint-ticket-dark-mode-fix-implemented": [],
+  "sources/obs-2026-07-17-bomb-payload-prevention-maxlength-server-validation-added": []
 }

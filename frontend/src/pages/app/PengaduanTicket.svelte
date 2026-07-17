@@ -218,7 +218,7 @@
                     {/if}
                     <div>
                         <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Pesan</label>
-                        <textarea bind:value={replyMessage} required rows={3} disabled={sending} class="w-full px-3 py-2.5 rounded-lg bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none placeholder-neutral-400 dark:placeholder-neutral-500" placeholder="Tulis balasan..."></textarea>
+                        <textarea bind:value={replyMessage} required rows={3} disabled={sending} class="w-full px-3 py-2.5 rounded-lg bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none placeholder-neutral-400 dark:placeholder-neutral-500" placeholder="Tulis balasan..." maxlength="2000"></textarea>
                     </div>
                     <button type="submit" disabled={sending} class="inline-flex items-center gap-2 px-5 py-2 rounded-lg bg-renjana-500 hover:bg-renjana-600 disabled:bg-neutral-400 text-white text-sm font-semibold transition">
                         <Send class="w-4 h-4" /> {sending ? "Mengirim..." : "Kirim Balasan"}

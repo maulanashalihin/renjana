@@ -226,6 +226,7 @@
                         placeholder="081234567890"
                         class="w-full px-4 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:border-renjana-500 focus:ring-2 focus:ring-renjana-500/20 outline-none transition"
                         class:border-red-500={fieldErrors.phone}
+                        maxlength="15"
                     />
                     {#if fieldErrors.phone}
                         <p class="mt-1 text-xs text-red-500">{fieldErrors.phone}</p>

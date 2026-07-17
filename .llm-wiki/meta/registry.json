@@ -1,66 +1,66 @@
 {
   "version": "1.0",
-  "last_updated": "2026-07-16T06:53:40.558Z",
+  "last_updated": "2026-07-17T02:27:41.876Z",
   "pages": {
     "concepts/agent-browser-testing": {
       "type": "page",
       "title": "agent-browser-testing",
-      "created": "2026-07-16",
-      "updated": "2026-07-16"
+      "created": "2026-07-17",
+      "updated": "2026-07-17"
     },
     "concepts/deployment": {
       "type": "page",
       "title": "deployment",
-      "created": "2026-07-16",
-      "updated": "2026-07-16"
+      "created": "2026-07-17",
+      "updated": "2026-07-17"
     },
     "concepts/design-standards": {
       "type": "page",
       "title": "design-standards",
-      "created": "2026-07-16",
-      "updated": "2026-07-16"
+      "created": "2026-07-17",
+      "updated": "2026-07-17"
     },
     "concepts/environment-config": {
       "type": "page",
       "title": "environment-config",
-      "created": "2026-07-16",
-      "updated": "2026-07-16"
+      "created": "2026-07-17",
+      "updated": "2026-07-17"
     },
     "concepts/handler-structure": {
       "type": "page",
       "title": "handler-structure",
-      "created": "2026-07-16",
-      "updated": "2026-07-16"
+      "created": "2026-07-17",
+      "updated": "2026-07-17"
     },
     "concepts/http-conventions": {
       "type": "page",
       "title": "http-conventions",
-      "created": "2026-07-16",
-      "updated": "2026-07-16"
+      "created": "2026-07-17",
+      "updated": "2026-07-17"
     },
     "concepts/migration-convention": {
       "type": "page",
       "title": "migration-convention",
-      "created": "2026-07-16",
-      "updated": "2026-07-16"
+      "created": "2026-07-17",
+      "updated": "2026-07-17"
     },
     "concepts/rbac-roles": {
       "type": "page",
       "title": "rbac-roles",
-      "created": "2026-07-16",
-      "updated": "2026-07-16"
+      "created": "2026-07-17",
+      "updated": "2026-07-17"
     },
     "concepts/svelte-conventions": {
       "type": "page",
       "title": "svelte-conventions",
-      "created": "2026-07-16",
-      "updated": "2026-07-16"
+      "created": "2026-07-17",
+      "updated": "2026-07-17"
     },
     "concepts/three-tier-rule": {
       "type": "page",
       "title": "three-tier-rule",
-      "created": "2026-07-16",
-      "updated": "2026-07-16"
+      "created": "2026-07-17",
+      "updated": "2026-07-17"
     },
     "sources/deployment-read-all-before-action": {
       "type": "source",
@@ -198,6 +198,23 @@
         "dark-mode",
         "conversation"
       ]
+    },
+    "sources/obs-2026-07-17-bomb-payload-prevention-maxlength-server-validation-added": {
+      "type": "source",
+      "title": "\"Observation: Bomb payload prevention: maxlength + server validation added\"",
+      "created": "2026-07-17",
+      "updated": "2026-07-17",
+      "slug": "obs-2026-07-17-bomb-payload-prevention-maxlength-server-validation-added",
+      "status": "observation",
+      "relevance": "high",
+      "observed_at": "2026-07-17T02:27:41.860Z",
+      "tags": [
+        "security",
+        "validation",
+        "backend",
+        "frontend"
+      ],
+      "source_context": "\"Verifikasi bom payload di form input\""
     }
   }
 }

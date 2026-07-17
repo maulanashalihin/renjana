@@ -132,6 +132,23 @@ func (h *ComplaintHandler) Store(c *fiber.Ctx) error {
 		})
 	}
 
+	// Validate field lengths to prevent bomb payload
+	if len(input.Name) > 100 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Nama terlalu panjang (maks 100 karakter)",
+		})
+	}
+	if len(input.Phone) > 15 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Nomor telepon terlalu panjang (maks 15 digit)",
+		})
+	}
+	if len(input.Message) > 2000 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Pesan terlalu panjang (maks 2000 karakter)",
+		})
+	}
+
 	// Generate unique token for ticket URL
 	token, err := h.complaintSvc.GenerateToken()
 	if err != nil {
@@ -229,6 +246,13 @@ func (h *ComplaintHandler) AddReply(c *fiber.Ctx) error {
 		})
 	}
 
+	// Validate message length to prevent bomb payload
+	if len(input.Message) > 2000 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Pesan terlalu panjang (maks 2000 karakter)",
+		})
+	}
+
 	// Determine sender type and name
 	senderType := "user"
 	senderName := input.SenderName
@@ -305,6 +329,13 @@ func (h *ComplaintHandler) UpdateStatus(c *fiber.Ctx) error {
 	}
 
 	userID := c.Locals("user_id").(int64)
+
+	// Validate response length to prevent bomb payload
+	if len(input.Response) > 2000 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Respon terlalu panjang (maks 2000 karakter)",
+		})
+	}
 
 	_, err = h.complaintSvc.UpdateStatus(c.Context(), id, input.Status, input.Response, userID)
 	if err != nil {

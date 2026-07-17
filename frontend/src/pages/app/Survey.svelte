@@ -184,11 +184,11 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Nama</label>
-                            <input type="text" name="name" bind:value={formName} class="w-full px-3 py-2.5 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" placeholder="Nama (opsional)" />
+                            <input type="text" name="name" bind:value={formName} class="w-full px-3 py-2.5 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" placeholder="Nama (opsional)" maxlength="100" />
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">No. HP</label>
-                            <input type="tel" name="phone" bind:value={formPhone} class="w-full px-3 py-2.5 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" placeholder="08xxxxxxxxxx (opsional)" />
+                            <input type="tel" name="phone" bind:value={formPhone} class="w-full px-3 py-2.5 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" placeholder="08xxxxxxxxxx (opsional)" maxlength="15" />
                         </div>
                     </div>
 
@@ -221,7 +221,7 @@
 
                     <div>
                         <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Kritik & Saran</label>
-                        <textarea name="feedback" bind:value={formFeedback} rows={4} class="w-full px-3 py-2.5 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" placeholder="Tulis kritik dan saran Anda (opsional)..."></textarea>
+                        <textarea name="feedback" bind:value={formFeedback} rows={4} class="w-full px-3 py-2.5 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" placeholder="Tulis kritik dan saran Anda (opsional)..." maxlength="2000"></textarea>
                     </div>
 
                     <button type="submit" disabled={formRating === 0} class="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg bg-renjana-500 hover:bg-renjana-600 disabled:bg-neutral-300 dark:disabled:bg-neutral-700 disabled:cursor-not-allowed text-white text-sm font-semibold transition">

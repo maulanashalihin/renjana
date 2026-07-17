@@ -124,6 +124,23 @@ func (h *SurveyHandler) Store(c *fiber.Ctx) error {
 		})
 	}
 
+	// Validate field lengths to prevent bomb payload
+	if len(input.Name) > 100 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Nama terlalu panjang (maks 100 karakter)",
+		})
+	}
+	if len(input.Phone) > 15 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Nomor telepon terlalu panjang (maks 15 digit)",
+		})
+	}
+	if len(input.Feedback) > 2000 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Kritik/saran terlalu panjang (maks 2000 karakter)",
+		})
+	}
+
 	_, err := h.surveySvc.Create(c.Context(), input.Name, input.Phone, input.ServiceType, input.Rating, input.Feedback)
 	if err != nil {
 		slog.Error("survey create error", "err", err)

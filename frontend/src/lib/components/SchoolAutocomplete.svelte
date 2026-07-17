@@ -120,6 +120,7 @@
       oninput={handleInput}
       onkeydown={handleKeydown}
       autocomplete="off"
+      maxlength="200"
     />
     <div class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
       {#if isLoading}

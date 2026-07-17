@@ -65,3 +65,6 @@
 ## [2026-07-16T06:53:40.508Z] observe
 - slug: "obs-2026-07-16-bpbd-tanah-bumbu-logos-added-to-certificate", title: "BPBD & Tanah Bumbu logos added to certificate", relevance: "medium"
 
+## [2026-07-17T02:27:41.861Z] observe
+- slug: "obs-2026-07-17-bomb-payload-prevention-maxlength-server-validation-added", title: "Bomb payload prevention: maxlength + server validation added", relevance: "high"
+

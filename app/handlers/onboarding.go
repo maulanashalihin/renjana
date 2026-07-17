@@ -80,6 +80,16 @@ func (h *OnboardingHandler) Store(c *fiber.Ctx) error {
 		return c.Redirect("/onboarding", fiber.StatusSeeOther)
 	}
 
+	// Validate field lengths to prevent bomb payload (AGENTS.md three-tier rule: handler validates input)
+	if len(req.School) > 200 {
+		h.store.Flash(c, "error", "Nama sekolah terlalu panjang (maks 200 karakter)")
+		return c.Redirect("/onboarding", fiber.StatusSeeOther)
+	}
+	if len(req.Phone) > 15 {
+		h.store.Flash(c, "error", "Nomor telepon terlalu panjang (maks 15 digit)")
+		return c.Redirect("/onboarding", fiber.StatusSeeOther)
+	}
+
 	_, err = h.volunteerService.CreateForUser(c.Context(), userID, user.Name, req.AvatarURL, req)
 	if err != nil {
 		slog.Error("onboarding: create volunteer failed", "err", err, "user_id", userID)

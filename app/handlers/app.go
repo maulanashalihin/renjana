@@ -177,6 +177,13 @@ func (h *AppHandler) UpdateProfile(c *fiber.Ctx) error {
 		})
 	}
 
+	// Validate name length to prevent bomb payload
+	if len(req.Name) > 100 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Nama terlalu panjang (maks 100 karakter)",
+		})
+	}
+
 	user, err := h.userService.UpdateProfile(userID.(int64), req)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
