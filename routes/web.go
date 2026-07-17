@@ -60,7 +60,7 @@ func SetupRoutes(app *fiber.App, h Handlers, store *session.Store, mailerService
 	setupPublicFormRoutes(app, h.Complaint, h.Survey)
 
 	// Setup app routes (protected) — semua di root path
-	setupAppRoutes(app, h.App, h.Upload, h.Volunteer, h.Activity, h.Announcement, h.Contact, h.Gallery, h.Organization, h.Onboarding, h.Document, h.Static, h.UserAdmin, h.Complaint, h.Survey, h.Education, h.School, store, csrfMiddleware)
+	setupAppRoutes(app, h.App, h.Upload, h.Volunteer, h.Activity, h.Announcement, h.Contact, h.Gallery, h.Organization, h.Onboarding, h.Document, h.Static, h.UserAdmin, h.Complaint, h.Survey, h.Education, h.School, store)
 }
 
 // setupRegistrationRoutes is deprecated — /daftar flow removed.
@@ -191,7 +191,7 @@ func setupAuthRoutes(app *fiber.App, authHandler *handlers.AuthHandler, password
 	app.Post("/reset-password/:token", passwordResetHandler.ResetPassword)
 }
 
-func setupAppRoutes(app *fiber.App, appHandler *handlers.AppHandler, uploadHandler *handlers.UploadHandler, volunteerHandler *handlers.VolunteerHandler, activityHandler *handlers.ActivityHandler, announcementHandler *handlers.AnnouncementHandler, contactHandler *handlers.ContactHandler, galleryHandler *handlers.GalleryHandler, organizationHandler *handlers.OrganizationHandler, onboardingHandler *handlers.OnboardingHandler, documentHandler *handlers.DocumentHandler, staticHandler *handlers.StaticHandler, userAdminHandler *handlers.UserAdminHandler, complaintHandler *handlers.ComplaintHandler, surveyHandler *handlers.SurveyHandler, educationHandler *handlers.EducationHandler, schoolHandler *handlers.SchoolHandler, store *session.Store, csrfMiddleware *middlewares.CSRFMiddleware) {
+func setupAppRoutes(app *fiber.App, appHandler *handlers.AppHandler, uploadHandler *handlers.UploadHandler, volunteerHandler *handlers.VolunteerHandler, activityHandler *handlers.ActivityHandler, announcementHandler *handlers.AnnouncementHandler, contactHandler *handlers.ContactHandler, galleryHandler *handlers.GalleryHandler, organizationHandler *handlers.OrganizationHandler, onboardingHandler *handlers.OnboardingHandler, documentHandler *handlers.DocumentHandler, staticHandler *handlers.StaticHandler, userAdminHandler *handlers.UserAdminHandler, complaintHandler *handlers.ComplaintHandler, surveyHandler *handlers.SurveyHandler, educationHandler *handlers.EducationHandler, schoolHandler *handlers.SchoolHandler, store *session.Store) {
 	// Protected routes (semua di root path, bukan /app/* lagi)
 	// Apply AuthRequired globally — all routes below require auth
 	app.Use(middlewares.AuthRequired(store))
@@ -281,7 +281,7 @@ func setupAppRoutes(app *fiber.App, appHandler *handlers.AppHandler, uploadHandl
 }
 
 // SetupCSRFMiddleware sets up the CSRF middleware
-func SetupCSRFMiddleware(store *session.Store, secret string) *middlewares.CSRFMiddleware {
+func SetupCSRFMiddleware(secret string) *middlewares.CSRFMiddleware {
 	config := middlewares.DefaultCSRFConfig(secret)
 	config.Secure = false // Set to true in production with HTTPS
 	config.SameSite = "Lax"
@@ -295,7 +295,7 @@ func SetupCSRFMiddleware(store *session.Store, secret string) *middlewares.CSRFM
 		"/auth/",
 		"/api/",
 	}
-	return middlewares.NewCSRFMiddleware(store, config)
+	return middlewares.NewCSRFMiddleware(config)
 }
 
 // SetupMailerService sets up the mailer service

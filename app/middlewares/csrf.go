@@ -3,31 +3,30 @@ package middlewares
 import (
 	"crypto/rand"
 	"encoding/hex"
-	"log/slog"
 	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/maulanashalihin/laju-go/app/session"
 )
 
 // CSRFConfig holds CSRF middleware configuration
 type CSRFConfig struct {
-	Secret      string        // Secret key for signing tokens
-	CookieName  string        // Name of the CSRF token cookie
-	HeaderName  string        // Name of the CSRF token header
-	TokenLength int           // Length of the random token
-	Expiry      time.Duration // Token expiry duration
-	Secure      bool          // Secure cookie flag
-	SameSite    string        // SameSite cookie attribute
-	SkipPaths   []string      // Paths to skip CSRF check
-	SkipMethods []string      // HTTP methods to skip CSRF check
+	Secret       string        // Secret key for signing tokens
+	CookieName   string        // Name of the CSRF token cookie
+	HeaderName   string        // Name of the CSRF token header
+	TokenLength  int           // Length of the random token
+	Expiry       time.Duration // Token expiry duration
+	Secure       bool          // Secure cookie flag
+	SameSite     string        // SameSite cookie attribute
+	SkipPaths    []string      // Paths to skip CSRF check
+	SkipMethods  []string      // HTTP methods to skip CSRF check
 }
 
-// CSRFMiddleware implements CSRF protection
+// CSRFMiddleware implements CSRF protection using double-submit cookie pattern.
+// The token is stored ONLY in the cookie (no session storage needed).
+// Validation compares the X-XSRF-TOKEN header with the XSRF-TOKEN cookie value.
 type CSRFMiddleware struct {
 	config CSRFConfig
-	store  *session.Store
 }
 
 // DefaultCSRFConfig returns a default CSRF configuration
@@ -45,10 +44,9 @@ func DefaultCSRFConfig(secret string) CSRFConfig {
 }
 
 // NewCSRFMiddleware creates a new CSRF middleware
-func NewCSRFMiddleware(store *session.Store, config CSRFConfig) *CSRFMiddleware {
+func NewCSRFMiddleware(config CSRFConfig) *CSRFMiddleware {
 	return &CSRFMiddleware{
 		config: config,
-		store:  store,
 	}
 }
 
@@ -78,51 +76,37 @@ func (csrf *CSRFMiddleware) Protect() fiber.Handler {
 	}
 }
 
-// setToken generates and sets a CSRF token
+// setToken generates and sets a CSRF token using double-submit cookie pattern.
+// No session write required — the token is stored in a cookie only.
 func (csrf *CSRFMiddleware) setToken(c *fiber.Ctx) error {
-	// Try to get existing token from session
-	sess, _ := csrf.store.Get(c)
-	token := sess.Get("csrf_token")
-
-	needsCookie := false
-
-	if token == nil || csrf.isTokenExpired(sess) {
-		// Generate new token
-		var err error
-		token, err = csrf.generateToken()
-		if err != nil {
-			return err
-		}
-		sess.Set("csrf_token", token)
-		sess.Set("csrf_expiry", time.Now().Add(csrf.config.Expiry).Unix())
-		if err := sess.Save(); err != nil {
-			slog.Error("failed to save CSRF token to session", "error", err)
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "Failed to save CSRF token",
-			})
-		}
-		needsCookie = true
-	} else if c.Cookies(csrf.config.CookieName) == "" {
-		// Token exists in session but browser lost the cookie (e.g. cleared, expired)
-		needsCookie = true
+	// Reuse existing cookie if still valid
+	existingToken := c.Cookies(csrf.config.CookieName)
+	if existingToken != "" {
+		return c.Next()
 	}
 
-	if needsCookie {
-		c.Cookie(&fiber.Cookie{
-			Name:     csrf.config.CookieName,
-			Value:    token.(string),
-			Path:     "/",
-			MaxAge:   int(csrf.config.Expiry.Seconds()),
-			Secure:   csrf.config.Secure,
-			HTTPOnly: false, // Must be false to allow JavaScript access
-			SameSite: csrf.config.SameSite,
-		})
+	// Generate new token
+	token, err := csrf.generateToken()
+	if err != nil {
+		return err
 	}
+
+	// Set cookie with the token
+	c.Cookie(&fiber.Cookie{
+		Name:     csrf.config.CookieName,
+		Value:    token,
+		Path:     "/",
+		MaxAge:   int(csrf.config.Expiry.Seconds()),
+		Secure:   csrf.config.Secure,
+		HTTPOnly: false, // Must be false to allow JavaScript access
+		SameSite: csrf.config.SameSite,
+	})
 
 	return c.Next()
 }
 
-// validateToken validates the CSRF token from the request
+// validateToken validates the CSRF token using double-submit cookie pattern.
+// Compares the X-XSRF-TOKEN header with the XSRF-TOKEN cookie — no session lookup needed.
 func (csrf *CSRFMiddleware) validateToken(c *fiber.Ctx) error {
 	// Get token from header, form, or query
 	token := c.Get(csrf.config.HeaderName)
@@ -137,34 +121,18 @@ func (csrf *CSRFMiddleware) validateToken(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, "CSRF token missing")
 	}
 
-	// Get token from session
-	sess, _ := csrf.store.Get(c)
-	sessionToken := sess.Get("csrf_token")
-
-	if sessionToken == nil {
+	// Get token from cookie (the source of truth)
+	cookieToken := c.Cookies(csrf.config.CookieName)
+	if cookieToken == "" {
 		return fiber.NewError(fiber.StatusForbidden, "CSRF token invalid")
 	}
 
-	// Compare tokens (constant time comparison)
-	if !csrf.constantTimeCompare(token, sessionToken.(string)) {
+	// Compare header token with cookie token (constant time comparison)
+	if !csrf.constantTimeCompare(token, cookieToken) {
 		return fiber.NewError(fiber.StatusForbidden, "CSRF token invalid")
-	}
-
-	// Check expiry
-	if csrf.isTokenExpired(sess) {
-		return fiber.NewError(fiber.StatusForbidden, "CSRF token expired")
 	}
 
 	return nil
-}
-
-// isTokenExpired checks if the token has expired
-func (csrf *CSRFMiddleware) isTokenExpired(sess *session.Session) bool {
-	expiry := sess.Get("csrf_expiry")
-	if expiry == nil {
-		return true
-	}
-	return time.Now().Unix() > expiry.(int64)
 }
 
 // generateToken generates a random CSRF token

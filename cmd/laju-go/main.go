@@ -147,7 +147,7 @@ func main() {
 	}
 
 	// Setup CSRF middleware
-	csrfMiddleware := routes.SetupCSRFMiddleware(sessionStore, cfg.SessionSecret)
+	csrfMiddleware := routes.SetupCSRFMiddleware(cfg.SessionSecret)
 
 	// Setup mailer service
 	mailerService := routes.SetupMailerService(
