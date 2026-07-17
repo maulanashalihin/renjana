@@ -257,21 +257,8 @@ func (s *AuthService) downloadAndSaveAvatar(ctx context.Context, pictureURL, goo
 		return "", fmt.Errorf("unexpected status %d", resp.StatusCode)
 	}
 
-	// Detect extension from Content-Type
-	contentType := resp.Header.Get("Content-Type")
-	ext := ".jpg"
-	switch {
-	case strings.Contains(contentType, "jpeg"), strings.Contains(contentType, "jpg"):
-		ext = ".jpg"
-	case strings.Contains(contentType, "png"):
-		ext = ".png"
-	case strings.Contains(contentType, "gif"):
-		ext = ".gif"
-	case strings.Contains(contentType, "webp"):
-		ext = ".webp"
-	}
-
-	filename := googleID + ext
+	// Google avatar selalu JPEG
+	filename := googleID + ".jpg"
 
 	// Ensure directory exists
 	avatarDir := "./storage/avatars"
