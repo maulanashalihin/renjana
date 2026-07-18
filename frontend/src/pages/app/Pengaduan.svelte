@@ -88,15 +88,7 @@
         if (formName) localStorage.setItem("pengaduan_name", formName);
     });
 
-    // Auto-redirect public users to their active ticket if stored in localStorage
-    $effect(() => {
-        if (!isAdmin) {
-            const token = localStorage.getItem("pengaduan_token");
-            if (token) {
-                router.visit(`/pengaduan/tiket/${token}`);
-            }
-        }
-    });
+    // Auto-redirect to active ticket removed — user should see list, not redirect
 
     // Admin state
     let activeTab = $state<string>("pending");

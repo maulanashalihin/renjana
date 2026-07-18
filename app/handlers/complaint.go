@@ -81,6 +81,7 @@ func (h *ComplaintHandler) publicIndex(c *fiber.Ctx, user *fiber.Map) error {
 	return h.inertiaService.Render(c, "app/PengaduanPublic", fiber.Map{
 		"user":      user,
 		"submitted": c.Query("success") == "true",
+		"token":     c.Query("token", ""),
 	})
 }
 
@@ -175,8 +176,8 @@ func (h *ComplaintHandler) Store(c *fiber.Ctx) error {
 		slog.Error("failed to add initial message", "err", err)
 	}
 
-	// Redirect to the ticket page
-	return c.Redirect("/pengaduan/tiket/"+token, fiber.StatusSeeOther)
+	// Redirect back to pengaduan page with success and token
+	return c.Redirect("/pengaduan?success=true&token="+token, fiber.StatusSeeOther)
 }
 
 // ShowTicket — display a complaint ticket with conversation.

@@ -2,8 +2,8 @@
 -- +goose StatementBegin
 -- ============================================================================
 -- RENJANA Extended Schema — Iterasi 3
--- New tables: contacts, media, documents, education, innovations, organization
--- Extends: volunteers (application_status, reviewer_id, reviewed_at, rejection_reason)
+-- New tables: contacts, media, documents, education, innovations, organization,
+-- course_modules, quiz_questions, quiz_attempts, course_progress, certificates
 -- ============================================================================
 
 -- 1. Kontak (koordinator per kecamatan)
@@ -32,10 +32,12 @@ CREATE TABLE IF NOT EXISTS renjana_media (
     caption TEXT,
     uploaded_by INTEGER REFERENCES users(id),
     uploaded_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    is_published BOOLEAN NOT NULL DEFAULT 1
+    is_published BOOLEAN NOT NULL DEFAULT 1,
+    album_id TEXT
 );
 
 CREATE INDEX idx_renjana_media_type ON renjana_media(media_type, is_published);
+CREATE INDEX idx_renjana_media_album_id ON renjana_media(album_id);
 
 -- 3. Dokumen
 CREATE TABLE IF NOT EXISTS renjana_documents (
@@ -47,6 +49,7 @@ CREATE TABLE IF NOT EXISTS renjana_documents (
     file_size INTEGER,
     description TEXT,
     uploaded_by INTEGER REFERENCES users(id),
+    original_name TEXT NOT NULL DEFAULT '',
     uploaded_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -61,6 +64,10 @@ CREATE TABLE IF NOT EXISTS renjana_education (
     age_group TEXT DEFAULT 'Umum',           -- 'SD' | 'SMP' | 'SMA' | 'Umum'
     duration_minutes INTEGER DEFAULT 30,
     is_published BOOLEAN NOT NULL DEFAULT 0,
+    cover_image TEXT,
+    passing_score INTEGER NOT NULL DEFAULT 70,
+    total_modules INTEGER NOT NULL DEFAULT 0,
+    is_course BOOLEAN NOT NULL DEFAULT 0,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -97,22 +104,100 @@ CREATE TABLE IF NOT EXISTS renjana_organization (
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
--- 7. Extend renjana_volunteers (untuk Pendaftaran workflow)
-ALTER TABLE renjana_volunteers ADD COLUMN application_status TEXT NOT NULL DEFAULT 'approved';
-ALTER TABLE renjana_volunteers ADD COLUMN reviewer_id INTEGER REFERENCES users(id);
-ALTER TABLE renjana_volunteers ADD COLUMN reviewed_at DATETIME;
-ALTER TABLE renjana_volunteers ADD COLUMN rejection_reason TEXT;
+-- 7. Course Modules (lessons/sections within a course)
+CREATE TABLE IF NOT EXISTS renjana_course_modules (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    course_id INTEGER NOT NULL REFERENCES renjana_education(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    content TEXT NOT NULL DEFAULT '',
+    video_url TEXT,
+    order_index INTEGER NOT NULL DEFAULT 0,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
 
-CREATE INDEX idx_renjana_volunteers_application ON renjana_volunteers(application_status, joined_at DESC);
+CREATE INDEX IF NOT EXISTS idx_renjana_course_modules_course ON renjana_course_modules(course_id, order_index);
+
+-- 8. Quiz Questions (MCQ per course)
+CREATE TABLE IF NOT EXISTS renjana_quiz_questions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    course_id INTEGER NOT NULL REFERENCES renjana_education(id) ON DELETE CASCADE,
+    question TEXT NOT NULL,
+    options TEXT NOT NULL,           -- JSON array of 4 options
+    correct_option INTEGER NOT NULL, -- 0-3 index of correct answer
+    order_index INTEGER NOT NULL DEFAULT 0,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_renjana_quiz_questions_course ON renjana_quiz_questions(course_id, order_index);
+
+-- 9. User Quiz Attempts
+CREATE TABLE IF NOT EXISTS renjana_quiz_attempts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    course_id INTEGER NOT NULL REFERENCES renjana_education(id) ON DELETE CASCADE,
+    score INTEGER NOT NULL DEFAULT 0,
+    total_questions INTEGER NOT NULL DEFAULT 0,
+    passed BOOLEAN NOT NULL DEFAULT 0,
+    answers TEXT,                    -- JSON array of {question_id, selected, correct}
+    started_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    completed_at DATETIME
+);
+
+CREATE INDEX IF NOT EXISTS idx_renjana_quiz_attempts_user_course ON renjana_quiz_attempts(user_id, course_id);
+CREATE INDEX IF NOT EXISTS idx_renjana_quiz_attempts_passed ON renjana_quiz_attempts(passed);
+
+-- 10. User Course Progress
+CREATE TABLE IF NOT EXISTS renjana_course_progress (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    course_id INTEGER NOT NULL REFERENCES renjana_education(id) ON DELETE CASCADE,
+    completed_modules INTEGER NOT NULL DEFAULT 0,
+    total_modules INTEGER NOT NULL DEFAULT 0,
+    completed BOOLEAN NOT NULL DEFAULT 0,
+    started_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    completed_at DATETIME,
+    UNIQUE(user_id, course_id)
+);
+
+-- 11. Certificates
+CREATE TABLE IF NOT EXISTS renjana_certificates (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    course_id INTEGER NOT NULL REFERENCES renjana_education(id) ON DELETE CASCADE,
+    certificate_code TEXT NOT NULL UNIQUE,
+    score INTEGER NOT NULL,
+    issued_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_renjana_certificates_user ON renjana_certificates(user_id);
+CREATE INDEX IF NOT EXISTS idx_renjana_certificates_code ON renjana_certificates(certificate_code);
+CREATE INDEX IF NOT EXISTS idx_renjana_certificates_user_course ON renjana_certificates(user_id, course_id);
 -- +goose StatementEnd
 
 -- +goose Down
 -- +goose StatementBegin
-DROP INDEX IF EXISTS idx_renjana_volunteers_application;
+DROP INDEX IF EXISTS idx_renjana_certificates_user_course;
+DROP INDEX IF EXISTS idx_renjana_certificates_code;
+DROP INDEX IF EXISTS idx_renjana_certificates_user;
+DROP TABLE IF EXISTS renjana_certificates;
+
+DROP INDEX IF EXISTS idx_renjana_quiz_attempts_passed;
+DROP INDEX IF EXISTS idx_renjana_quiz_attempts_user_course;
+DROP TABLE IF EXISTS renjana_quiz_attempts;
+
+DROP INDEX IF EXISTS idx_renjana_quiz_questions_course;
+DROP TABLE IF EXISTS renjana_quiz_questions;
+
+DROP INDEX IF EXISTS idx_renjana_course_modules_course;
+DROP TABLE IF EXISTS renjana_course_modules;
+
+DROP TABLE IF EXISTS renjana_course_progress;
+
 DROP INDEX IF EXISTS idx_renjana_innovations_year;
 DROP INDEX IF EXISTS idx_renjana_education_category;
 DROP INDEX IF EXISTS idx_renjana_documents_category;
 DROP INDEX IF EXISTS idx_renjana_media_type;
+DROP INDEX IF EXISTS idx_renjana_media_album_id;
 DROP INDEX IF EXISTS idx_renjana_contacts_active;
 DROP INDEX IF EXISTS idx_renjana_contacts_district;
 

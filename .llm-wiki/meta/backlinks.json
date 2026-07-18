@@ -1,5 +1,6 @@
 {
   "concepts/agent-browser-testing": [],
+  "concepts/dark-mode-mandatory": [],
   "concepts/deployment": [],
   "concepts/design-standards": [],
   "concepts/environment-config": [],
@@ -30,5 +31,8 @@
   "sources/obs-2026-07-17-unhandled-error-review-csrf-save-logger-c-next-sess-destroy": [],
   "sources/obs-2026-07-18-fix-e-preventdefault-needed-on-buttons-inside-inertia-use-in": [],
   "sources/obs-2026-07-18-pengaduan-ticket-redirect-auto-scroll-fix": [],
-  "sources/obs-2026-07-18-relawan-card-restructured-buttons-moved-outside-a-tag": []
+  "sources/obs-2026-07-18-relawan-card-restructured-buttons-moved-outside-a-tag": [],
+  "sources/obs-2026-07-18-seed-data-migrations-cleaned-volunteers-contacts-kosong-orga": [],
+  "sources/obs-2026-07-18-semua-add-column-migration-dihapus-dan-digabung-ke-create-ta": [],
+  "sources/obs-2026-07-18-user-id-added-to-renjana-volunteers-for-direct-cert-counting": []
 }

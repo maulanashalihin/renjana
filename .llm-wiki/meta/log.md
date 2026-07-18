@@ -98,3 +98,15 @@
 ## [2026-07-18T05:58:28.616Z] retro
 - slug: "first-principles-before-debugging", title: "Cek dasar dulu sebelum debug kompleks — HTML spec, UX flow, HTML defaults", category: "frontend"
 
+## [2026-07-18T06:58:07.368Z] observe
+- slug: "obs-2026-07-18-user-id-added-to-renjana-volunteers-for-direct-cert-counting", title: "user_id added to renjana_volunteers for direct cert counting", relevance: "high"
+
+## [2026-07-18T07:27:02.797Z] observe
+- slug: "obs-2026-07-18-seed-data-migrations-cleaned-volunteers-contacts-kosong-orga", title: "Seed data migrations cleaned: volunteers & contacts kosong, organization from app.db", relevance: "high"
+
+## [2026-07-18T07:41:00.045Z] observe
+- slug: "obs-2026-07-18-semua-add-column-migration-dihapus-dan-digabung-ke-create-ta", title: "Semua ADD COLUMN migration dihapus dan digabung ke CREATE TABLE utama", relevance: "high"
+
+## [2026-07-18T08:05:33.614Z] ensure_page
+- page_type: "concept", title: "dark-mode-mandatory", path: "concepts/dark-mode-mandatory"
+

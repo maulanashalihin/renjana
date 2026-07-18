@@ -47,10 +47,9 @@
     let replyName = $state(localStorage.getItem("pengaduan_name") ?? complaint?.name ?? "");
     let replyMessage = $state("");
 
-    // Save complaint name and token to localStorage for future use
+    // Save complaint name to localStorage for future use
     $effect(() => {
         if (complaint?.name) localStorage.setItem("pengaduan_name", complaint.name);
-        if (complaint?.token) localStorage.setItem("pengaduan_token", complaint.token);
     });
     let sending = $state(false);
     let resolving = $state(false);

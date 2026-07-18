@@ -10,17 +10,12 @@ import (
 )
 
 type RenjanaAchievement struct {
-	ID           int64           `json:"id"`
-	Year         int64           `json:"year"`
-	MetricKey    string          `json:"metric_key"`
-	MetricName   string          `json:"metric_name"`
-	Value        float64         `json:"value"`
-	Unit         string          `json:"unit"`
-	Target       sql.NullFloat64 `json:"target"`
-	DisplayOrder int64           `json:"display_order"`
-	Icon         sql.NullString  `json:"icon"`
-	IconColor    sql.NullString  `json:"icon_color"`
-	CreatedAt    time.Time       `json:"created_at"`
+	ID           int64     `json:"id"`
+	MetricName   string    `json:"metric_name"`
+	Value        float64   `json:"value"`
+	Unit         string    `json:"unit"`
+	DisplayOrder int64     `json:"display_order"`
+	CreatedAt    time.Time `json:"created_at"`
 }
 
 type RenjanaActivity struct {
@@ -289,6 +284,7 @@ type RenjanaVolunteer struct {
 	ReviewerID        sql.NullInt64  `json:"reviewer_id"`
 	ReviewedAt        sql.NullTime   `json:"reviewed_at"`
 	RejectionReason   sql.NullString `json:"rejection_reason"`
+	UserID            sql.NullInt64  `json:"user_id"`
 }
 
 type Session struct {

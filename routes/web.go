@@ -205,6 +205,9 @@ func setupAppRoutes(app *fiber.App, appHandler *handlers.AppHandler, uploadHandl
 	// Avatar upload — requires auth (not admin), skipped by CSRF (/api/ prefix)
 	app.Post("/api/avatar/upload", uploadHandler.UploadByPurpose)
 
+	// Achievements — admin only (edit capaian tahunan dashboard)
+	app.Put("/api/achievements", middlewares.AdminRequired(store), appHandler.UpdateAchievements)
+
 	// Organization profile — edit routes only (GET is public)
 	app.Put("/profil", middlewares.AdminRequired(store), organizationHandler.Update)
 	app.Post("/profil", middlewares.AdminRequired(store), organizationHandler.Update)

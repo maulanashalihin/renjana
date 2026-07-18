@@ -1,10 +1,16 @@
 {
   "version": "1.0",
-  "last_updated": "2026-07-18T05:58:28.659Z",
+  "last_updated": "2026-07-18T08:05:33.626Z",
   "pages": {
     "concepts/agent-browser-testing": {
       "type": "page",
       "title": "agent-browser-testing",
+      "created": "2026-07-18",
+      "updated": "2026-07-18"
+    },
+    "concepts/dark-mode-mandatory": {
+      "type": "page",
+      "title": "dark-mode-mandatory",
       "created": "2026-07-18",
       "updated": "2026-07-18"
     },
@@ -353,6 +359,42 @@
         "invalid-html"
       ],
       "source_context": "\"Fixing Relawan.svelte edit modal not showing for Admin\""
+    },
+    "sources/obs-2026-07-18-seed-data-migrations-cleaned-volunteers-contacts-kosong-orga": {
+      "type": "source",
+      "title": "\"Observation: Seed data migrations cleaned: volunteers & contacts kosong, organization from app.db\"",
+      "created": "2026-07-18",
+      "updated": "2026-07-18",
+      "slug": "obs-2026-07-18-seed-data-migrations-cleaned-volunteers-contacts-kosong-orga",
+      "status": "observation",
+      "relevance": "high",
+      "observed_at": "2026-07-18T07:27:02.796Z"
+    },
+    "sources/obs-2026-07-18-semua-add-column-migration-dihapus-dan-digabung-ke-create-ta": {
+      "type": "source",
+      "title": "\"Observation: Semua ADD COLUMN migration dihapus dan digabung ke CREATE TABLE utama\"",
+      "created": "2026-07-18",
+      "updated": "2026-07-18",
+      "slug": "obs-2026-07-18-semua-add-column-migration-dihapus-dan-digabung-ke-create-ta",
+      "status": "observation",
+      "relevance": "high",
+      "observed_at": "2026-07-18T07:41:00.045Z"
+    },
+    "sources/obs-2026-07-18-user-id-added-to-renjana-volunteers-for-direct-cert-counting": {
+      "type": "source",
+      "title": "\"Observation: user_id added to renjana_volunteers for direct cert counting\"",
+      "created": "2026-07-18",
+      "updated": "2026-07-18",
+      "slug": "obs-2026-07-18-user-id-added-to-renjana-volunteers-for-direct-cert-counting",
+      "status": "observation",
+      "relevance": "high",
+      "observed_at": "2026-07-18T06:58:07.367Z",
+      "tags": [
+        "database",
+        "migration",
+        "volunteer",
+        "certificate"
+      ]
     }
   }
 }

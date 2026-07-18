@@ -42,22 +42,6 @@
                 Pantau data relawan, kegiatan, dan capaian program dalam satu dashboard terpadu.
             </p>
 
-            <!-- Stats -->
-            <div class="mt-10 grid grid-cols-3 gap-6">
-                <div class="text-center p-4 rounded-2xl bg-white/60 dark:bg-slate-800/40 backdrop-blur border border-slate-200 dark:border-slate-700/50">
-                    <div class="text-2xl font-bold text-renjana-500">1.248</div>
-                    <div class="text-xs text-slate-600 dark:text-slate-400 mt-1">Total Relawan</div>
-                </div>
-                <div class="text-center p-4 rounded-2xl bg-white/60 dark:bg-slate-800/40 backdrop-blur border border-slate-200 dark:border-slate-700/50">
-                    <div class="text-2xl font-bold text-renjana-500">45</div>
-                    <div class="text-xs text-slate-600 dark:text-slate-400 mt-1">Sekolah Binaan</div>
-                </div>
-                <div class="text-center p-4 rounded-2xl bg-white/60 dark:bg-slate-800/40 backdrop-blur border border-slate-200 dark:border-slate-700/50">
-                    <div class="text-2xl font-bold text-renjana-500">128</div>
-                    <div class="text-xs text-slate-600 dark:text-slate-400 mt-1">Total Kegiatan</div>
-                </div>
-            </div>
-
             <!-- Quote -->
             <blockquote class="mt-10 pl-4 border-l-4 border-renjana-500">
                 <p class="italic text-slate-700 dark:text-slate-300 text-sm">

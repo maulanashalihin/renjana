@@ -532,16 +532,16 @@ WHERE v.id = (SELECT volunteer_id FROM users WHERE id = ?)`
 func (q *Querier) CreateVolunteerForUserDirect(ctx context.Context, userID int64, name, school string, districtID int64, phone string, joinedAt time.Time, avatarURL string) (int64, error) {
 	const ins = `INSERT INTO renjana_volunteers (
     name, school, district_id, phone, status, avatar_url, joined_at,
-    is_active, application_status
+    is_active, application_status, user_id
 )
-VALUES (?, ?, ?, ?, 'aktif', ?, ?, 1, 'approved')
+VALUES (?, ?, ?, ?, 'aktif', ?, ?, 1, 'approved', ?)
 RETURNING id`
 	var volunteerID int64
 	var avatarArg interface{}
 	if avatarURL != "" {
 		avatarArg = avatarURL
 	}
-	err := q.db.QueryRowContext(ctx, ins, name, school, districtID, phone, avatarArg, joinedAt).Scan(&volunteerID)
+	err := q.db.QueryRowContext(ctx, ins, name, school, districtID, phone, avatarArg, joinedAt, userID).Scan(&volunteerID)
 	if err != nil {
 		return 0, err
 	}

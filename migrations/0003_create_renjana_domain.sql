@@ -40,6 +40,11 @@ CREATE TABLE IF NOT EXISTS renjana_volunteers (
     avatar_url TEXT,
     joined_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    application_status TEXT NOT NULL DEFAULT 'approved',
+    reviewer_id INTEGER REFERENCES users(id),
+    reviewed_at DATETIME,
+    rejection_reason TEXT,
+    user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -47,6 +52,8 @@ CREATE INDEX idx_renjana_volunteers_district ON renjana_volunteers(district_id);
 CREATE INDEX idx_renjuana_volunteers_status ON renjana_volunteers(status);
 CREATE INDEX idx_renjana_volunteers_active ON renjana_volunteers(is_active);
 CREATE INDEX idx_renjana_volunteers_school ON renjana_volunteers(school);
+CREATE INDEX idx_renjana_volunteers_application ON renjana_volunteers(application_status, joined_at DESC);
+CREATE INDEX IF NOT EXISTS idx_renjana_volunteers_user ON renjana_volunteers(user_id);
 
 -- 4. Activities (Kegiatan) — 128 data
 CREATE TABLE IF NOT EXISTS renjana_activities (
@@ -79,6 +86,7 @@ CREATE TABLE IF NOT EXISTS renjana_announcements (
     author_id INTEGER REFERENCES users(id),
     published_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     is_published BOOLEAN NOT NULL DEFAULT TRUE,
+    view_count INTEGER NOT NULL DEFAULT 0,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -89,20 +97,14 @@ CREATE INDEX idx_renjana_announcements_slug ON renjana_announcements(slug);
 -- 6. Achievements (Capaian Tahunan)
 CREATE TABLE IF NOT EXISTS renjana_achievements (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    year INTEGER NOT NULL,
-    metric_key TEXT NOT NULL,      -- 'program_achievement', 'educated_students', dll
-    metric_name TEXT NOT NULL,     -- 'Capaian Program', 'Siswa Teredukasi', dll
+    metric_name TEXT NOT NULL,
     value REAL NOT NULL,
-    unit TEXT NOT NULL DEFAULT '', -- '%' untuk percentage, '' untuk count
-    target REAL,                   -- target untuk kalkulasi progress (nullable)
+    unit TEXT NOT NULL DEFAULT '',
     display_order INTEGER NOT NULL DEFAULT 0,
-    icon TEXT,                    -- lucide icon name
-    icon_color TEXT,               -- hex color
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(year, metric_key)
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_renjana_achievements_year ON renjana_achievements(year, display_order);
+CREATE INDEX idx_renjana_achievements_order ON renjana_achievements(display_order);
 -- +goose StatementEnd
 
 -- +goose Down
@@ -121,6 +123,8 @@ DROP INDEX IF EXISTS idx_renjana_activities_district;
 DROP INDEX IF EXISTS idx_renjana_activities_type;
 DROP TABLE IF EXISTS renjana_activities;
 
+DROP INDEX IF EXISTS idx_renjana_volunteers_user;
+DROP INDEX IF EXISTS idx_renjana_volunteers_application;
 DROP INDEX IF EXISTS idx_renjana_volunteers_school;
 DROP INDEX IF EXISTS idx_renjana_volunteers_active;
 DROP INDEX IF EXISTS idx_renjuana_volunteers_status;

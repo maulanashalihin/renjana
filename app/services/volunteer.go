@@ -61,14 +61,14 @@ type VolunteerDetail struct {
 
 // VolunteerStats — banner stats for the list page.
 type VolunteerStats struct {
-	Total           int64 `json:"total"`
-	Active          int64 `json:"active"`
-	Inactive        int64 `json:"inactive"`
-	Pending         int64 `json:"pending"`
-	Rejected        int64 `json:"rejected"`
-	Schools         int64 `json:"schools"`
-	TotalKegiatan   int64 `json:"total_kegiatan"`
-	TotalKecamatan  int64 `json:"total_kecamatan"`
+	Total          int64 `json:"total"`
+	Active         int64 `json:"active"`
+	Inactive       int64 `json:"inactive"`
+	Pending        int64 `json:"pending"`
+	Rejected       int64 `json:"rejected"`
+	Schools        int64 `json:"schools"`
+	TotalKegiatan  int64 `json:"total_kegiatan"`
+	TotalKecamatan int64 `json:"total_kecamatan"`
 }
 
 // CreateVolunteerRequest — input for create.
@@ -161,16 +161,18 @@ func (s *VolunteerService) List(
 			avatar = r.AvatarUrl.String
 		}
 
-		// Count certificates for this volunteer (shared ID: volunteer.id = user.id)
+		// Count certificates using the actual user_id, not volunteer ID
 		var certCount int64
-		cnt, err := s.querier.CountCertificatesByUser(ctx, r.ID)
-		if err == nil {
-			certCount = cnt
+		if r.UserID.Valid {
+			cnt, err := s.querier.CountCertificatesByUser(ctx, r.UserID.Int64)
+			if err == nil {
+				certCount = cnt
+			}
 		}
 
 		items = append(items, VolunteerListItem{
 			ID:                r.ID,
-			UserID:            r.ID,
+			UserID:            r.UserID.Int64,
 			Name:              r.Name,
 			School:            r.School,
 			DistrictID:        r.DistrictID,
@@ -220,10 +222,14 @@ func (s *VolunteerService) Get(ctx context.Context, id int64) (*VolunteerDetail,
 	if r.DistrictName.Valid {
 		districtName = r.DistrictName.String
 	}
+	var userID int64
+	if r.UserID.Valid {
+		userID = r.UserID.Int64
+	}
 
 	return &VolunteerDetail{
 		ID:                r.ID,
-		UserID:            r.ID,
+		UserID:            userID,
 		Name:              r.Name,
 		School:            r.School,
 		DistrictID:        r.DistrictID,
@@ -417,14 +423,14 @@ func (s *VolunteerService) GetStats(ctx context.Context) (*VolunteerStats, error
 	totalKecamatan, _ := s.querier.CountActiveDistricts(ctx)
 
 	return &VolunteerStats{
-		Total:           r.Total,
-		Active:          nullFloatToInt(r.Active),
-		Inactive:        nullFloatToInt(r.Inactive),
-		Pending:         nullFloatToInt(r.Pending),
-		Rejected:        nullFloatToInt(r.Rejected),
-		Schools:         r.Schools,
-		TotalKegiatan:   totalKegiatan,
-		TotalKecamatan:  totalKecamatan,
+		Total:          r.Total,
+		Active:         nullFloatToInt(r.Active),
+		Inactive:       nullFloatToInt(r.Inactive),
+		Pending:        nullFloatToInt(r.Pending),
+		Rejected:       nullFloatToInt(r.Rejected),
+		Schools:        r.Schools,
+		TotalKegiatan:  totalKegiatan,
+		TotalKecamatan: totalKecamatan,
 	}, nil
 }
 
@@ -535,7 +541,7 @@ func (s *VolunteerService) GetByUserID(ctx context.Context, userID int64) (*Volu
 
 	return &VolunteerDetail{
 		ID:                r.ID,
-		UserID:            r.ID,
+		UserID:            userID,
 		Name:              r.Name,
 		School:            r.School,
 		DistrictID:        r.DistrictID,

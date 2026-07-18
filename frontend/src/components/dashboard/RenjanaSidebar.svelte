@@ -66,9 +66,11 @@
 <aside
     class="bg-renjana-sidebar dark:bg-slate-900 text-white w-72 flex-shrink-0 flex flex-col h-screen sticky top-0 border-r border-renjana-sidebar-border dark:border-slate-800"
 >
-    <!-- Logo -->
-    <div
-        class="flex items-center gap-3 px-6 py-6 border-b border-renjana-sidebar-border dark:border-slate-800"
+    <!-- Logo -- klik balik ke dashboard -->
+    <a
+        href="/"
+        use:inertia
+        class="flex items-center gap-3 px-6 py-6 border-b border-renjana-sidebar-border dark:border-slate-800 hover:bg-renjana-sidebar-hover dark:hover:bg-slate-800 transition"
     >
         <img
             src="/public/images/renjana-logo.png"
@@ -85,7 +87,7 @@
                 Relawan Remaja Aman Bencana
             </p>
         </div>
-    </div>
+    </a>
 
     <!-- Navigation -->
     <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
@@ -127,7 +129,7 @@
             <p
                 class="text-[10px] uppercase tracking-wider text-renjana-nav-text dark:text-slate-400 text-center font-semibold"
             >
-                Panggilan Darurat
+                Layanan Call Center Kegawatdaruratan
             </p>
             <div class="flex items-center justify-center gap-2 mt-1">
                 <PhoneCall
@@ -154,3 +156,25 @@
         </p>
     </div>
 </aside>
+
+<style>
+    nav::-webkit-scrollbar {
+        width: 6px;
+    }
+    nav::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    nav::-webkit-scrollbar-thumb {
+        background: #94a3b8;
+        border-radius: 3px;
+    }
+    nav::-webkit-scrollbar-thumb:hover {
+        background: #64748b;
+    }
+    :global(.dark) nav::-webkit-scrollbar-thumb {
+        background: #475569;
+    }
+    :global(.dark) nav::-webkit-scrollbar-thumb:hover {
+        background: #64748b;
+    }
+</style>

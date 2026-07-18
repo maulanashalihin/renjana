@@ -66,18 +66,12 @@ type VolunteerSummary struct {
 	JoinedAt     time.Time `json:"joined_at"`
 }
 
-// Achievement — one of the 5 yearly metrics.
+// Achievement — one metric in the capaian section.
 type Achievement struct {
 	ID           int64   `json:"id"`
-	Year         int64   `json:"year"`
-	MetricKey    string  `json:"metric_key"`
 	MetricName   string  `json:"metric_name"`
 	Value        float64 `json:"value"`
 	Unit         string  `json:"unit"`
-	Target       float64 `json:"target"` // 0 if not set
-	Type         string  `json:"type"`   // "percentage" | "count"
-	Icon         string  `json:"icon"`
-	IconColor    string  `json:"icon_color"`
 	DisplayOrder int64   `json:"display_order"`
 }
 
@@ -173,8 +167,8 @@ func (s *DashboardService) GetDashboardData(ctx context.Context) (*DashboardResp
 		}
 	}
 
-	// 5. Achievements (current year)
-	if achievements, err := s.getAchievementsForCurrentYear(ctx); err == nil {
+	// 5. Achievements (manual data)
+	if achievements, err := s.getAchievements(ctx); err == nil {
 		resp.Achievements = achievements
 	}
 
@@ -297,46 +291,19 @@ func (s *DashboardService) getActivityBreakdown(ctx context.Context) ([]Activity
 	return out, nil
 }
 
-func (s *DashboardService) getAchievementsForCurrentYear(ctx context.Context) ([]Achievement, error) {
-	const year int64 = 2025
-
-	rows, err := s.querier.GetAchievementsByYear(ctx, year)
+func (s *DashboardService) getAchievements(ctx context.Context) ([]Achievement, error) {
+	rows, err := s.querier.GetAchievements(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	out := make([]Achievement, 0, len(rows))
 	for _, r := range rows {
-		target := 0.0
-		if r.Target.Valid {
-			target = r.Target.Float64
-		}
-		icon := ""
-		if r.Icon.Valid {
-			icon = r.Icon.String
-		}
-		iconColor := ""
-		if r.IconColor.Valid {
-			iconColor = r.IconColor.String
-		}
-
-		// Decide type based on unit
-		achType := "count"
-		if r.Unit == "%" {
-			achType = "percentage"
-		}
-
 		out = append(out, Achievement{
 			ID:           r.ID,
-			Year:         r.Year,
-			MetricKey:    r.MetricKey,
 			MetricName:   r.MetricName,
 			Value:        r.Value,
 			Unit:         r.Unit,
-			Target:       target,
-			Type:         achType,
-			Icon:         icon,
-			IconColor:    iconColor,
 			DisplayOrder: r.DisplayOrder,
 		})
 	}
@@ -346,6 +313,22 @@ func (s *DashboardService) getAchievementsForCurrentYear(ctx context.Context) ([
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
+
+// UpdateAchievements updates multiple achievement records (admin edit).
+func (s *DashboardService) UpdateAchievements(ctx context.Context, items []Achievement) error {
+	for _, a := range items {
+		_, err := s.querier.UpdateAchievement(ctx, queries.UpdateAchievementParams{
+			MetricName: a.MetricName,
+			Value:      a.Value,
+			Unit:       a.Unit,
+			ID:         a.ID,
+		})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
 
 func deltaPercent(current, previous int64) float64 {
 	if previous == 0 {

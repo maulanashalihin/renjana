@@ -5,6 +5,7 @@
 ## Pages
 
 - [[concepts/agent-browser-testing]] — agent-browser-testing *(created: 2026-07-18)*
+- [[concepts/dark-mode-mandatory]] — dark-mode-mandatory *(created: 2026-07-18)*
 - [[concepts/deployment]] — deployment *(created: 2026-07-18)*
 - [[concepts/design-standards]] — design-standards *(created: 2026-07-18)*
 - [[concepts/environment-config]] — environment-config *(created: 2026-07-18)*
@@ -37,6 +38,9 @@
 - [[sources/obs-2026-07-18-fix-e-preventdefault-needed-on-buttons-inside-inertia-use-in]] — "Observation: Fix: e.preventDefault() needed on buttons inside Inertia use:inertia links" *(created: 2026-07-18)*
 - [[sources/obs-2026-07-18-pengaduan-ticket-redirect-auto-scroll-fix]] — "Observation: Pengaduan ticket redirect + auto-scroll fix" *(created: 2026-07-18)*
 - [[sources/obs-2026-07-18-relawan-card-restructured-buttons-moved-outside-a-tag]] — "Observation: Relawan card restructured: buttons moved outside <a> tag" *(created: 2026-07-18)*
+- [[sources/obs-2026-07-18-seed-data-migrations-cleaned-volunteers-contacts-kosong-orga]] — "Observation: Seed data migrations cleaned: volunteers & contacts kosong, organization from app.db" *(created: 2026-07-18)*
+- [[sources/obs-2026-07-18-semua-add-column-migration-dihapus-dan-digabung-ke-create-ta]] — "Observation: Semua ADD COLUMN migration dihapus dan digabung ke CREATE TABLE utama" *(created: 2026-07-18)*
+- [[sources/obs-2026-07-18-user-id-added-to-renjana-volunteers-for-direct-cert-counting]] — "Observation: user_id added to renjana_volunteers for direct cert counting" *(created: 2026-07-18)*
 
 ---
-*Last updated: 2026-07-18T05:58:28.659Z* | *Total pages: 30*
+*Last updated: 2026-07-18T08:05:33.626Z* | *Total pages: 34*

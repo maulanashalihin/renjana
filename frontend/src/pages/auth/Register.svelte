@@ -1,6 +1,4 @@
 <script lang="ts">
-    import { Check } from "lucide-svelte";
-
     interface Props {
         flash?: {
             error?: string;
@@ -43,37 +41,6 @@
                 Daftar dan mulai berkontribusi untuk Kabupaten Tanah Bumbu yang lebih siap
                 menghadapi bencana. Setiap aksi kecil Anda berarti besar bagi keselamatan bersama.
             </p>
-
-            <!-- Benefit list -->
-            <div class="mt-10 space-y-4">
-                <div class="flex items-start gap-4">
-                    <div class="w-10 h-10 rounded-lg bg-renjana-500/15 flex items-center justify-center shrink-0 mt-0.5">
-                        <Check class="w-5 h-5 text-renjana-500" />
-                    </div>
-                    <div>
-                        <div class="text-slate-900 dark:text-white font-semibold">Akses ke 12 Kecamatan</div>
-                        <div class="text-sm text-slate-500 dark:text-slate-400">Terlibat langsung di kegiatan kecamatan</div>
-                    </div>
-                </div>
-                <div class="flex items-start gap-4">
-                    <div class="w-10 h-10 rounded-lg bg-renjana-500/15 flex items-center justify-center shrink-0 mt-0.5">
-                        <Check class="w-5 h-5 text-renjana-500" />
-                    </div>
-                    <div>
-                        <div class="text-slate-900 dark:text-white font-semibold">45+ Sekolah Binaan</div>
-                        <div class="text-sm text-slate-500 dark:text-slate-400">Kolaborasi edukasi bencana di sekolah</div>
-                    </div>
-                </div>
-                <div class="flex items-start gap-4">
-                    <div class="w-10 h-10 rounded-lg bg-renjana-500/15 flex items-center justify-center shrink-0 mt-0.5">
-                        <Check class="w-5 h-5 text-renjana-500" />
-                    </div>
-                    <div>
-                        <div class="text-slate-900 dark:text-white font-semibold">128+ Kegiatan per Tahun</div>
-                        <div class="text-sm text-slate-500 dark:text-slate-400">Pelatihan, simulasi, edukasi &amp; aksi kemanusiaan</div>
-                    </div>
-                </div>
-            </div>
 
             <!-- Quote -->
             <blockquote class="mt-10 pl-4 border-l-4 border-renjana-500">

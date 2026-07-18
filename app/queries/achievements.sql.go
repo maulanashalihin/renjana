@@ -9,15 +9,14 @@ import (
 	"context"
 )
 
-const getAchievementsByYear = `-- name: GetAchievementsByYear :many
-SELECT id, year, metric_key, metric_name, value, unit, target, display_order, icon, icon_color, created_at
+const getAchievements = `-- name: GetAchievements :many
+SELECT id, metric_name, value, unit, display_order, created_at
 FROM renjana_achievements
-WHERE year = ?
 ORDER BY display_order
 `
 
-func (q *Queries) GetAchievementsByYear(ctx context.Context, year int64) ([]RenjanaAchievement, error) {
-	rows, err := q.db.QueryContext(ctx, getAchievementsByYear, year)
+func (q *Queries) GetAchievements(ctx context.Context) ([]RenjanaAchievement, error) {
+	rows, err := q.db.QueryContext(ctx, getAchievements)
 	if err != nil {
 		return nil, err
 	}
@@ -27,15 +26,10 @@ func (q *Queries) GetAchievementsByYear(ctx context.Context, year int64) ([]Renj
 		var i RenjanaAchievement
 		if err := rows.Scan(
 			&i.ID,
-			&i.Year,
-			&i.MetricKey,
 			&i.MetricName,
 			&i.Value,
 			&i.Unit,
-			&i.Target,
 			&i.DisplayOrder,
-			&i.Icon,
-			&i.IconColor,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err
@@ -49,4 +43,30 @@ func (q *Queries) GetAchievementsByYear(ctx context.Context, year int64) ([]Renj
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateAchievement = `-- name: UpdateAchievement :execrows
+UPDATE renjana_achievements
+SET metric_name = ?, value = ?, unit = ?
+WHERE id = ?
+`
+
+type UpdateAchievementParams struct {
+	MetricName string  `json:"metric_name"`
+	Value      float64 `json:"value"`
+	Unit       string  `json:"unit"`
+	ID         int64   `json:"id"`
+}
+
+func (q *Queries) UpdateAchievement(ctx context.Context, arg UpdateAchievementParams) (int64, error) {
+	result, err := q.db.ExecContext(ctx, updateAchievement,
+		arg.MetricName,
+		arg.Value,
+		arg.Unit,
+		arg.ID,
+	)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
 }

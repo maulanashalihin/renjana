@@ -312,6 +312,30 @@ func (h *AppHandler) UpdatePassword(c *fiber.Ctx) error {
 	return h.inertiaService.Render(c, "app/Profile", props)
 }
 
+// UpdateAchievements — admin-only: update achievement metrics.
+func (h *AppHandler) UpdateAchievements(c *fiber.Ctx) error {
+	var req struct {
+		Achievements []services.Achievement `json:"achievements"`
+	}
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Data tidak valid",
+		})
+	}
+
+	if err := h.dashboardService.UpdateAchievements(c.Context(), req.Achievements); err != nil {
+		slog.Error("update achievements error", "err", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Gagal menyimpan capaian",
+		})
+	}
+
+	return c.JSON(fiber.Map{
+		"success": true,
+		"message": "Capaian berhasil disimpan",
+	})
+}
+
 // toStr safely extracts a string from an interface{}, defaulting to empty string.
 func toStr(v interface{}) string {
 	if v == nil {

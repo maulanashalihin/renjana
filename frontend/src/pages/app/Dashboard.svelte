@@ -9,7 +9,7 @@
     import AnnouncementCard from "../../components/dashboard/AnnouncementCard.svelte";
     import UpcomingActivity from "../../components/dashboard/UpcomingActivity.svelte";
     import EdukasiCard from "../../components/dashboard/EdukasiCard.svelte";
-    import { Users, GraduationCap, Activity, MapPin } from "lucide-svelte";
+    import { Users, GraduationCap, Activity, MapPin, Pencil, X, Check } from "lucide-svelte";
 
     // -----------------------------------------------------------------
     // Types — match backend DTOs (app/services/dashboard.go)
@@ -60,15 +60,9 @@
 
     interface Achievement {
         id: number;
-        year: number;
-        metric_key: string;
         metric_name: string;
         value: number;
         unit: string;
-        target: number;
-        type: "percentage" | "count";
-        icon: string;
-        icon_color: string;
         display_order: number;
     }
 
@@ -140,34 +134,7 @@
         };
     }
 
-    // Map achievement icon name (string from backend) -> component
-    import {
-        Target as IconTarget,
-        Users as IconUsers,
-        ShieldCheck as IconShield,
-        Trophy as IconTrophy,
-        Activity as IconActivity,
-        Award as IconAward,
-        BookOpen as IconBook,
-        GraduationCap as IconGrad,
-        BarChart as IconBar,
-    } from "lucide-svelte";
-
-    function achievementIcon(name: string) {
-        const map: Record<string, any> = {
-            target: IconTarget,
-            users: IconUsers,
-            shield: IconShield,
-            shieldcheck: IconShield,
-            trophy: IconTrophy,
-            activity: IconActivity,
-            award: IconAward,
-            book: IconBook,
-            grad: IconGrad,
-            chart: IconBar,
-        };
-        return map[name?.toLowerCase()] ?? IconTarget;
-    }
+    // Achievement icons removed — using simple text display
 
     // Build typed arrays for sub-components
     let districtRows = $derived(
@@ -195,15 +162,11 @@
             label: a.metric_name,
             value: a.value,
             unit: a.unit,
-            iconName: achievementIcon(a.icon),
-            type: a.type,
-            target: a.target,
-            color: a.icon_color || "#f97316",
         }))
     );
 
     let announcementList = $derived(
-        latest_announcements.map(a => ({
+        (latest_announcements ?? []).map(a => ({
             id: a.id,
             title: a.title,
             date: new Date(a.published_at).toLocaleDateString("id-ID", {
@@ -228,6 +191,70 @@
             };
         })
     );
+
+    // ————————————————————————
+    // Achievements edit modal (admin only)
+    // ————————————————————————
+    const isAdmin = $derived(user?.role === "admin");
+    let showAchievementModal = $state(false);
+    let editAchievements = $state<Achievement[]>([]);
+    let savingAchievements = $state(false);
+    let saveSuccess = $state(false);
+
+    function openAchievementEdit() {
+        editAchievements = achievements.map(a => ({ ...a }));
+        showAchievementModal = true;
+        saveSuccess = false;
+    }
+
+    function closeAchievementEdit() {
+        showAchievementModal = false;
+        savingAchievements = false;
+    }
+
+    function getCSRFToken(): string {
+        const name = "XSRF-TOKEN";
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return decodeURIComponent(parts.pop()?.split(";").shift() ?? "");
+        return "";
+    }
+
+    async function saveAchievements() {
+        savingAchievements = true;
+        try {
+            const res = await fetch("/api/achievements", {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-XSRF-TOKEN": getCSRFToken(),
+                    "X-Requested-With": "XMLHttpRequest",
+                },
+                body: JSON.stringify({
+                    achievements: editAchievements.map(a => ({
+                        id: a.id,
+                        metric_name: a.metric_name,
+                        value: Number(a.value),
+                        unit: a.unit,
+                    })),
+                }),
+            });
+            if (res.ok) {
+                saveSuccess = true;
+                setTimeout(() => {
+                    closeAchievementEdit();
+                    // Reload to reflect changes
+                    window.location.reload();
+                }, 800);
+            } else {
+                alert("Gagal menyimpan capaian");
+            }
+        } catch {
+            alert("Gagal menyimpan capaian");
+        } finally {
+            savingAchievements = false;
+        }
+    }
 </script>
 
 <AppLayout
@@ -302,6 +329,82 @@
         </div>
 
         <!-- Capaian -->
-        <AchievementBar achievements={achievementRows} year={achievements[0]?.year ?? 2025} />
+        <div class="relative">
+            {#if isAdmin}
+                <button onclick={openAchievementEdit} class="absolute top-0 right-0 z-10 inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 hover:border-renjana-500 text-xs font-semibold text-neutral-700 dark:text-neutral-300 transition shadow-sm">
+                    <Pencil class="w-3.5 h-3.5" /> Edit
+                </button>
+            {/if}
+            <AchievementBar achievements={achievementRows} title="Capaian" />
+        </div>
     </div>
 </AppLayout>
+
+<!-- Edit Modal -->
+{#if showAchievementModal}
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onclick={(e) => { if (e.target === e.currentTarget) closeAchievementEdit(); }}>
+        <div class="bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto modal-scroll">
+            <div class="flex items-center justify-between p-5 border-b border-neutral-200 dark:border-neutral-800">
+                <h2 class="text-lg font-bold text-neutral-900 dark:text-white">Edit Capaian</h2>
+                <button onclick={closeAchievementEdit} class="text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 transition">
+                    <X class="w-5 h-5" />
+                </button>
+            </div>
+            <div class="p-5 space-y-5">
+                {#each editAchievements as _, i}
+                    <div class="rounded-xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700 p-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-sm font-semibold text-neutral-900 dark:text-white">#{i + 1}</span>
+                        </div>
+                        <div class="grid grid-cols-[1fr_auto_auto] gap-3 items-end">
+                            <div>
+                                <label class="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1">Nama Metrik</label>
+                                <input type="text" bind:value={editAchievements[i].metric_name} class="w-full px-3 py-2.5 rounded-lg bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm font-semibold focus:border-renjana-500 outline-none" />
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1">Nilai</label>
+                                <input type="number" bind:value={editAchievements[i].value} step="any" class="w-24 px-3 py-2.5 rounded-lg bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1">Satuan</label>
+                                <input type="text" bind:value={editAchievements[i].unit} placeholder="%" class="w-20 px-3 py-2.5 rounded-lg bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
+                            </div>
+                        </div>
+                    </div>
+                {/each}
+
+                {#if saveSuccess}
+                    <div class="rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 p-3 text-center text-sm font-medium text-emerald-700 dark:text-emerald-300">
+                        <Check class="w-4 h-4 inline mr-1" /> Capaian berhasil disimpan!
+                    </div>
+                {/if}
+
+                <div class="flex justify-end gap-2 pt-2">
+                    <button onclick={closeAchievementEdit} class="px-4 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:border-renjana-500 transition">Batal</button>
+                    <button onclick={saveAchievements} disabled={savingAchievements} class="px-4 py-2 rounded-lg bg-renjana-500 hover:bg-renjana-600 disabled:bg-neutral-400 text-white text-sm font-semibold transition">
+                        {savingAchievements ? "Menyimpan..." : "Simpan"}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+{/if}
+
+<style>
+    .modal-scroll::-webkit-scrollbar {
+        width: 6px;
+    }
+    .modal-scroll::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .modal-scroll::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 3px;
+    }
+    :global(.dark) .modal-scroll::-webkit-scrollbar-thumb {
+        background: #475569;
+    }
+    :global(.dark) .modal-scroll::-webkit-scrollbar-thumb:hover {
+        background: #64748b;
+    }
+</style>
