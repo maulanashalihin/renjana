@@ -82,12 +82,14 @@
     let actionType = $state<"create" | "edit" | "">("");
     let editTarget = $state<Volunteer | null>(null);
 
+    // Local mutable copy of volunteers for instant UI updates
+    let localVolunteers = $state(volunteers);
+    const items = $derived(localVolunteers?.data ?? []);
+
     // Form state for modal
     let formSchool = $state("");
     let formDistrictId = $state(0);
     let selectedSchool = $state<SchoolResult | null>(null);
-
-    const items = $derived(volunteers?.data ?? []);
 
     const statCards = $derived([
         { label: "Total Volunteer", value: stats?.total ?? 0, icon: Users, color: "renjana" },
@@ -177,6 +179,11 @@
                 body: JSON.stringify(obj),
             }).then((res) => {
                 if (res.ok) {
+                    // Update local data instantly
+                    const idx = localVolunteers?.data?.findIndex(v => v.id === editTarget!.id) ?? -1;
+                    if (idx !== -1 && localVolunteers) {
+                        localVolunteers.data[idx] = { ...localVolunteers.data[idx], ...obj };
+                    }
                     closeModal();
                 }
             });
