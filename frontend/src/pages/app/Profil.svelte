@@ -334,9 +334,9 @@
             <div class="flex items-center justify-between mb-6">
                 <h2 class="text-xl font-bold text-neutral-900 dark:text-white">Edit Profil RENJANA</h2>
                 <div class="flex gap-2 border border-neutral-200 dark:border-neutral-700 rounded-lg p-1">
-                    <button onclick={() => activeTab = "tentang"} class="px-3 py-1.5 rounded text-xs font-medium {activeTab === 'tentang' ? 'bg-renjana-500 text-white' : 'text-neutral-600'}">Tentang</button>
-                    <button onclick={() => activeTab = "kontak"} class="px-3 py-1.5 rounded text-xs font-medium {activeTab === 'kontak' ? 'bg-renjana-500 text-white' : 'text-neutral-600'}">Kontak</button>
-                    <button onclick={() => activeTab = "sosial"} class="px-3 py-1.5 rounded text-xs font-medium {activeTab === 'sosial' ? 'bg-renjana-500 text-white' : 'text-neutral-600'}">Sosial</button>
+                    <button type="button" onclick={() => activeTab = "tentang"} class="px-3 py-1.5 rounded text-xs font-medium {activeTab === 'tentang' ? 'bg-renjana-500 text-white' : 'text-neutral-600 dark:text-neutral-300'}">Tentang</button>
+                    <button type="button" onclick={() => activeTab = "kontak"} class="px-3 py-1.5 rounded text-xs font-medium {activeTab === 'kontak' ? 'bg-renjana-500 text-white' : 'text-neutral-600 dark:text-neutral-300'}">Kontak</button>
+                    <button type="button" onclick={() => activeTab = "sosial"} class="px-3 py-1.5 rounded text-xs font-medium {activeTab === 'sosial' ? 'bg-renjana-500 text-white' : 'text-neutral-600 dark:text-neutral-300'}">Sosial</button>
                 </div>
             </div>
             <form onsubmit={submitEdit}>
@@ -426,7 +426,7 @@
                     </div>
                 {/if}
                 <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-neutral-200 dark:border-neutral-800">
-                    <button type="button" onclick={() => editing = false} class="px-4 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 text-sm font-medium hover:border-renjana-500 transition">Batal</button>
+                    <button type="button" onclick={() => editing = false} class="px-4 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-sm font-medium hover:border-renjana-500 transition">Batal</button>
                     <button type="submit" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-renjana-500 hover:bg-renjana-600 text-white text-sm font-semibold transition">
                         <Save class="w-4 h-4" />Simpan
                     </button>
@@ -467,7 +467,7 @@
                         </div>
                     </div>
                     <div class="flex justify-end gap-2 p-5 border-t border-neutral-200 dark:border-neutral-800">
-                        <button type="button" onclick={() => { clearPartnerForm(); showPartnerModal = false; }} class="px-4 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 text-sm font-medium hover:border-renjana-500 transition">Batal</button>
+                        <button type="button" onclick={() => { clearPartnerForm(); showPartnerModal = false; }} class="px-4 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-sm font-medium hover:border-renjana-500 transition">Batal</button>
                         <button type="button" onclick={addPartner} disabled={!partnerName.trim() || partnerAdding} class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-renjana-500 hover:bg-renjana-600 text-white text-sm font-semibold transition disabled:opacity-50">
                             {#if partnerAdding}
                                 <span class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
@@ -519,7 +519,7 @@
                         </div>
                     </div>
                     <div class="flex justify-end gap-2 p-5 border-t border-neutral-200 dark:border-neutral-800">
-                        <button type="button" onclick={() => { clearPartnerForm(); showEditModal = false; }} class="px-4 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 text-sm font-medium hover:border-renjana-500 transition">Batal</button>
+                        <button type="button" onclick={() => { clearPartnerForm(); showEditModal = false; }} class="px-4 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-sm font-medium hover:border-renjana-500 transition">Batal</button>
                         <button type="button" onclick={updatePartner} disabled={!partnerName.trim() || partnerAdding} class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-renjana-500 hover:bg-renjana-600 text-white text-sm font-semibold transition disabled:opacity-50">
                             {#if partnerAdding}
                                 <span class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>

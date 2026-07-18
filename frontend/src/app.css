@@ -190,6 +190,10 @@
         outline-offset: 2px;
         border-radius: 4px;
     }
+
+    button:not(:disabled) {
+        cursor: pointer;
+    }
 }
 
 /* Honor reduced motion preference */
