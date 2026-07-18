@@ -146,6 +146,14 @@
         editTarget = null;
     }
 
+    function getCSRFToken(): string {
+        const name = "XSRF-TOKEN";
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return decodeURIComponent(parts.pop()?.split(";").shift() ?? "");
+        return "";
+    }
+
     function handleSubmit(e: Event) {
         e.preventDefault();
         const form = e.target as HTMLFormElement;
@@ -157,8 +165,18 @@
                 onSuccess: () => closeModal(),
             });
         } else if (actionType === "edit" && editTarget) {
-            router.put(`/relawan/${editTarget.id}`, obj, {
-                onSuccess: () => closeModal(),
+            fetch(`/relawan/${editTarget.id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-XSRF-TOKEN": getCSRFToken(),
+                    "X-Requested-With": "XMLHttpRequest",
+                },
+                body: JSON.stringify(obj),
+            }).then((res) => {
+                if (res.ok || res.status === 303) {
+                    closeModal();
+                }
             });
         }
     }
