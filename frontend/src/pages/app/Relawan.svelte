@@ -160,6 +160,8 @@
         const data = new FormData(form);
         const obj: Record<string, any> = {};
         data.forEach((v, k) => { obj[k] = v; });
+        // Parse numeric fields
+        if (obj.district_id) obj.district_id = Number(obj.district_id);
         if (actionType === "create") {
             router.post("/relawan", obj, {
                 onSuccess: () => closeModal(),
@@ -174,7 +176,7 @@
                 },
                 body: JSON.stringify(obj),
             }).then((res) => {
-                if (res.ok || res.status === 303) {
+                if (res.ok) {
                     closeModal();
                 }
             });
