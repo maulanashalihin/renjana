@@ -202,6 +202,15 @@ type RenjanaOrganization struct {
 	UpdatedAt       time.Time      `json:"updated_at"`
 }
 
+type RenjanaPartner struct {
+	ID         int64     `json:"id"`
+	Name       string    `json:"name"`
+	LogoUrl    string    `json:"logo_url"`
+	WebsiteUrl string    `json:"website_url"`
+	SortOrder  int64     `json:"sort_order"`
+	CreatedAt  time.Time `json:"created_at"`
+}
+
 type RenjanaQuizAttempt struct {
 	ID             int64          `json:"id"`
 	UserID         int64          `json:"user_id"`
@@ -243,6 +252,26 @@ type RenjanaSurvey struct {
 	Rating          int64          `json:"rating"`
 	Feedback        sql.NullString `json:"feedback"`
 	CreatedAt       time.Time      `json:"created_at"`
+}
+
+type RenjanaSurveySkm struct {
+	ID         int64          `json:"id"`
+	Age        int64          `json:"age"`
+	Gender     string         `json:"gender"`
+	Education  string         `json:"education"`
+	Occupation string         `json:"occupation"`
+	Year       int64          `json:"year"`
+	Q1         int64          `json:"q1"`
+	Q2         int64          `json:"q2"`
+	Q3         int64          `json:"q3"`
+	Q4         int64          `json:"q4"`
+	Q5         int64          `json:"q5"`
+	Q6         int64          `json:"q6"`
+	Q7         int64          `json:"q7"`
+	Q8         int64          `json:"q8"`
+	Q9         int64          `json:"q9"`
+	Feedback   sql.NullString `json:"feedback"`
+	CreatedAt  time.Time      `json:"created_at"`
 }
 
 type RenjanaVolunteer struct {

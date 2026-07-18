@@ -10,18 +10,18 @@ import (
 	"github.com/maulanashalihin/laju-go/app/session"
 )
 
-// SurveyHandler handles survey pelayanan publik.
+// SurveyHandler handles survey SKM.
 type SurveyHandler struct {
 	store          *session.Store
 	inertiaService *services.InertiaService
-	surveySvc      *services.SurveyService
+	surveySvc      *services.SurveySKMService
 	querier        *queries.Querier
 }
 
 func NewSurveyHandler(
 	store *session.Store,
 	inertiaService *services.InertiaService,
-	surveySvc *services.SurveyService,
+	surveySvc *services.SurveySKMService,
 	querier *queries.Querier,
 ) *SurveyHandler {
 	return &SurveyHandler{
@@ -33,7 +33,6 @@ func NewSurveyHandler(
 }
 
 func (h *SurveyHandler) getUser(c *fiber.Ctx) *fiber.Map {
-	// Try to get user from session (works on public routes without AuthRequired middleware)
 	sess, err := h.store.Get(c)
 	if err != nil || sess.Get("user_id") == nil {
 		return nil
@@ -59,7 +58,7 @@ func (h *SurveyHandler) getUser(c *fiber.Ctx) *fiber.Map {
 	}
 }
 
-// Index — show public form or admin results.
+// Index — show admin stats or public form.
 func (h *SurveyHandler) Index(c *fiber.Ctx) error {
 	user := h.getUser(c)
 	isLoggedIn := user != nil
@@ -72,9 +71,8 @@ func (h *SurveyHandler) Index(c *fiber.Ctx) error {
 }
 
 func (h *SurveyHandler) publicIndex(c *fiber.Ctx, user *fiber.Map) error {
-	return h.inertiaService.Render(c, "app/Survey", fiber.Map{
+	return h.inertiaService.Render(c, "app/SurveyPublic", fiber.Map{
 		"user":      user,
-		"isAdmin":   false,
 		"submitted": c.Query("success") == "true",
 	})
 }
@@ -92,25 +90,38 @@ func (h *SurveyHandler) adminIndex(c *fiber.Ctx, user *fiber.Map) error {
 	}
 
 	stats, _ := h.surveySvc.GetStats(c.Context())
-	byService, _ := h.surveySvc.GetStatsByService(c.Context())
+	byGender, _ := h.surveySvc.GetByGender(c.Context())
+	byEducation, _ := h.surveySvc.GetByEducation(c.Context())
+	byOccupation, _ := h.surveySvc.GetByOccupation(c.Context())
 
-	return h.inertiaService.Render(c, "app/Survey", fiber.Map{
-		"user":       user,
-		"isAdmin":    true,
-		"surveys":    result,
-		"stats":      stats,
-		"by_service": byService,
+	return h.inertiaService.Render(c, "app/SurveyAdmin", fiber.Map{
+		"user":          user,
+		"surveys":       result,
+		"stats":         stats,
+		"by_gender":     byGender,
+		"by_education":  byEducation,
+		"by_occupation": byOccupation,
 	})
 }
 
-// Store — public submission.
+// Store — public SKM survey submission.
 func (h *SurveyHandler) Store(c *fiber.Ctx) error {
 	var input struct {
-		Name        string `json:"name"`
-		Phone       string `json:"phone"`
-		ServiceType string `json:"service_type"`
-		Rating      int64  `json:"rating"`
-		Feedback    string `json:"feedback"`
+		Age        int64  `json:"age"`
+		Gender     string `json:"gender"`
+		Education  string `json:"education"`
+		Occupation string `json:"occupation"`
+		Year       int64  `json:"year"`
+		Q1         int64  `json:"q1"`
+		Q2         int64  `json:"q2"`
+		Q3         int64  `json:"q3"`
+		Q4         int64  `json:"q4"`
+		Q5         int64  `json:"q5"`
+		Q6         int64  `json:"q6"`
+		Q7         int64  `json:"q7"`
+		Q8         int64  `json:"q8"`
+		Q9         int64  `json:"q9"`
+		Feedback   string `json:"feedback"`
 	}
 	if err := c.BodyParser(&input); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -118,32 +129,31 @@ func (h *SurveyHandler) Store(c *fiber.Ctx) error {
 		})
 	}
 
-	if input.ServiceType == "" || input.Rating < 1 || input.Rating > 5 {
+	if input.Gender == "" || input.Education == "" || input.Occupation == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Jenis layanan dan rating harus diisi (1-5)",
+			"error": "Data responden harus diisi lengkap",
 		})
 	}
 
-	// Validate field lengths to prevent bomb payload
-	if len(input.Name) > 100 {
+	// Validate all 9 questions answered (1-4)
+	if input.Q1 < 1 || input.Q1 > 4 || input.Q2 < 1 || input.Q2 > 4 || input.Q3 < 1 || input.Q3 > 4 ||
+		input.Q4 < 1 || input.Q4 > 4 || input.Q5 < 1 || input.Q5 > 4 || input.Q6 < 1 || input.Q6 > 4 ||
+		input.Q7 < 1 || input.Q7 > 4 || input.Q8 < 1 || input.Q8 > 4 || input.Q9 < 1 || input.Q9 > 4 {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Nama terlalu panjang (maks 100 karakter)",
+			"error": "Semua pertanyaan harus diisi (nilai 1-4)",
 		})
 	}
-	if len(input.Phone) > 15 {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Nomor telepon terlalu panjang (maks 15 digit)",
-		})
-	}
+
 	if len(input.Feedback) > 2000 {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Kritik/saran terlalu panjang (maks 2000 karakter)",
+			"error": "Masukan terlalu panjang (maks 2000 karakter)",
 		})
 	}
 
-	_, err := h.surveySvc.Create(c.Context(), input.Name, input.Phone, input.ServiceType, input.Rating, input.Feedback)
+	_, err := h.surveySvc.Create(c.Context(), input.Age, input.Gender, input.Education, input.Occupation, input.Year,
+		input.Q1, input.Q2, input.Q3, input.Q4, input.Q5, input.Q6, input.Q7, input.Q8, input.Q9, input.Feedback)
 	if err != nil {
-		slog.Error("survey create error", "err", err)
+		slog.Error("survey SKM create error", "err", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Gagal mengirim survey: " + err.Error(),
 		})

@@ -78,9 +78,8 @@ func (h *ComplaintHandler) Index(c *fiber.Ctx) error {
 }
 
 func (h *ComplaintHandler) publicIndex(c *fiber.Ctx, user *fiber.Map) error {
-	return h.inertiaService.Render(c, "app/Pengaduan", fiber.Map{
+	return h.inertiaService.Render(c, "app/PengaduanPublic", fiber.Map{
 		"user":      user,
-		"isAdmin":   false,
 		"submitted": c.Query("success") == "true",
 	})
 }
@@ -103,12 +102,15 @@ func (h *ComplaintHandler) adminIndex(c *fiber.Ctx, user *fiber.Map) error {
 	resolvedPage, _ := strconv.Atoi(c.Query("resolved_page", "1"))
 	resolvedResult, _ := h.complaintSvc.ListResolved(c.Context(), resolvedPage, 20)
 
-	return h.inertiaService.Render(c, "app/Pengaduan", fiber.Map{
+	// Get detailed statistics
+	statistics, _ := h.complaintSvc.GetStatistics(c.Context())
+
+	return h.inertiaService.Render(c, "app/PengaduanAdmin", fiber.Map{
 		"user":       user,
-		"isAdmin":    true,
 		"complaints": result,
 		"stats":      stats,
 		"resolved":   resolvedResult,
+		"statistics": statistics,
 	})
 }
 
@@ -259,6 +261,7 @@ func (h *ComplaintHandler) AddReply(c *fiber.Ctx) error {
 
 	user := h.getUser(c)
 	isAdmin := false
+	var adminUserID int64
 	if user != nil {
 		if role, ok := (*user)["role"].(string); ok {
 			isAdmin = role == "admin"
@@ -270,6 +273,9 @@ func (h *ComplaintHandler) AddReply(c *fiber.Ctx) error {
 			} else {
 				senderName = "Admin"
 			}
+			if id, ok := (*user)["id"].(int64); ok {
+				adminUserID = id
+			}
 		}
 	}
 
@@ -277,7 +283,11 @@ func (h *ComplaintHandler) AddReply(c *fiber.Ctx) error {
 		senderName = "Pengguna"
 	}
 
-	_, err = h.complaintSvc.AddMessage(c.Context(), complaint.ID, senderType, senderName, input.Message)
+	if isAdmin {
+		_, err = h.complaintSvc.AdminReply(c.Context(), complaint.ID, adminUserID, senderName, input.Message)
+	} else {
+		_, err = h.complaintSvc.AddMessage(c.Context(), complaint.ID, senderType, senderName, input.Message)
+	}
 	if err != nil {
 		slog.Error("add reply error", "err", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{

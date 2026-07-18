@@ -229,7 +229,6 @@ func (s *AuthService) Login(email, password string) (*models.User, error) {
 	return user, nil
 }
 
-
 // hashPassword hashes a password using argon2id with the configured params.
 func (s *AuthService) hashPassword(password string) (string, error) {
 	return generateFromPassword(password, s.argon2Params)

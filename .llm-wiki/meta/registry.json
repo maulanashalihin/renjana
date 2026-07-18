@@ -1,66 +1,66 @@
 {
   "version": "1.0",
-  "last_updated": "2026-07-17T05:15:41.251Z",
+  "last_updated": "2026-07-18T05:58:28.659Z",
   "pages": {
     "concepts/agent-browser-testing": {
       "type": "page",
       "title": "agent-browser-testing",
-      "created": "2026-07-17",
-      "updated": "2026-07-17"
+      "created": "2026-07-18",
+      "updated": "2026-07-18"
     },
     "concepts/deployment": {
       "type": "page",
       "title": "deployment",
-      "created": "2026-07-17",
-      "updated": "2026-07-17"
+      "created": "2026-07-18",
+      "updated": "2026-07-18"
     },
     "concepts/design-standards": {
       "type": "page",
       "title": "design-standards",
-      "created": "2026-07-17",
-      "updated": "2026-07-17"
+      "created": "2026-07-18",
+      "updated": "2026-07-18"
     },
     "concepts/environment-config": {
       "type": "page",
       "title": "environment-config",
-      "created": "2026-07-17",
-      "updated": "2026-07-17"
+      "created": "2026-07-18",
+      "updated": "2026-07-18"
     },
     "concepts/handler-structure": {
       "type": "page",
       "title": "handler-structure",
-      "created": "2026-07-17",
-      "updated": "2026-07-17"
+      "created": "2026-07-18",
+      "updated": "2026-07-18"
     },
     "concepts/http-conventions": {
       "type": "page",
       "title": "http-conventions",
-      "created": "2026-07-17",
-      "updated": "2026-07-17"
+      "created": "2026-07-18",
+      "updated": "2026-07-18"
     },
     "concepts/migration-convention": {
       "type": "page",
       "title": "migration-convention",
-      "created": "2026-07-17",
-      "updated": "2026-07-17"
+      "created": "2026-07-18",
+      "updated": "2026-07-18"
     },
     "concepts/rbac-roles": {
       "type": "page",
       "title": "rbac-roles",
-      "created": "2026-07-17",
-      "updated": "2026-07-17"
+      "created": "2026-07-18",
+      "updated": "2026-07-18"
     },
     "concepts/svelte-conventions": {
       "type": "page",
       "title": "svelte-conventions",
-      "created": "2026-07-17",
-      "updated": "2026-07-17"
+      "created": "2026-07-18",
+      "updated": "2026-07-18"
     },
     "concepts/three-tier-rule": {
       "type": "page",
       "title": "three-tier-rule",
-      "created": "2026-07-17",
-      "updated": "2026-07-17"
+      "created": "2026-07-18",
+      "updated": "2026-07-18"
     },
     "sources/deployment-read-all-before-action": {
       "type": "source",
@@ -70,6 +70,24 @@
       "slug": "deployment-read-all-before-action",
       "status": "insight",
       "category": "devops"
+    },
+    "sources/first-principles-before-debugging": {
+      "type": "source",
+      "title": "\"Cek dasar dulu sebelum debug kompleks — HTML spec, UX flow, HTML defaults\"",
+      "created": "2026-07-18",
+      "updated": "2026-07-18",
+      "slug": "first-principles-before-debugging",
+      "status": "insight",
+      "category": "frontend"
+    },
+    "sources/invalid-html-button-inside-anchor": {
+      "type": "source",
+      "title": "\"Jangan taruh <button> di dalam <a> — invalid HTML, browser engine navigasi ga bisa dicegah JS\"",
+      "created": "2026-07-18",
+      "updated": "2026-07-18",
+      "slug": "invalid-html-button-inside-anchor",
+      "status": "insight",
+      "category": "frontend"
     },
     "sources/obs-2026-07-15-agents-md-simplified-and-llm-wiki-bootstrapped": {
       "type": "source",
@@ -243,6 +261,16 @@
       "relevance": "low",
       "observed_at": "2026-07-17T02:43:28.569Z"
     },
+    "sources/obs-2026-07-17-downloadandsaveavatar-diimplementasikan-di-laju-go-auth-serv": {
+      "type": "source",
+      "title": "\"Observation: downloadAndSaveAvatar diimplementasikan di laju-go auth service\"",
+      "created": "2026-07-17",
+      "updated": "2026-07-17",
+      "slug": "obs-2026-07-17-downloadandsaveavatar-diimplementasikan-di-laju-go-auth-serv",
+      "status": "observation",
+      "relevance": "high",
+      "observed_at": "2026-07-17T05:54:11.683Z"
+    },
     "sources/obs-2026-07-17-google-avatar-format-detection-simplified": {
       "type": "source",
       "title": "\"Observation: Google avatar format detection simplified\"",
@@ -276,6 +304,55 @@
         "auth",
         "error-handling"
       ]
+    },
+    "sources/obs-2026-07-18-fix-e-preventdefault-needed-on-buttons-inside-inertia-use-in": {
+      "type": "source",
+      "title": "\"Observation: Fix: e.preventDefault() needed on buttons inside Inertia use:inertia links\"",
+      "created": "2026-07-18",
+      "updated": "2026-07-18",
+      "slug": "obs-2026-07-18-fix-e-preventdefault-needed-on-buttons-inside-inertia-use-in",
+      "status": "observation",
+      "relevance": "medium",
+      "observed_at": "2026-07-18T05:09:27.527Z",
+      "tags": [
+        "inertia",
+        "svelte5",
+        "event-propagation"
+      ],
+      "source_context": "\"Fixing Relawan.svelte edit modal not showing for Admin role\""
+    },
+    "sources/obs-2026-07-18-pengaduan-ticket-redirect-auto-scroll-fix": {
+      "type": "source",
+      "title": "\"Observation: Pengaduan ticket redirect + auto-scroll fix\"",
+      "created": "2026-07-18",
+      "updated": "2026-07-18",
+      "slug": "obs-2026-07-18-pengaduan-ticket-redirect-auto-scroll-fix",
+      "status": "observation",
+      "relevance": "medium",
+      "observed_at": "2026-07-18T05:15:38.363Z",
+      "tags": [
+        "pengaduan",
+        "frontend",
+        "svelte"
+      ],
+      "source_context": "\"User requested /pengaduan should redirect to ticket page, remove confusing back button, and fix chat scroll\""
+    },
+    "sources/obs-2026-07-18-relawan-card-restructured-buttons-moved-outside-a-tag": {
+      "type": "source",
+      "title": "\"Observation: Relawan card restructured: buttons moved outside <a> tag\"",
+      "created": "2026-07-18",
+      "updated": "2026-07-18",
+      "slug": "obs-2026-07-18-relawan-card-restructured-buttons-moved-outside-a-tag",
+      "status": "observation",
+      "relevance": "medium",
+      "observed_at": "2026-07-18T05:12:41.559Z",
+      "tags": [
+        "inertia",
+        "svelte5",
+        "event-propagation",
+        "invalid-html"
+      ],
+      "source_context": "\"Fixing Relawan.svelte edit modal not showing for Admin\""
     }
   }
 }

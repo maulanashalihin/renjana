@@ -68,3 +68,32 @@ SELECT id, complaint_id, sender_type, sender_name, message, created_at
 FROM renjana_complaint_messages
 WHERE complaint_id = ?1
 ORDER BY created_at ASC;
+
+-- name: GetLatestMessagesForComplaints :many
+SELECT m.complaint_id, m.sender_type, m.sender_name, m.message, m.created_at
+FROM renjana_complaint_messages m
+WHERE m.id IN (
+    SELECT MAX(m2.id)
+    FROM renjana_complaint_messages m2
+    GROUP BY m2.complaint_id
+);
+
+-- name: CountComplaintsByCategory :many
+SELECT category, COUNT(*) AS count
+FROM renjana_complaints
+GROUP BY category
+ORDER BY count DESC;
+
+-- name: CountComplaintsByMonth :many
+SELECT strftime('%Y-%m', created_at) AS month, COUNT(*) AS count
+FROM renjana_complaints
+GROUP BY month
+ORDER BY month DESC
+LIMIT 12;
+
+-- name: GetResponseTimeStats :one
+SELECT
+    COUNT(*) AS total_resolved,
+    ROUND(AVG(julianday(responded_at) - julianday(created_at)), 1) AS avg_response_days
+FROM renjana_complaints
+WHERE status = 'resolved' AND responded_at IS NOT NULL;

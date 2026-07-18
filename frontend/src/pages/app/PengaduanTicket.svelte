@@ -47,13 +47,25 @@
     let replyName = $state(localStorage.getItem("pengaduan_name") ?? complaint?.name ?? "");
     let replyMessage = $state("");
 
-    // Save complaint name to localStorage for future use
+    // Save complaint name and token to localStorage for future use
     $effect(() => {
         if (complaint?.name) localStorage.setItem("pengaduan_name", complaint.name);
+        if (complaint?.token) localStorage.setItem("pengaduan_token", complaint.token);
     });
     let sending = $state(false);
     let resolving = $state(false);
     let copied = $state(false);
+    let messagesContainer: HTMLDivElement | undefined = $state(undefined);
+
+    // Auto-scroll to the latest message when messages change
+    $effect(() => {
+        if (messages.length > 0 && messagesContainer) {
+            // Small delay to let the DOM update
+            requestAnimationFrame(() => {
+                messagesContainer!.scrollTop = messagesContainer!.scrollHeight;
+            });
+        }
+    });
 
     const ticketUrl = $derived(`${window.location.origin}/pengaduan/tiket/${complaint.token}`);
 
@@ -108,11 +120,6 @@
 <AppLayout {user} pageTitle="Tiket Pengaduan" pageSubtitle={`#${complaint.token}`} activeMenu="Pengaduan">
 
     <div class="max-w-3xl mx-auto space-y-4">
-        <!-- Back Link -->
-        <a href="/pengaduan" class="inline-flex items-center gap-1 text-sm text-renjana-500 hover:text-renjana-600 transition">
-            &larr; Kembali ke Pengaduan
-        </a>
-
         <!-- Ticket Header -->
         <div class="rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6">
             <div class="flex items-start justify-between mb-4">
@@ -163,7 +170,7 @@
             <h2 class="text-base font-bold text-neutral-900 dark:text-white mb-4">Percakapan</h2>
 
             {#if messages.length > 0}
-                <div class="space-y-4">
+                <div bind:this={messagesContainer} class="space-y-4 max-h-[500px] overflow-y-auto pr-1">
                     {#each messages as msg, i}
                         <div class="flex gap-3 {msg.sender_type === 'admin' ? 'flex-row-reverse' : ''}">
                             <div class="shrink-0">

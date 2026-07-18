@@ -8,6 +8,7 @@ package queries
 import (
 	"context"
 	"database/sql"
+	"time"
 )
 
 const addComplaintMessage = `-- name: AddComplaintMessage :one
@@ -52,6 +53,77 @@ func (q *Queries) CountComplaints(ctx context.Context) (int64, error) {
 	var total int64
 	err := row.Scan(&total)
 	return total, err
+}
+
+const countComplaintsByCategory = `-- name: CountComplaintsByCategory :many
+SELECT category, COUNT(*) AS count
+FROM renjana_complaints
+GROUP BY category
+ORDER BY count DESC
+`
+
+type CountComplaintsByCategoryRow struct {
+	Category string `json:"category"`
+	Count    int64  `json:"count"`
+}
+
+func (q *Queries) CountComplaintsByCategory(ctx context.Context) ([]CountComplaintsByCategoryRow, error) {
+	rows, err := q.db.QueryContext(ctx, countComplaintsByCategory)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []CountComplaintsByCategoryRow
+	for rows.Next() {
+		var i CountComplaintsByCategoryRow
+		if err := rows.Scan(&i.Category, &i.Count); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const countComplaintsByMonth = `-- name: CountComplaintsByMonth :many
+SELECT strftime('%Y-%m', created_at) AS month, COUNT(*) AS count
+FROM renjana_complaints
+GROUP BY month
+ORDER BY month DESC
+LIMIT 12
+`
+
+type CountComplaintsByMonthRow struct {
+	Month interface{} `json:"month"`
+	Count int64       `json:"count"`
+}
+
+func (q *Queries) CountComplaintsByMonth(ctx context.Context) ([]CountComplaintsByMonthRow, error) {
+	rows, err := q.db.QueryContext(ctx, countComplaintsByMonth)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []CountComplaintsByMonthRow
+	for rows.Next() {
+		var i CountComplaintsByMonthRow
+		if err := rows.Scan(&i.Month, &i.Count); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const countResolvedComplaints = `-- name: CountResolvedComplaints :one
@@ -195,6 +267,73 @@ func (q *Queries) GetComplaintStats(ctx context.Context) (GetComplaintStatsRow, 
 		&i.Processed,
 		&i.Resolved,
 	)
+	return i, err
+}
+
+const getLatestMessagesForComplaints = `-- name: GetLatestMessagesForComplaints :many
+SELECT m.complaint_id, m.sender_type, m.sender_name, m.message, m.created_at
+FROM renjana_complaint_messages m
+WHERE m.id IN (
+    SELECT MAX(m2.id)
+    FROM renjana_complaint_messages m2
+    GROUP BY m2.complaint_id
+)
+`
+
+type GetLatestMessagesForComplaintsRow struct {
+	ComplaintID int64     `json:"complaint_id"`
+	SenderType  string    `json:"sender_type"`
+	SenderName  string    `json:"sender_name"`
+	Message     string    `json:"message"`
+	CreatedAt   time.Time `json:"created_at"`
+}
+
+func (q *Queries) GetLatestMessagesForComplaints(ctx context.Context) ([]GetLatestMessagesForComplaintsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getLatestMessagesForComplaints)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetLatestMessagesForComplaintsRow
+	for rows.Next() {
+		var i GetLatestMessagesForComplaintsRow
+		if err := rows.Scan(
+			&i.ComplaintID,
+			&i.SenderType,
+			&i.SenderName,
+			&i.Message,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getResponseTimeStats = `-- name: GetResponseTimeStats :one
+SELECT
+    COUNT(*) AS total_resolved,
+    ROUND(AVG(julianday(responded_at) - julianday(created_at)), 1) AS avg_response_days
+FROM renjana_complaints
+WHERE status = 'resolved' AND responded_at IS NOT NULL
+`
+
+type GetResponseTimeStatsRow struct {
+	TotalResolved   int64   `json:"total_resolved"`
+	AvgResponseDays float64 `json:"avg_response_days"`
+}
+
+func (q *Queries) GetResponseTimeStats(ctx context.Context) (GetResponseTimeStatsRow, error) {
+	row := q.db.QueryRowContext(ctx, getResponseTimeStats)
+	var i GetResponseTimeStatsRow
+	err := row.Scan(&i.TotalResolved, &i.AvgResponseDays)
 	return i, err
 }
 

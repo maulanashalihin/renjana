@@ -30,6 +30,7 @@ type Handlers struct {
 	Gallery       *handlers.GalleryHandler
 	Education     *handlers.EducationHandler
 	School        *handlers.SchoolHandler
+	Partner       *handlers.PartnerHandler
 }
 
 func SetupRoutes(app *fiber.App, h Handlers, store *session.Store, mailerService *services.MailerService, csrfMiddleware *middlewares.CSRFMiddleware) {
@@ -40,7 +41,7 @@ func SetupRoutes(app *fiber.App, h Handlers, store *session.Store, mailerService
 	app.Post("/api/errors", handlers.HandleClientError)
 
 	// Public API — no auth, no CSRF (before CSRF middleware)
-	setupPublicAPIRoutes(app, h.School)
+	setupPublicAPIRoutes(app, h.School, h.Partner)
 
 	// Setup auth routes
 	setupAuthRoutes(app, h.Auth, h.PasswordReset, store, mailerService)
@@ -60,7 +61,7 @@ func SetupRoutes(app *fiber.App, h Handlers, store *session.Store, mailerService
 	setupPublicFormRoutes(app, h.Complaint, h.Survey)
 
 	// Setup app routes (protected) — semua di root path
-	setupAppRoutes(app, h.App, h.Upload, h.Volunteer, h.Activity, h.Announcement, h.Contact, h.Gallery, h.Organization, h.Onboarding, h.Document, h.Static, h.UserAdmin, h.Complaint, h.Survey, h.Education, h.School, store)
+	setupAppRoutes(app, h.App, h.Upload, h.Volunteer, h.Activity, h.Announcement, h.Contact, h.Gallery, h.Organization, h.Onboarding, h.Document, h.Static, h.UserAdmin, h.Complaint, h.Survey, h.Education, h.School, h.Partner, store)
 }
 
 // setupRegistrationRoutes is deprecated — /daftar flow removed.
@@ -94,9 +95,12 @@ func setupStaticRoutes(app *fiber.App) {
 	})
 }
 
-func setupPublicAPIRoutes(app *fiber.App, schoolHandler *handlers.SchoolHandler) {
+func setupPublicAPIRoutes(app *fiber.App, schoolHandler *handlers.SchoolHandler, partnerHandler *handlers.PartnerHandler) {
 	// School search API — used by SchoolAutocomplete component (public, no auth)
 	app.Get("/api/schools/search", schoolHandler.SearchSchoolsAPI)
+
+	// Partner list API — used by Profil page to show mitra logos (public, no auth)
+	app.Get("/api/partners", partnerHandler.List)
 }
 
 func setupPublicFormRoutes(app *fiber.App, complaintHandler *handlers.ComplaintHandler, surveyHandler *handlers.SurveyHandler) {
@@ -178,7 +182,6 @@ func setupAuthRoutes(app *fiber.App, authHandler *handlers.AuthHandler, password
 	// Logout (requires auth)
 	app.Post("/logout", middlewares.AuthRequired(store), authHandler.Logout)
 
-
 	// Password reset routes
 	app.Get("/forgot-password", passwordResetHandler.ShowForgotPasswordForm)
 	app.Post("/forgot-password", passwordResetHandler.SendResetLink, middlewares.PasswordResetRateLimit.Limit())
@@ -186,7 +189,7 @@ func setupAuthRoutes(app *fiber.App, authHandler *handlers.AuthHandler, password
 	app.Post("/reset-password/:token", passwordResetHandler.ResetPassword)
 }
 
-func setupAppRoutes(app *fiber.App, appHandler *handlers.AppHandler, uploadHandler *handlers.UploadHandler, volunteerHandler *handlers.VolunteerHandler, activityHandler *handlers.ActivityHandler, announcementHandler *handlers.AnnouncementHandler, contactHandler *handlers.ContactHandler, galleryHandler *handlers.GalleryHandler, organizationHandler *handlers.OrganizationHandler, onboardingHandler *handlers.OnboardingHandler, documentHandler *handlers.DocumentHandler, staticHandler *handlers.StaticHandler, userAdminHandler *handlers.UserAdminHandler, complaintHandler *handlers.ComplaintHandler, surveyHandler *handlers.SurveyHandler, educationHandler *handlers.EducationHandler, schoolHandler *handlers.SchoolHandler, store *session.Store) {
+func setupAppRoutes(app *fiber.App, appHandler *handlers.AppHandler, uploadHandler *handlers.UploadHandler, volunteerHandler *handlers.VolunteerHandler, activityHandler *handlers.ActivityHandler, announcementHandler *handlers.AnnouncementHandler, contactHandler *handlers.ContactHandler, galleryHandler *handlers.GalleryHandler, organizationHandler *handlers.OrganizationHandler, onboardingHandler *handlers.OnboardingHandler, documentHandler *handlers.DocumentHandler, staticHandler *handlers.StaticHandler, userAdminHandler *handlers.UserAdminHandler, complaintHandler *handlers.ComplaintHandler, surveyHandler *handlers.SurveyHandler, educationHandler *handlers.EducationHandler, schoolHandler *handlers.SchoolHandler, partnerHandler *handlers.PartnerHandler, store *session.Store) {
 	// Protected routes (semua di root path, bukan /app/* lagi)
 	// Apply AuthRequired globally — all routes below require auth
 	app.Use(middlewares.AuthRequired(store))
@@ -272,6 +275,11 @@ func setupAppRoutes(app *fiber.App, appHandler *handlers.AppHandler, uploadHandl
 	app.Post("/admin/schools", middlewares.AdminRequired(store), schoolHandler.Store)
 	app.Put("/admin/schools/:id", middlewares.AdminRequired(store), schoolHandler.Update)
 	app.Delete("/admin/schools/:id", middlewares.AdminRequired(store), schoolHandler.Destroy)
+
+	// Partner management — admin only (Mitra & Kolaborasi logos)
+	app.Post("/api/partners", middlewares.AdminRequired(store), partnerHandler.Create)
+	app.Put("/api/partners/:id", middlewares.AdminRequired(store), partnerHandler.Update)
+	app.Delete("/api/partners/:id", middlewares.AdminRequired(store), partnerHandler.Delete)
 
 }
 

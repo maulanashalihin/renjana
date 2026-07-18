@@ -76,7 +76,7 @@ func main() {
 	}
 
 	// Ensure storage directories exist for file uploads
-	for _, dir := range []string{"storage/avatars", "storage/media", "storage/documents"} {
+	for _, dir := range []string{"storage/avatars", "storage/media", "storage/documents", "storage/partners"} {
 		if err := os.MkdirAll(dir, 0755); err != nil {
 			slog.Error("failed to create storage directory", "dir", dir, "error", err)
 			os.Exit(1)
@@ -115,9 +115,10 @@ func main() {
 	organizationService := services.NewOrganizationService(querier)
 	staticService := services.NewStaticService(querier)
 	complaintService := services.NewComplaintService(querier)
-	surveyService := services.NewSurveyService(querier)
+	surveyService := services.NewSurveySKMService(querier)
 	educationService := services.NewEducationService(querier)
 	schoolService := services.NewSchoolService(querier)
+	partnerService := services.NewPartnerService(querier)
 
 	// Initialize Asset service (for production builds with hashed filenames)
 	assetService := services.NewAssetService("./dist/.vite/manifest.json", ".vite-port", cfg.IsDevelopment())
@@ -144,6 +145,7 @@ func main() {
 		Gallery:      handlers.NewGalleryHandler(sessionStore, inertiaService, staticService, querier),
 		Education:    handlers.NewEducationHandler(sessionStore, inertiaService, educationService, querier),
 		School:       handlers.NewSchoolHandler(sessionStore, inertiaService, schoolService, querier),
+		Partner:      handlers.NewPartnerHandler(sessionStore, partnerService),
 	}
 
 	// Setup CSRF middleware

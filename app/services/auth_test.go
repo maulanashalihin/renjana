@@ -127,7 +127,6 @@ func TestLogin(t *testing.T) {
 	}
 }
 
-
 func TestPassword(t *testing.T) {
 	t.Run("hash produces different salts", func(t *testing.T) {
 		h1, _ := hashPassword("same-password")

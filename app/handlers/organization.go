@@ -72,10 +72,24 @@ func (h *OrganizationHandler) Index(c *fiber.Ctx) error {
 
 	stats, _ := h.volunteerSvc.GetStats(c.Context())
 
+	// Load partners for Mitra & Kolaborasi section
+	partnerRows, _ := h.querier.ListPartners(c.Context())
+	partners := make([]fiber.Map, 0)
+	for _, p := range partnerRows {
+		partners = append(partners, fiber.Map{
+			"id":          p.ID,
+			"name":        p.Name,
+			"logo_url":    p.LogoUrl,
+			"website_url": p.WebsiteUrl,
+			"sort_order":  p.SortOrder,
+		})
+	}
+
 	return h.inertiaService.Render(c, "app/Profil", fiber.Map{
 		"user":            user,
 		"organization":    org,
 		"volunteer_stats": stats,
+		"partners":        partners,
 	})
 }
 

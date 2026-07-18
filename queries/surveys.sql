@@ -1,36 +1,47 @@
--- name: ListSurveysPaginated :many
-SELECT id, respondent_name, respondent_email, service_type, rating, feedback, created_at
-FROM renjana_surveys
+-- name: CreateSurveySKM :one
+INSERT INTO renjana_survey_skm (age, gender, education, occupation, year, q1, q2, q3, q4, q5, q6, q7, q8, q9, feedback)
+VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15)
+RETURNING id, age, gender, education, occupation, year, q1, q2, q3, q4, q5, q6, q7, q8, q9, feedback, created_at;
+
+-- name: ListSurveySKMPaginated :many
+SELECT id, age, gender, education, occupation, year, q1, q2, q3, q4, q5, q6, q7, q8, q9, feedback, created_at
+FROM renjana_survey_skm
 ORDER BY created_at DESC
 LIMIT ?1 OFFSET ?2;
 
--- name: CountSurveys :one
+-- name: CountSurveySKM :one
 SELECT COUNT(*) AS total
-FROM renjana_surveys;
+FROM renjana_survey_skm;
 
--- name: GetSurveyByID :one
-SELECT id, respondent_name, respondent_email, service_type, rating, feedback, created_at
-FROM renjana_surveys
-WHERE id = ?;
-
--- name: CreateSurvey :one
-INSERT INTO renjana_surveys (respondent_name, respondent_email, service_type, rating, feedback)
-VALUES (?1, ?2, ?3, ?4, ?5)
-RETURNING id, respondent_name, respondent_email, service_type, rating, feedback, created_at;
-
--- name: GetSurveyStats :one
+-- name: GetSurveySKMStats :one
 SELECT
     COUNT(*) AS total,
-    ROUND(AVG(rating), 2) AS average_rating,
-    SUM(CASE WHEN rating = 5 THEN 1 ELSE 0 END) AS rating_5,
-    SUM(CASE WHEN rating = 4 THEN 1 ELSE 0 END) AS rating_4,
-    SUM(CASE WHEN rating = 3 THEN 1 ELSE 0 END) AS rating_3,
-    SUM(CASE WHEN rating = 2 THEN 1 ELSE 0 END) AS rating_2,
-    SUM(CASE WHEN rating = 1 THEN 1 ELSE 0 END) AS rating_1
-FROM renjana_surveys;
+    ROUND(CAST(SUM(q1 + q2 + q3 + q4 + q5 + q6 + q7 + q8 + q9) AS REAL) / (COUNT(*) * 9 * 4) * 100, 1) AS skm_score,
+    ROUND(AVG(q1), 2) AS avg_q1,
+    ROUND(AVG(q2), 2) AS avg_q2,
+    ROUND(AVG(q3), 2) AS avg_q3,
+    ROUND(AVG(q4), 2) AS avg_q4,
+    ROUND(AVG(q5), 2) AS avg_q5,
+    ROUND(AVG(q6), 2) AS avg_q6,
+    ROUND(AVG(q7), 2) AS avg_q7,
+    ROUND(AVG(q8), 2) AS avg_q8,
+    ROUND(AVG(q9), 2) AS avg_q9
+FROM renjana_survey_skm;
 
--- name: GetSurveyStatsByService :many
-SELECT service_type, COUNT(*) AS total, ROUND(AVG(rating), 2) AS average_rating
-FROM renjana_surveys
-GROUP BY service_type
-ORDER BY total DESC;
+-- name: GetSurveySKMByGender :many
+SELECT gender, COUNT(*) AS count, ROUND(AVG(q1 + q2 + q3 + q4 + q5 + q6 + q7 + q8 + q9) * 100.0 / 36.0, 1) AS avg_score
+FROM renjana_survey_skm
+GROUP BY gender
+ORDER BY count DESC;
+
+-- name: GetSurveySKMByEducation :many
+SELECT education, COUNT(*) AS count, ROUND(AVG(q1 + q2 + q3 + q4 + q5 + q6 + q7 + q8 + q9) * 100.0 / 36.0, 1) AS avg_score
+FROM renjana_survey_skm
+GROUP BY education
+ORDER BY count DESC;
+
+-- name: GetSurveySKMByOccupation :many
+SELECT occupation, COUNT(*) AS count, ROUND(AVG(q1 + q2 + q3 + q4 + q5 + q6 + q7 + q8 + q9) * 100.0 / 36.0, 1) AS avg_score
+FROM renjana_survey_skm
+GROUP BY occupation
+ORDER BY count DESC;

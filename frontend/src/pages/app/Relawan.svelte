@@ -4,6 +4,7 @@
     import PageHeader from "../../lib/components/PageHeader.svelte";
     import EmptyState from "../../lib/components/EmptyState.svelte";
     import { Users, Search, GraduationCap, MapPin, Phone, CalendarCheck, Filter, UserCheck, Clock, XCircle, School, Plus, Pencil, Trash2, X, Award } from "lucide-svelte";
+    import SchoolAutocomplete from "../../lib/components/SchoolAutocomplete.svelte";
 
     interface AppUser {
         id: number;
@@ -40,6 +41,14 @@
     }
 
     interface District { id: number; name: string; }
+
+    interface SchoolResult {
+        id: number;
+        name: string;
+        level: string;
+        status: string;
+        kecamatan: string;
+    }
     interface Stats { total: number; active: number; inactive: number; pending: number; rejected: number; schools: number; }
 
     interface Props {
@@ -72,6 +81,11 @@
 
     let actionType = $state<"create" | "edit" | "">("");
     let editTarget = $state<Volunteer | null>(null);
+
+    // Form state for modal
+    let formSchool = $state("");
+    let formDistrictId = $state(0);
+    let selectedSchool = $state<SchoolResult | null>(null);
 
     const items = $derived(volunteers?.data ?? []);
 
@@ -114,11 +128,17 @@
     function openCreate() {
         actionType = "create";
         editTarget = null;
+        formSchool = "";
+        formDistrictId = 0;
+        selectedSchool = null;
     }
 
     function openEdit(v: Volunteer) {
         actionType = "edit";
         editTarget = v;
+        formSchool = v.school;
+        formDistrictId = v.district_id;
+        selectedSchool = null;
     }
 
     function closeModal() {
@@ -224,7 +244,7 @@
     {#if items.length > 0}
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {#each items as v}
-                <a href="/relawan/{v.id}" use:inertia class="block rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-5 hover:shadow-lg hover:-translate-y-0.5 transition cursor-pointer">
+                <div onclick={(e) => { const target = e.target as HTMLElement; if (target.closest('button')) return; router.visit('/relawan/' + v.id); }} onkeydown={(e) => { if (e.key === 'Enter') { const target = e.target as HTMLElement; if (!target.closest('button')) router.visit('/relawan/' + v.id); } }} class="block rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-5 hover:shadow-lg hover:-translate-y-0.5 transition cursor-pointer" role="link" tabindex="0">
                     <div class="flex items-start gap-3 mb-3">
                         <div class="relative flex-shrink-0">
                             {#if v.avatar_url}
@@ -282,7 +302,7 @@
                             <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-300">DITOLAK</span>
                         {/if}
                     </div>
-                    <div class="mt-3 flex gap-2" onclick={(e) => e.stopPropagation()}>
+                    <div class="mt-3 flex gap-2">
                         {#if canEdit}
                             <button onclick={(e) => { e.stopPropagation(); openEdit(v); }} class="flex-1 inline-flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:border-renjana-500 text-neutral-700 dark:text-neutral-300 text-xs font-semibold transition">
                                 <Pencil class="w-3 h-3" />Edit
@@ -292,7 +312,7 @@
                         </button>
                         {/if}
                     </div>
-                </a>
+                </div>
             {/each}
         </div>
 
@@ -321,13 +341,26 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Sekolah *</label>
-                        <input type="text" name="school" required value={editTarget?.school ?? ""} class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
+                        <SchoolAutocomplete
+                            bind:value={formSchool}
+                            bind:selectedEntry={selectedSchool}
+                            onSelect={(entry) => {
+                                const match = districts.find(
+                                    (d) => d.name.toLowerCase() === entry.kecamatan.toLowerCase(),
+                                );
+                                if (match) {
+                                    formDistrictId = match.id;
+                                }
+                            }}
+                        />
+                        <input type="hidden" name="school" value={formSchool} />
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Kecamatan *</label>
-                        <select name="district_id" required class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none">
+                        <select name="district_id" required bind:value={formDistrictId} class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none">
+                            <option value={0} disabled>Pilih kecamatan...</option>
                             {#each districts as d}
-                                <option value={d.id} selected={editTarget?.district_id === d.id}>{d.name}</option>
+                                <option value={d.id}>{d.name}</option>
                             {/each}
                         </select>
                     </div>

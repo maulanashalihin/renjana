@@ -8,8 +8,12 @@
   "concepts/migration-convention": [],
   "concepts/rbac-roles": [],
   "concepts/svelte-conventions": [],
-  "concepts/three-tier-rule": [],
+  "concepts/three-tier-rule": [
+    "sources/invalid-html-button-inside-anchor"
+  ],
   "sources/deployment-read-all-before-action": [],
+  "sources/first-principles-before-debugging": [],
+  "sources/invalid-html-button-inside-anchor": [],
   "sources/obs-2026-07-15-agents-md-simplified-and-llm-wiki-bootstrapped": [],
   "sources/obs-2026-07-15-perubahan-usercache-session-diterapkan-ke-laju-go-boilerplat": [],
   "sources/obs-2026-07-15-sessiondata-diperkaya-dengan-name-avatar-email-verified": [],
@@ -21,6 +25,10 @@
   "sources/obs-2026-07-17-avatar-dir-permission-tightened-from-0755-to-0750": [],
   "sources/obs-2026-07-17-bomb-payload-prevention-maxlength-server-validation-added": [],
   "sources/obs-2026-07-17-brace-expansion-di-package-lock-json": [],
+  "sources/obs-2026-07-17-downloadandsaveavatar-diimplementasikan-di-laju-go-auth-serv": [],
   "sources/obs-2026-07-17-google-avatar-format-detection-simplified": [],
-  "sources/obs-2026-07-17-unhandled-error-review-csrf-save-logger-c-next-sess-destroy": []
+  "sources/obs-2026-07-17-unhandled-error-review-csrf-save-logger-c-next-sess-destroy": [],
+  "sources/obs-2026-07-18-fix-e-preventdefault-needed-on-buttons-inside-inertia-use-in": [],
+  "sources/obs-2026-07-18-pengaduan-ticket-redirect-auto-scroll-fix": [],
+  "sources/obs-2026-07-18-relawan-card-restructured-buttons-moved-outside-a-tag": []
 }

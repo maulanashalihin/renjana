@@ -266,7 +266,6 @@ func (h *AuthHandler) GoogleCallback(c *fiber.Ctx) error {
 	return c.Redirect("/")
 }
 
-
 // generateState generates a random state string for OAuth
 func generateState() string {
 	// Generate random bytes

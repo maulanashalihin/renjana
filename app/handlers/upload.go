@@ -29,6 +29,7 @@ const (
 	UploadTypeAvatar   = "avatar"
 	UploadTypeDocument = "document"
 	UploadTypeMedia    = "media"
+	UploadTypePartner  = "partner"
 )
 
 // per-type config: allowed MIME types + max size (bytes)
@@ -46,6 +47,11 @@ var uploadConfigs = map[string]struct {
 		allowedTypes: []string{"image/jpeg", "image/png", "image/gif", "image/webp", "video/mp4", "video/webm"},
 		maxSize:      20 * 1024 * 1024, // 20MB
 		folder:       "media",
+	},
+	UploadTypePartner: {
+		allowedTypes: []string{"image/jpeg", "image/png", "image/gif", "image/webp", "image/svg+xml"},
+		maxSize:      5 * 1024 * 1024, // 5MB
+		folder:       "partners",
 	},
 	UploadTypeDocument: {
 		allowedTypes: []string{
@@ -76,6 +82,8 @@ func (h *UploadHandler) UploadByPurpose(c *fiber.Ctx) error {
 		return h.handleUpload(c, UploadTypeDocument)
 	case UploadTypeMedia:
 		return h.handleUpload(c, UploadTypeMedia)
+	case UploadTypePartner:
+		return h.handleUpload(c, UploadTypePartner)
 	case UploadTypeAvatar, "":
 		return h.handleUpload(c, UploadTypeAvatar)
 	default:

@@ -26,6 +26,9 @@ type ComplaintItem struct {
 	RespondedAt *time.Time `json:"responded_at,omitempty"`
 	CreatedAt   time.Time  `json:"created_at"`
 	Token       string     `json:"token,omitempty"`
+	LatestMessageAt     *time.Time `json:"latest_message_at,omitempty"`
+	LatestSenderType    string     `json:"latest_sender_type,omitempty"`
+	LatestSenderName    string     `json:"latest_sender_name,omitempty"`
 }
 
 type ComplaintMessageItem struct {
@@ -42,6 +45,27 @@ type ComplaintStats struct {
 	Pending   int64 `json:"pending"`
 	Processed int64 `json:"processed"`
 	Resolved  int64 `json:"resolved"`
+}
+
+type CategoryStat struct {
+	Category string `json:"category"`
+	Count    int64  `json:"count"`
+}
+
+type MonthlyStat struct {
+	Month string `json:"month"`
+	Count int64  `json:"count"`
+}
+
+type ResponseTimeStat struct {
+	TotalResolved   int64   `json:"total_resolved"`
+	AvgResponseDays float64 `json:"avg_response_days"`
+}
+
+type ComplaintStatistics struct {
+	ByCategory   []CategoryStat    `json:"by_category"`
+	ByMonth      []MonthlyStat     `json:"by_month"`
+	ResponseTime *ResponseTimeStat `json:"response_time"`
 }
 
 type ComplaintService struct {
@@ -75,6 +99,23 @@ func (s *ComplaintService) List(ctx context.Context, page, perPage int) (*Pagina
 	items := make([]ComplaintItem, 0, len(rows))
 	for _, r := range rows {
 		items = append(items, *complaintFromRow(&r))
+	}
+
+	// Fetch latest message for each complaint and override the Message field
+	latestMessages, err := s.querier.GetLatestMessagesForComplaints(ctx)
+	if err == nil {
+		msgMap := make(map[int64]queries.GetLatestMessagesForComplaintsRow, len(latestMessages))
+		for _, lm := range latestMessages {
+			msgMap[lm.ComplaintID] = lm
+		}
+		for i, item := range items {
+			if lm, ok := msgMap[item.ID]; ok {
+				items[i].Message = lm.Message
+				items[i].LatestMessageAt = &lm.CreatedAt
+				items[i].LatestSenderType = lm.SenderType
+				items[i].LatestSenderName = lm.SenderName
+			}
+		}
 	}
 
 	total, err := s.querier.CountComplaints(ctx)
@@ -147,6 +188,43 @@ func (s *ComplaintService) GetStats(ctx context.Context) (*ComplaintStats, error
 	}, nil
 }
 
+func (s *ComplaintService) GetStatistics(ctx context.Context) (*ComplaintStatistics, error) {
+	byCategory, err := s.querier.CountComplaintsByCategory(ctx)
+	if err != nil {
+		return nil, err
+	}
+	byMonth, err := s.querier.CountComplaintsByMonth(ctx)
+	if err != nil {
+		return nil, err
+	}
+	respTime, err := s.querier.GetResponseTimeStats(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	cats := make([]CategoryStat, 0, len(byCategory))
+	for _, c := range byCategory {
+		cats = append(cats, CategoryStat{Category: c.Category, Count: c.Count})
+	}
+	months := make([]MonthlyStat, 0, len(byMonth))
+	for _, m := range byMonth {
+		monthStr := ""
+		if s, ok := m.Month.(string); ok {
+			monthStr = s
+		}
+		months = append(months, MonthlyStat{Month: monthStr, Count: m.Count})
+	}
+
+	return &ComplaintStatistics{
+		ByCategory: cats,
+		ByMonth:    months,
+		ResponseTime: &ResponseTimeStat{
+			TotalResolved:   respTime.TotalResolved,
+			AvgResponseDays: respTime.AvgResponseDays,
+		},
+	}, nil
+}
+
 func (s *ComplaintService) Delete(ctx context.Context, id int64) error {
 	return s.querier.DeleteComplaint(ctx, id)
 }
@@ -170,6 +248,24 @@ func (s *ComplaintService) AddMessage(ctx context.Context, complaintID int64, se
 		Message:     r.Message,
 		CreatedAt:   r.CreatedAt,
 	}, nil
+}
+
+// AdminReply adds a message and updates complaint status to "processed".
+// Called when admin replies via ticket page.
+func (s *ComplaintService) AdminReply(ctx context.Context, complaintID, adminUserID int64, adminName, message string) (*ComplaintMessageItem, error) {
+	// Update status to "processed" if still pending
+	_, err := s.querier.UpdateComplaintStatus(ctx, queries.UpdateComplaintStatusParams{
+		ID:          complaintID,
+		Status:      "processed",
+		Response:    sql.NullString{String: message, Valid: true},
+		RespondedBy: sql.NullInt64{Int64: adminUserID, Valid: true},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// Add the message to the conversation thread
+	return s.AddMessage(ctx, complaintID, "admin", adminName, message)
 }
 
 // GetMessages returns all messages for a complaint, ordered by creation time.

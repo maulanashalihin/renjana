@@ -80,3 +80,21 @@
 ## [2026-07-17T05:15:41.234Z] observe
 - slug: "obs-2026-07-17-google-avatar-format-detection-simplified", title: "Google avatar format detection simplified", relevance: "low"
 
+## [2026-07-17T05:54:11.684Z] observe
+- slug: "obs-2026-07-17-downloadandsaveavatar-diimplementasikan-di-laju-go-auth-serv", title: "downloadAndSaveAvatar diimplementasikan di laju-go auth service", relevance: "high"
+
+## [2026-07-18T05:09:27.529Z] observe
+- slug: "obs-2026-07-18-fix-e-preventdefault-needed-on-buttons-inside-inertia-use-in", title: "Fix: e.preventDefault() needed on buttons inside Inertia use:inertia links", relevance: "medium"
+
+## [2026-07-18T05:12:41.559Z] observe
+- slug: "obs-2026-07-18-relawan-card-restructured-buttons-moved-outside-a-tag", title: "Relawan card restructured: buttons moved outside <a> tag", relevance: "medium"
+
+## [2026-07-18T05:14:34.897Z] retro
+- slug: "invalid-html-button-inside-anchor", title: "Jangan taruh <button> di dalam <a> — invalid HTML, browser engine navigasi ga bisa dicegah JS", category: "frontend"
+
+## [2026-07-18T05:15:38.364Z] observe
+- slug: "obs-2026-07-18-pengaduan-ticket-redirect-auto-scroll-fix", title: "Pengaduan ticket redirect + auto-scroll fix", relevance: "medium"
+
+## [2026-07-18T05:58:28.616Z] retro
+- slug: "first-principles-before-debugging", title: "Cek dasar dulu sebelum debug kompleks — HTML spec, UX flow, HTML defaults", category: "frontend"
+

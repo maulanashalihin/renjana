@@ -3,7 +3,7 @@
     import AppLayout from "../../components/AppLayout.svelte";
     import PageHeader from "../../lib/components/PageHeader.svelte";
     import EmptyState from "../../lib/components/EmptyState.svelte";
-    import { MessageSquareWarning, Send, CheckCircle2, ExternalLink, FileText } from "lucide-svelte";
+    import { MessageSquareWarning, Send, CheckCircle2, FileText } from "lucide-svelte";
 
     interface AppUser {
         id: number;
@@ -26,6 +26,9 @@
         responded_by?: number;
         responded_at?: string;
         created_at: string;
+        latest_sender_type?: string;
+        latest_sender_name?: string;
+        latest_message_at?: string;
     }
 
     interface Pagination {
@@ -41,6 +44,27 @@
         resolved: number;
     }
 
+    interface CategoryStat {
+        category: string;
+        count: number;
+    }
+
+    interface MonthlyStat {
+        month: string;
+        count: number;
+    }
+
+    interface ResponseTimeStat {
+        total_resolved: number;
+        avg_response_days: number;
+    }
+
+    interface ComplaintStatistics {
+        by_category: CategoryStat[];
+        by_month: MonthlyStat[];
+        response_time: ResponseTimeStat;
+    }
+
     interface Props {
         user?: AppUser;
         isAdmin?: boolean;
@@ -48,9 +72,10 @@
         stats?: ComplaintStats;
         resolved?: Pagination;
         submitted?: boolean;
+        statistics?: ComplaintStatistics;
     }
 
-    let { user, isAdmin = false, complaints, stats, resolved, submitted = false }: Props = $props();
+    let { user, isAdmin = false, complaints, stats, resolved, submitted = false, statistics }: Props = $props();
 
     // Form state (public) — load name from localStorage
     let formName = $state(localStorage.getItem("pengaduan_name") ?? "");
@@ -63,11 +88,18 @@
         if (formName) localStorage.setItem("pengaduan_name", formName);
     });
 
+    // Auto-redirect public users to their active ticket if stored in localStorage
+    $effect(() => {
+        if (!isAdmin) {
+            const token = localStorage.getItem("pengaduan_token");
+            if (token) {
+                router.visit(`/pengaduan/tiket/${token}`);
+            }
+        }
+    });
+
     // Admin state
     let activeTab = $state<string>("pending");
-    let respondModal = $state<Complaint | null>(null);
-    let respondText = $state("");
-    let loading = $state<number | null>(null);
 
     function submitPengaduan(e: Event) {
         e.preventDefault();
@@ -76,30 +108,6 @@
             phone: formPhone,
             category: formCategory,
             message: formMessage,
-        });
-    }
-
-    function markResolved(id: number) {
-        loading = id;
-        const complaint = items.find(c => c.id === id);
-        router.put(`/pengaduan/${id}`, {
-            status: "resolved",
-            response: complaint?.response ?? "",
-        }, {
-            onFinish: () => { loading = null; },
-        });
-    }
-
-    function submitResponse(id: number) {
-        loading = id;
-        router.put(`/pengaduan/${id}`, {
-            status: "processed",
-            response: respondText,
-        }, {
-            onFinish: () => {
-                respondModal = null;
-                loading = null;
-            },
         });
     }
 
@@ -143,9 +151,9 @@
         {/if}
 
         <div class="flex flex-wrap items-center gap-2 mb-4">
-            {#each ["pending", "processed", "resolved", "all", "laporan"] as tab}
+            {#each ["pending", "processed", "resolved", "all", "laporan", "statistik"] as tab}
                 <button onclick={() => activeTab = tab} class="px-3 py-1.5 rounded-lg text-xs font-medium border transition {activeTab === tab ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 border-transparent' : 'bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-700'}">
-                    {tab === "pending" ? "Pending" : tab === "processed" ? "Diproses" : tab === "resolved" ? "Selesai" : tab === "all" ? "Semua" : "📋 Laporan"}
+                    {tab === "pending" ? "Pending" : tab === "processed" ? "Diproses" : tab === "resolved" ? "Selesai" : tab === "all" ? "Semua" : tab === "laporan" ? "📋 Laporan" : "📊 Statistik"}
                 </button>
             {/each}
         </div>
@@ -169,12 +177,11 @@
                                     <th class="text-left py-3 px-2 font-semibold text-neutral-600 dark:text-neutral-400">Keluhan</th>
                                     <th class="text-left py-3 px-2 font-semibold text-neutral-600 dark:text-neutral-400">Respon Admin</th>
                                     <th class="text-left py-3 px-2 font-semibold text-neutral-600 dark:text-neutral-400">Tanggal Selesai</th>
-                                    <th class="text-left py-3 px-2 font-semibold text-neutral-600 dark:text-neutral-400">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {#each resolvedItems as item}
-                                    <tr class="border-b border-neutral-100 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
+                                    <tr onclick={() => { if (item.token) router.visit(`/pengaduan/tiket/${item.token}`); }} onkeydown={(e) => { if (e.key === 'Enter' && item.token) router.visit(`/pengaduan/tiket/${item.token}`); }} tabindex="0" role="button" class="border-b border-neutral-100 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 cursor-pointer transition">
                                         <td class="py-3 px-2 font-mono text-xs text-neutral-700 dark:text-neutral-300">{item.token || "-"}</td>
                                         <td class="py-3 px-2 font-medium text-neutral-900 dark:text-white">{item.name}</td>
                                         <td class="py-3 px-2 text-neutral-600 dark:text-neutral-400">{item.category}</td>
@@ -182,13 +189,6 @@
                                         <td class="py-3 px-2 text-neutral-600 dark:text-neutral-400 max-w-[200px] truncate">{item.response || "-"}</td>
                                         <td class="py-3 px-2 text-neutral-500 dark:text-neutral-400 text-xs">
                                             {item.responded_at ? new Date(item.responded_at).toLocaleDateString("id-ID") : "-"}
-                                        </td>
-                                        <td class="py-3 px-2">
-                                            {#if item.token}
-                                                <a href={`/pengaduan/tiket/${item.token}`} class="inline-flex items-center gap-1 text-renjana-500 hover:text-renjana-600 text-xs font-medium transition">
-                                                    <ExternalLink class="w-3 h-3" /> Tiket
-                                                </a>
-                                            {/if}
                                         </td>
                                     </tr>
                                 {/each}
@@ -199,22 +199,83 @@
                     <p class="text-sm text-neutral-500 dark:text-neutral-400 text-center py-4">Belum ada pengaduan yang selesai.</p>
                 {/if}
             </div>
+
+        {:else if activeTab === "statistik"}
+            <!-- Statistik -->
+            <div class="space-y-6">
+                {#if statistics?.response_time}
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-5">
+                            <p class="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-1">Total Selesai</p>
+                            <p class="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{statistics.response_time.total_resolved}</p>
+                        </div>
+                        <div class="rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-5">
+                            <p class="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-1">Rata-rata Waktu Selesai</p>
+                            <p class="text-2xl font-bold text-renjana-600 dark:text-renjana-400">{statistics.response_time.avg_response_days} hari</p>
+                        </div>
+                    </div>
+                {/if}
+
+                {#if statistics?.by_category && statistics.by_category.length > 0}
+                    <div class="rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6">
+                        <h3 class="text-base font-bold text-neutral-900 dark:text-white mb-4">Per Kategori</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead>
+                                    <tr class="border-b border-neutral-200 dark:border-neutral-700">
+                                        <th class="text-left py-3 px-2 font-semibold text-neutral-600 dark:text-neutral-400">Kategori</th>
+                                        <th class="text-right py-3 px-2 font-semibold text-neutral-600 dark:text-neutral-400">Jumlah</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {#each statistics.by_category as cat}
+                                        <tr class="border-b border-neutral-100 dark:border-neutral-800">
+                                            <td class="py-3 px-2 text-neutral-900 dark:text-white font-medium">{cat.category}</td>
+                                            <td class="py-3 px-2 text-right text-neutral-700 dark:text-neutral-300 font-semibold">{cat.count}</td>
+                                        </tr>
+                                    {/each}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                {/if}
+
+                {#if statistics?.by_month && statistics.by_month.length > 0}
+                    <div class="rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6">
+                        <h3 class="text-base font-bold text-neutral-900 dark:text-white mb-4">Per Bulan (12 bulan terakhir)</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead>
+                                    <tr class="border-b border-neutral-200 dark:border-neutral-700">
+                                        <th class="text-left py-3 px-2 font-semibold text-neutral-600 dark:text-neutral-400">Bulan</th>
+                                        <th class="text-right py-3 px-2 font-semibold text-neutral-600 dark:text-neutral-400">Jumlah</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {#each statistics.by_month as m}
+                                        <tr class="border-b border-neutral-100 dark:border-neutral-800">
+                                            <td class="py-3 px-2 text-neutral-900 dark:text-white font-medium">{m.month}</td>
+                                            <td class="py-3 px-2 text-right text-neutral-700 dark:text-neutral-300 font-semibold">{m.count}</td>
+                                        </tr>
+                                    {/each}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                {/if}
+            </div>
+
         {:else if filtered.length > 0}
             <div class="space-y-3">
                 {#each filtered as complaint}
                     {@const colors = statusColors[complaint.status] || { bg: "bg-neutral-100 dark:bg-neutral-800", text: "text-neutral-700 dark:text-neutral-300" }}
-                    <div class="rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-5">
+                    <a href={`/pengaduan/tiket/${complaint.token}`} class="block rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-5 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition cursor-pointer">
                         <div class="flex items-start justify-between mb-3">
                             <div>
                                 <p class="font-semibold text-neutral-900 dark:text-white">{complaint.name}</p>
                                 <p class="text-xs text-neutral-500 dark:text-neutral-400">{complaint.email}{#if complaint.phone} · {complaint.phone}{/if}</p>
                             </div>
                             <div class="flex items-center gap-2">
-                                {#if complaint.token}
-                                    <a href={`/pengaduan/tiket/${complaint.token}`} class="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium text-renjana-500 hover:bg-renjana-50 dark:hover:bg-renjana-900/20 transition">
-                                        <ExternalLink class="w-3 h-3" /> Tiket
-                                    </a>
-                                {/if}
                                 <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold {colors.bg} {colors.text}">
                                     {complaint.status === "pending" ? "Pending" : complaint.status === "processed" ? "Diproses" : "Selesai"}
                                 </span>
@@ -227,53 +288,23 @@
                                 <span class="text-xs font-mono text-neutral-400">#{complaint.token}</span>
                             {/if}
                         </div>
-                        <p class="text-sm text-neutral-700 dark:text-neutral-300 mb-3">{complaint.message}</p>
-                        {#if complaint.response}
-                            <div class="bg-neutral-50 dark:bg-neutral-800/50 rounded-lg p-3 text-sm text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700">
-                                <p class="font-medium text-neutral-800 dark:text-neutral-200 mb-1">Respon:</p>
-                                {complaint.response}
+                        <p class="text-sm text-neutral-700 dark:text-neutral-300 mb-2">{complaint.message}</p>
+                        {#if complaint.latest_sender_type}
+                            <div class="flex items-center gap-1.5 text-xs text-neutral-500 dark:text-neutral-400">
+                                {#if complaint.latest_sender_type === "admin"}
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">Admin</span>
+                                {:else}
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-renjana-100 dark:bg-renjana-900/30 text-renjana-600 dark:text-renjana-400">User</span>
+                                {/if}
+                                <span>· {complaint.latest_sender_name}</span>
                             </div>
                         {/if}
-                        {#if complaint.status !== "resolved"}
-                            <div class="mt-3 flex gap-2">
-                                <button onclick={() => { respondModal = complaint; respondText = complaint.response ?? ""; }} class="px-3 py-1.5 rounded-lg bg-renjana-500 hover:bg-renjana-600 text-white text-xs font-medium transition">Respon</button>
-                                <button onclick={() => markResolved(complaint.id)} disabled={loading === complaint.id} class="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 disabled:bg-neutral-400 text-white text-xs font-medium transition">
-                                    {loading === complaint.id ? "Memproses..." : "Tandai Selesai"}
-                                </button>
-                            </div>
-                        {/if}
-                    </div>
+                    </a>
                 {/each}
             </div>
         {:else}
             <EmptyState title="Tidak ada pengaduan" message={activeTab === "all" ? "Belum ada pengaduan masuk" : `Tidak ada pengaduan dengan status ${activeTab}`} icon={MessageSquareWarning} />
         {/if}
-
-        <!-- Respond Modal -->
-        {#if respondModal}
-            <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onclick={() => { if (loading === null) respondModal = null; }}>
-                <div class="bg-white dark:bg-neutral-900 rounded-2xl p-6 max-w-lg w-full mx-4 shadow-2xl" onclick={(e) => e.stopPropagation()}>
-                    <h3 class="text-lg font-bold text-neutral-900 dark:text-white mb-4">Respon Pengaduan</h3>
-                    <p class="text-sm text-neutral-500 dark:text-neutral-400 mb-4">
-                        Dari: <strong>{respondModal.name}</strong> · {respondModal.category}
-                        {#if respondModal.token}
-                            · Tiket: <span class="font-mono">#{respondModal.token}</span>
-                        {/if}
-                    </p>
-                    <p class="text-sm text-neutral-700 dark:text-neutral-300 mb-4 bg-neutral-50 dark:bg-neutral-800 p-3 rounded-lg">{respondModal.message}</p>
-                    <div>
-                        <textarea bind:value={respondText} rows={4} disabled={loading !== null} class="w-full px-3 py-2.5 rounded-lg bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none mb-4 placeholder-neutral-400 dark:placeholder-neutral-500" placeholder="Tulis respon..." maxlength="2000"></textarea>
-                        <div class="flex gap-2 justify-end">
-                            <button onclick={() => { if (loading === null) respondModal = null; }} disabled={loading !== null} class="px-4 py-2 rounded-lg text-sm font-medium border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition">Batal</button>
-                            <button onclick={() => submitResponse(respondModal!.id)} disabled={loading !== null} class="px-4 py-2 rounded-lg bg-renjana-500 hover:bg-renjana-600 disabled:bg-neutral-400 text-white text-sm font-semibold transition">
-                                {loading === respondModal!.id ? "Mengirim..." : "Kirim Respon"}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        {/if}
-
     {:else}
         <!-- Public View -->
         <PageHeader title="Pengaduan Masyarakat" subtitle="Sampaikan pengaduan, saran, atau masukan kepada RENJANA" icon={MessageSquareWarning} />

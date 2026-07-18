@@ -2,7 +2,7 @@
     import { router } from "@inertiajs/svelte";
     import AppLayout from "../../components/AppLayout.svelte";
     import PageHeader from "../../lib/components/PageHeader.svelte";
-    import { Info, Target, Eye, Users, Building2, Award, Handshake, MapPin, Clock, Pencil, Save, FileDown } from "lucide-svelte";
+    import { Info, Target, Eye, Users, Building2, Award, Handshake, MapPin, Clock, Pencil, Save, FileDown, Plus, Trash2, Upload, X } from "lucide-svelte";
 
     interface AppUser {
         id: number;
@@ -34,10 +34,19 @@
         total_kecamatan: number;
     }
 
+    interface PartnerItem {
+        id: number;
+        name: string;
+        logo_url: string;
+        website_url: string;
+        sort_order: number;
+    }
+
     interface Props {
         user?: AppUser;
         organization?: Organization;
         volunteer_stats?: Stats;
+        partners?: PartnerItem[];
         success?: string;
         error?: string;
     }
@@ -46,12 +55,143 @@
         user,
         organization,
         volunteer_stats,
+        partners: initialPartners = [],
         success,
         error,
     }: Props = $props();
 
     let editing = $state(false);
     let activeTab = $state<"tentang" | "kontak" | "sosial">("tentang");
+
+    // Partners state — initialized from Inertia prop (server-rendered)
+    let partners = $state<PartnerItem[]>(initialPartners);
+    let partnerName = $state("");
+    let partnerLogoUrl = $state("");
+    let partnerLogoUploading = $state(false);
+    let partnerWebsite = $state("");
+    let partnerAdding = $state(false);
+    let partnerDeleting = $state<number | null>(null);
+    let showPartnerModal = $state(false);
+    let editPartnerTarget = $state<PartnerItem | null>(null);
+    let showEditModal = $state(false);
+
+    function getCSRFToken(): string {
+        const name = "XSRF-TOKEN";
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return decodeURIComponent(parts.pop()?.split(";").shift() ?? "");
+        return "";
+    }
+
+    async function fetchPartners() {
+        try {
+            const res = await fetch("/api/partners");
+            if (res.ok) {
+                const json = await res.json();
+                partners = json.data ?? [];
+            }
+        } catch {}
+    }
+
+    // Fallback: fetch from API on mount (server props may be stale if binary not restarted)
+    $effect(() => {
+        fetchPartners();
+    });
+
+    async function handlePartnerLogoSelect(file: File) {
+        partnerLogoUploading = true;
+        try {
+            const fd = new FormData();
+            fd.append("file", file);
+            fd.append("purpose", "partner");
+            const res = await fetch("/upload", {
+                method: "POST",
+                body: fd,
+                headers: {
+                    "X-XSRF-TOKEN": getCSRFToken(),
+                    "X-Requested-With": "XMLHttpRequest",
+                },
+            });
+            const data = await res.json();
+            if (data.success) {
+                partnerLogoUrl = data.url;
+            }
+        } catch {} finally {
+            partnerLogoUploading = false;
+        }
+    }
+
+    function clearPartnerForm() {
+        partnerName = "";
+        partnerLogoUrl = "";
+        partnerWebsite = "";
+        editPartnerTarget = null;
+    }
+
+    async function addPartner() {
+        if (!partnerName.trim()) return;
+        partnerAdding = true;
+        try {
+            const res = await fetch("/api/partners", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    name: partnerName.trim(),
+                    logo_url: partnerLogoUrl,
+                    website_url: partnerWebsite.trim(),
+                }),
+            });
+            if (res.ok) {
+                clearPartnerForm();
+                showPartnerModal = false;
+                await fetchPartners();
+            }
+        } catch {} finally {
+            partnerAdding = false;
+        }
+    }
+
+    function openEditPartner(p: PartnerItem) {
+        editPartnerTarget = p;
+        partnerName = p.name;
+        partnerLogoUrl = p.logo_url;
+        partnerWebsite = p.website_url;
+        showEditModal = true;
+    }
+
+    async function updatePartner() {
+        if (!editPartnerTarget || !partnerName.trim()) return;
+        partnerAdding = true;
+        try {
+            const res = await fetch(`/api/partners/${editPartnerTarget.id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    name: partnerName.trim(),
+                    logo_url: partnerLogoUrl,
+                    website_url: partnerWebsite.trim(),
+                }),
+            });
+            if (res.ok) {
+                clearPartnerForm();
+                showEditModal = false;
+                await fetchPartners();
+            }
+        } catch {} finally {
+            partnerAdding = false;
+        }
+    }
+
+    async function deletePartner(id: number) {
+        if (!confirm("Hapus mitra ini?")) return;
+        partnerDeleting = id;
+        try {
+            await fetch(`/api/partners/${id}`, { method: "DELETE" });
+            await fetchPartners();
+        } catch {} finally {
+            partnerDeleting = null;
+        }
+    }
 
     // Local writable state for form fields (bound via bind:value)
     let formVision = $state(organization?.vision ?? "");
@@ -113,13 +253,12 @@
         social_youtube: "",
     });
 
-    const partnerList = $derived(org.structure ? org.structure.split("\n").filter(l => l.trim()) : []);
+    const vision = $derived(org.vision || "Visi RENJANA belum diisi.");
 
     function parseMission(m: string): string[] {
         return m.split("\n").filter(l => l.trim());
     }
 
-    const vision = $derived(org.vision || "Visi RENJANA belum diisi.");
     const missionItems = $derived(parseMission(org.mission));
     const stats = $derived(volunteer_stats ?? { total: 0, active: 0, schools: 0, total_kegiatan: 0, total_kecamatan: 0 });
 </script>
@@ -215,9 +354,42 @@
                             <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Sejarah</label>
                             <textarea name="history" rows="4" bind:value={formHistory} class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none resize-none"></textarea>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Struktur / Mitra (satu per baris)</label>
-                            <textarea name="structure" rows="4" bind:value={formStructure} class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none resize-none"></textarea>
+                        <div class="hidden">
+                            <!-- Keep structure field for backward compat but hide it -->
+                            <textarea name="structure" bind:value={formStructure}></textarea>
+                        </div>
+                        <!-- Mitra Management -->
+                        <div class="border-t border-neutral-200 dark:border-neutral-800 pt-4">
+                            <div class="flex items-center justify-between mb-3">
+                                <h3 class="text-sm font-semibold text-neutral-800 dark:text-neutral-200">Mitra & Kolaborasi</h3>
+                                <button type="button" onclick={() => showPartnerModal = true} class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-renjana-500 hover:bg-renjana-600 text-white text-xs font-semibold transition">
+                                    <Plus class="w-3.5 h-3.5" />Tambah Mitra
+                                </button>
+                            </div>
+                            {#if partners.length > 0}
+                                <div class="flex flex-wrap gap-3">
+                                    {#each partners as p}
+                                        <div class="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700">
+                                            {#if p.logo_url}
+                                                <img src={p.logo_url} alt={p.name} class="w-8 h-8 rounded-lg object-contain bg-white" />
+                                            {:else}
+                                                <div class="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-purple-600 dark:text-purple-400 text-xs font-bold">{p.name.charAt(0)}</div>
+                                            {/if}
+                                            <span class="text-sm font-medium text-neutral-700 dark:text-neutral-300">{p.name}</span>
+                                            <div class="flex gap-0.5 ml-1">
+                                                <button type="button" onclick={() => openEditPartner(p)} class="text-blue-500 hover:text-blue-700 p-1">
+                                                    <Pencil class="w-3.5 h-3.5" />
+                                                </button>
+                                                <button type="button" onclick={() => deletePartner(p.id)} disabled={partnerDeleting === p.id} class="text-rose-500 hover:text-rose-700 disabled:opacity-50 p-1">
+                                                    <Trash2 class="w-3.5 h-3.5" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    {/each}
+                                </div>
+                            {:else}
+                                <p class="text-sm text-neutral-500 dark:text-neutral-400 italic">Belum ada mitra.</p>
+                            {/if}
                         </div>
                     </div>
                 {:else if activeTab === "kontak"}
@@ -261,6 +433,105 @@
                 </div>
             </form>
         </div>
+
+        {#if showPartnerModal}
+            <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onclick={(e) => { if (e.target === e.currentTarget) { clearPartnerForm(); showPartnerModal = false; } }}>
+                <div class="bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl w-full max-w-md">
+                    <div class="flex items-center justify-between p-5 border-b border-neutral-200 dark:border-neutral-800">
+                        <h3 class="text-lg font-bold text-neutral-900 dark:text-white">Tambah Mitra</h3>
+                        <button type="button" onclick={() => { clearPartnerForm(); showPartnerModal = false; }} class="text-neutral-500 hover:text-neutral-700"><X class="w-5 h-5" /></button>
+                    </div>
+                    <div class="p-5 space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Nama Institusi *</label>
+                            <input type="text" bind:value={partnerName} placeholder="BPBD Tanah Bumbu" class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Website (opsional)</label>
+                            <input type="text" bind:value={partnerWebsite} placeholder="https://site.basarnas.go.id" class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Logo (opsional)</label>
+                            {#if partnerLogoUrl}
+                                <div class="flex items-center gap-3 mb-2">
+                                    <img src={partnerLogoUrl} alt="Logo" class="w-12 h-12 rounded-xl object-contain bg-white border border-neutral-200 dark:border-neutral-700" />
+                                    <span class="text-xs text-green-600">✓ Logo terupload</span>
+                                    <button type="button" onclick={() => partnerLogoUrl = ""} class="text-xs text-rose-500">hapus</button>
+                                </div>
+                            {/if}
+                            <label class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm cursor-pointer hover:border-renjana-500 transition disabled:opacity-50" class:cursor-not-allowed={partnerLogoUploading}>
+                                <Upload class="w-4 h-4 text-neutral-500" />
+                                <span class="text-neutral-600 dark:text-neutral-400">{partnerLogoUploading ? "Mengupload..." : "Pilih gambar logo..."}</span>
+                                <input type="file" accept="image/*" class="hidden" disabled={partnerLogoUploading} onchange={(e) => { const target = e.target as HTMLInputElement; if (target.files?.[0]) handlePartnerLogoSelect(target.files[0]); }} />
+                            </label>
+                        </div>
+                    </div>
+                    <div class="flex justify-end gap-2 p-5 border-t border-neutral-200 dark:border-neutral-800">
+                        <button type="button" onclick={() => { clearPartnerForm(); showPartnerModal = false; }} class="px-4 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 text-sm font-medium hover:border-renjana-500 transition">Batal</button>
+                        <button type="button" onclick={addPartner} disabled={!partnerName.trim() || partnerAdding} class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-renjana-500 hover:bg-renjana-600 text-white text-sm font-semibold transition disabled:opacity-50">
+                            {#if partnerAdding}
+                                <span class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                            {:else}
+                                <Plus class="w-4 h-4" />
+                            {/if}
+                            Tambah
+                        </button>
+                    </div>
+                </div>
+            </div>
+        {/if}
+
+        {#if showEditModal && editPartnerTarget}
+            <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onclick={(e) => { if (e.target === e.currentTarget) { clearPartnerForm(); showEditModal = false; } }}>
+                <div class="bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl w-full max-w-md">
+                    <div class="flex items-center justify-between p-5 border-b border-neutral-200 dark:border-neutral-800">
+                        <h3 class="text-lg font-bold text-neutral-900 dark:text-white">Edit Mitra</h3>
+                        <button type="button" onclick={() => { clearPartnerForm(); showEditModal = false; }} class="text-neutral-500 hover:text-neutral-700"><X class="w-5 h-5" /></button>
+                    </div>
+                    <div class="p-5 space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Nama Institusi *</label>
+                            <input type="text" bind:value={partnerName} placeholder="BPBD Tanah Bumbu" class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Website (opsional)</label>
+                            <input type="text" bind:value={partnerWebsite} placeholder="https://site.basarnas.go.id" class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Logo (opsional)</label>
+                            {#if partnerLogoUrl}
+                                <div class="flex items-center gap-3 mb-2">
+                                    <img src={partnerLogoUrl} alt="Logo" class="w-12 h-12 rounded-xl object-contain bg-white border border-neutral-200 dark:border-neutral-700" />
+                                    <span class="text-xs text-green-600">✓ Logo siap</span>
+                                    <button type="button" onclick={() => partnerLogoUrl = ""} class="text-xs text-rose-500">hapus</button>
+                                </div>
+                            {:else if editPartnerTarget.logo_url}
+                                <div class="flex items-center gap-3 mb-2">
+                                    <img src={editPartnerTarget.logo_url} alt={editPartnerTarget.name} class="w-12 h-12 rounded-xl object-contain bg-white border border-neutral-200 dark:border-neutral-700" />
+                                    <span class="text-xs text-neutral-500">Logo saat ini. Upload untuk ganti.</span>
+                                </div>
+                            {/if}
+                            <label class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm cursor-pointer hover:border-renjana-500 transition disabled:opacity-50" class:cursor-not-allowed={partnerLogoUploading}>
+                                <Upload class="w-4 h-4 text-neutral-500" />
+                                <span class="text-neutral-600 dark:text-neutral-400">{partnerLogoUploading ? "Mengupload..." : "Pilih gambar logo..."}</span>
+                                <input type="file" accept="image/*" class="hidden" disabled={partnerLogoUploading} onchange={(e) => { const target = e.target as HTMLInputElement; if (target.files?.[0]) handlePartnerLogoSelect(target.files[0]); }} />
+                            </label>
+                        </div>
+                    </div>
+                    <div class="flex justify-end gap-2 p-5 border-t border-neutral-200 dark:border-neutral-800">
+                        <button type="button" onclick={() => { clearPartnerForm(); showEditModal = false; }} class="px-4 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 text-sm font-medium hover:border-renjana-500 transition">Batal</button>
+                        <button type="button" onclick={updatePartner} disabled={!partnerName.trim() || partnerAdding} class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-renjana-500 hover:bg-renjana-600 text-white text-sm font-semibold transition disabled:opacity-50">
+                            {#if partnerAdding}
+                                <span class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                            {:else}
+                                <Save class="w-4 h-4" />
+                            {/if}
+                            Simpan
+                        </button>
+                    </div>
+                </div>
+            </div>
+        {/if}
     {:else}
         <!-- Display -->
         <!-- Visi & Misi -->
@@ -295,6 +566,19 @@
                 {/if}
             </div>
         </div>
+
+        <!-- Sejarah -->
+        {#if org.history}
+            <div class="rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 sm:p-8 mb-8">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+                        <Clock class="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                    </div>
+                    <h2 class="text-xl font-bold text-neutral-900 dark:text-white">Sejarah</h2>
+                </div>
+                <div class="prose prose-sm max-w-none text-neutral-700 dark:text-neutral-300 leading-relaxed whitespace-pre-line">{org.history}</div>
+            </div>
+        {/if}
 
         <!-- Kontak & Sosial -->
         {#if org.contact_email || org.contact_phone || org.address || org.social_instagram || org.social_tiktok || org.social_youtube}
@@ -345,7 +629,7 @@
         {/if}
 
         <!-- Mitra -->
-        {#if partnerList.length > 0}
+        {#if partners.length > 0}
             <div class="rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 sm:p-8">
                 <div class="flex items-center gap-3 mb-6">
                     <div class="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
@@ -353,10 +637,30 @@
                     </div>
                     <h2 class="text-xl font-bold text-neutral-900 dark:text-white">Mitra & Kolaborasi</h2>
                 </div>
-                <div class="flex flex-wrap gap-3">
-                    {#each partnerList as partner}
-                        <div class="px-4 py-2.5 rounded-full bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                            {partner}
+                <div class="flex flex-wrap gap-6 items-center">
+                    {#each partners as p}
+                        <div class="flex flex-col items-center gap-2 text-center">
+                            {#if p.website_url}
+                                <a href={p.website_url} target="_blank" rel="noopener noreferrer" class="group">
+                                    <div class="w-24 h-24 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 p-4 flex items-center justify-center group-hover:shadow-lg group-hover:-translate-y-0.5 transition-all">
+                                        {#if p.logo_url}
+                                            <img src={p.logo_url} alt={p.name} class="w-full h-full object-contain" />
+                                        {:else}
+                                            <div class="w-full h-full rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-purple-600 dark:text-purple-400 text-xl font-bold">{p.name.charAt(0).toUpperCase()}</div>
+                                        {/if}
+                                    </div>
+                                    <p class="mt-2 text-xs font-medium text-neutral-600 dark:text-neutral-400 group-hover:text-renjana-500 transition-colors">{p.name}</p>
+                                </a>
+                            {:else}
+                                <div class="w-24 h-24 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 p-4 flex items-center justify-center">
+                                    {#if p.logo_url}
+                                        <img src={p.logo_url} alt={p.name} class="w-full h-full object-contain" />
+                                    {:else}
+                                        <div class="w-full h-full rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-purple-600 dark:text-purple-400 text-xl font-bold">{p.name.charAt(0).toUpperCase()}</div>
+                                    {/if}
+                                </div>
+                                <p class="mt-2 text-xs font-medium text-neutral-600 dark:text-neutral-400">{p.name}</p>
+                            {/if}
                         </div>
                     {/each}
                 </div>

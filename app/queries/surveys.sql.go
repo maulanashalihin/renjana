@@ -10,134 +10,106 @@ import (
 	"database/sql"
 )
 
-const countSurveys = `-- name: CountSurveys :one
+const countSurveySKM = `-- name: CountSurveySKM :one
 SELECT COUNT(*) AS total
-FROM renjana_surveys
+FROM renjana_survey_skm
 `
 
-func (q *Queries) CountSurveys(ctx context.Context) (int64, error) {
-	row := q.db.QueryRowContext(ctx, countSurveys)
+func (q *Queries) CountSurveySKM(ctx context.Context) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countSurveySKM)
 	var total int64
 	err := row.Scan(&total)
 	return total, err
 }
 
-const createSurvey = `-- name: CreateSurvey :one
-INSERT INTO renjana_surveys (respondent_name, respondent_email, service_type, rating, feedback)
-VALUES (?1, ?2, ?3, ?4, ?5)
-RETURNING id, respondent_name, respondent_email, service_type, rating, feedback, created_at
+const createSurveySKM = `-- name: CreateSurveySKM :one
+INSERT INTO renjana_survey_skm (age, gender, education, occupation, year, q1, q2, q3, q4, q5, q6, q7, q8, q9, feedback)
+VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15)
+RETURNING id, age, gender, education, occupation, year, q1, q2, q3, q4, q5, q6, q7, q8, q9, feedback, created_at
 `
 
-type CreateSurveyParams struct {
-	RespondentName  sql.NullString `json:"respondent_name"`
-	RespondentEmail sql.NullString `json:"respondent_email"`
-	ServiceType     string         `json:"service_type"`
-	Rating          int64          `json:"rating"`
-	Feedback        sql.NullString `json:"feedback"`
+type CreateSurveySKMParams struct {
+	Age        int64          `json:"age"`
+	Gender     string         `json:"gender"`
+	Education  string         `json:"education"`
+	Occupation string         `json:"occupation"`
+	Year       int64          `json:"year"`
+	Q1         int64          `json:"q1"`
+	Q2         int64          `json:"q2"`
+	Q3         int64          `json:"q3"`
+	Q4         int64          `json:"q4"`
+	Q5         int64          `json:"q5"`
+	Q6         int64          `json:"q6"`
+	Q7         int64          `json:"q7"`
+	Q8         int64          `json:"q8"`
+	Q9         int64          `json:"q9"`
+	Feedback   sql.NullString `json:"feedback"`
 }
 
-func (q *Queries) CreateSurvey(ctx context.Context, arg CreateSurveyParams) (RenjanaSurvey, error) {
-	row := q.db.QueryRowContext(ctx, createSurvey,
-		arg.RespondentName,
-		arg.RespondentEmail,
-		arg.ServiceType,
-		arg.Rating,
+func (q *Queries) CreateSurveySKM(ctx context.Context, arg CreateSurveySKMParams) (RenjanaSurveySkm, error) {
+	row := q.db.QueryRowContext(ctx, createSurveySKM,
+		arg.Age,
+		arg.Gender,
+		arg.Education,
+		arg.Occupation,
+		arg.Year,
+		arg.Q1,
+		arg.Q2,
+		arg.Q3,
+		arg.Q4,
+		arg.Q5,
+		arg.Q6,
+		arg.Q7,
+		arg.Q8,
+		arg.Q9,
 		arg.Feedback,
 	)
-	var i RenjanaSurvey
+	var i RenjanaSurveySkm
 	err := row.Scan(
 		&i.ID,
-		&i.RespondentName,
-		&i.RespondentEmail,
-		&i.ServiceType,
-		&i.Rating,
+		&i.Age,
+		&i.Gender,
+		&i.Education,
+		&i.Occupation,
+		&i.Year,
+		&i.Q1,
+		&i.Q2,
+		&i.Q3,
+		&i.Q4,
+		&i.Q5,
+		&i.Q6,
+		&i.Q7,
+		&i.Q8,
+		&i.Q9,
 		&i.Feedback,
 		&i.CreatedAt,
 	)
 	return i, err
 }
 
-const getSurveyByID = `-- name: GetSurveyByID :one
-SELECT id, respondent_name, respondent_email, service_type, rating, feedback, created_at
-FROM renjana_surveys
-WHERE id = ?
+const getSurveySKMByEducation = `-- name: GetSurveySKMByEducation :many
+SELECT education, COUNT(*) AS count, ROUND(AVG(q1 + q2 + q3 + q4 + q5 + q6 + q7 + q8 + q9) * 100.0 / 36.0, 1) AS avg_score
+FROM renjana_survey_skm
+GROUP BY education
+ORDER BY count DESC
 `
 
-func (q *Queries) GetSurveyByID(ctx context.Context, id int64) (RenjanaSurvey, error) {
-	row := q.db.QueryRowContext(ctx, getSurveyByID, id)
-	var i RenjanaSurvey
-	err := row.Scan(
-		&i.ID,
-		&i.RespondentName,
-		&i.RespondentEmail,
-		&i.ServiceType,
-		&i.Rating,
-		&i.Feedback,
-		&i.CreatedAt,
-	)
-	return i, err
+type GetSurveySKMByEducationRow struct {
+	Education string  `json:"education"`
+	Count     int64   `json:"count"`
+	AvgScore  float64 `json:"avg_score"`
 }
 
-const getSurveyStats = `-- name: GetSurveyStats :one
-SELECT
-    COUNT(*) AS total,
-    ROUND(AVG(rating), 2) AS average_rating,
-    SUM(CASE WHEN rating = 5 THEN 1 ELSE 0 END) AS rating_5,
-    SUM(CASE WHEN rating = 4 THEN 1 ELSE 0 END) AS rating_4,
-    SUM(CASE WHEN rating = 3 THEN 1 ELSE 0 END) AS rating_3,
-    SUM(CASE WHEN rating = 2 THEN 1 ELSE 0 END) AS rating_2,
-    SUM(CASE WHEN rating = 1 THEN 1 ELSE 0 END) AS rating_1
-FROM renjana_surveys
-`
-
-type GetSurveyStatsRow struct {
-	Total         int64           `json:"total"`
-	AverageRating float64         `json:"average_rating"`
-	Rating5       sql.NullFloat64 `json:"rating_5"`
-	Rating4       sql.NullFloat64 `json:"rating_4"`
-	Rating3       sql.NullFloat64 `json:"rating_3"`
-	Rating2       sql.NullFloat64 `json:"rating_2"`
-	Rating1       sql.NullFloat64 `json:"rating_1"`
-}
-
-func (q *Queries) GetSurveyStats(ctx context.Context) (GetSurveyStatsRow, error) {
-	row := q.db.QueryRowContext(ctx, getSurveyStats)
-	var i GetSurveyStatsRow
-	err := row.Scan(
-		&i.Total,
-		&i.AverageRating,
-		&i.Rating5,
-		&i.Rating4,
-		&i.Rating3,
-		&i.Rating2,
-		&i.Rating1,
-	)
-	return i, err
-}
-
-const getSurveyStatsByService = `-- name: GetSurveyStatsByService :many
-SELECT service_type, COUNT(*) AS total, ROUND(AVG(rating), 2) AS average_rating
-FROM renjana_surveys
-GROUP BY service_type
-ORDER BY total DESC
-`
-
-type GetSurveyStatsByServiceRow struct {
-	ServiceType   string  `json:"service_type"`
-	Total         int64   `json:"total"`
-	AverageRating float64 `json:"average_rating"`
-}
-
-func (q *Queries) GetSurveyStatsByService(ctx context.Context) ([]GetSurveyStatsByServiceRow, error) {
-	rows, err := q.db.QueryContext(ctx, getSurveyStatsByService)
+func (q *Queries) GetSurveySKMByEducation(ctx context.Context) ([]GetSurveySKMByEducationRow, error) {
+	rows, err := q.db.QueryContext(ctx, getSurveySKMByEducation)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetSurveyStatsByServiceRow
+	var items []GetSurveySKMByEducationRow
 	for rows.Next() {
-		var i GetSurveyStatsByServiceRow
-		if err := rows.Scan(&i.ServiceType, &i.Total, &i.AverageRating); err != nil {
+		var i GetSurveySKMByEducationRow
+		if err := rows.Scan(&i.Education, &i.Count, &i.AvgScore); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -151,33 +123,164 @@ func (q *Queries) GetSurveyStatsByService(ctx context.Context) ([]GetSurveyStats
 	return items, nil
 }
 
-const listSurveysPaginated = `-- name: ListSurveysPaginated :many
-SELECT id, respondent_name, respondent_email, service_type, rating, feedback, created_at
-FROM renjana_surveys
-ORDER BY created_at DESC
-LIMIT ?1 OFFSET ?2
+const getSurveySKMByGender = `-- name: GetSurveySKMByGender :many
+SELECT gender, COUNT(*) AS count, ROUND(AVG(q1 + q2 + q3 + q4 + q5 + q6 + q7 + q8 + q9) * 100.0 / 36.0, 1) AS avg_score
+FROM renjana_survey_skm
+GROUP BY gender
+ORDER BY count DESC
 `
 
-type ListSurveysPaginatedParams struct {
-	Limit  int64 `json:"limit"`
-	Offset int64 `json:"offset"`
+type GetSurveySKMByGenderRow struct {
+	Gender   string  `json:"gender"`
+	Count    int64   `json:"count"`
+	AvgScore float64 `json:"avg_score"`
 }
 
-func (q *Queries) ListSurveysPaginated(ctx context.Context, arg ListSurveysPaginatedParams) ([]RenjanaSurvey, error) {
-	rows, err := q.db.QueryContext(ctx, listSurveysPaginated, arg.Limit, arg.Offset)
+func (q *Queries) GetSurveySKMByGender(ctx context.Context) ([]GetSurveySKMByGenderRow, error) {
+	rows, err := q.db.QueryContext(ctx, getSurveySKMByGender)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []RenjanaSurvey
+	var items []GetSurveySKMByGenderRow
 	for rows.Next() {
-		var i RenjanaSurvey
+		var i GetSurveySKMByGenderRow
+		if err := rows.Scan(&i.Gender, &i.Count, &i.AvgScore); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getSurveySKMByOccupation = `-- name: GetSurveySKMByOccupation :many
+SELECT occupation, COUNT(*) AS count, ROUND(AVG(q1 + q2 + q3 + q4 + q5 + q6 + q7 + q8 + q9) * 100.0 / 36.0, 1) AS avg_score
+FROM renjana_survey_skm
+GROUP BY occupation
+ORDER BY count DESC
+`
+
+type GetSurveySKMByOccupationRow struct {
+	Occupation string  `json:"occupation"`
+	Count      int64   `json:"count"`
+	AvgScore   float64 `json:"avg_score"`
+}
+
+func (q *Queries) GetSurveySKMByOccupation(ctx context.Context) ([]GetSurveySKMByOccupationRow, error) {
+	rows, err := q.db.QueryContext(ctx, getSurveySKMByOccupation)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetSurveySKMByOccupationRow
+	for rows.Next() {
+		var i GetSurveySKMByOccupationRow
+		if err := rows.Scan(&i.Occupation, &i.Count, &i.AvgScore); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getSurveySKMStats = `-- name: GetSurveySKMStats :one
+SELECT
+    COUNT(*) AS total,
+    ROUND(CAST(SUM(q1 + q2 + q3 + q4 + q5 + q6 + q7 + q8 + q9) AS REAL) / (COUNT(*) * 9 * 4) * 100, 1) AS skm_score,
+    ROUND(AVG(q1), 2) AS avg_q1,
+    ROUND(AVG(q2), 2) AS avg_q2,
+    ROUND(AVG(q3), 2) AS avg_q3,
+    ROUND(AVG(q4), 2) AS avg_q4,
+    ROUND(AVG(q5), 2) AS avg_q5,
+    ROUND(AVG(q6), 2) AS avg_q6,
+    ROUND(AVG(q7), 2) AS avg_q7,
+    ROUND(AVG(q8), 2) AS avg_q8,
+    ROUND(AVG(q9), 2) AS avg_q9
+FROM renjana_survey_skm
+`
+
+type GetSurveySKMStatsRow struct {
+	Total    int64   `json:"total"`
+	SkmScore float64 `json:"skm_score"`
+	AvgQ1    float64 `json:"avg_q1"`
+	AvgQ2    float64 `json:"avg_q2"`
+	AvgQ3    float64 `json:"avg_q3"`
+	AvgQ4    float64 `json:"avg_q4"`
+	AvgQ5    float64 `json:"avg_q5"`
+	AvgQ6    float64 `json:"avg_q6"`
+	AvgQ7    float64 `json:"avg_q7"`
+	AvgQ8    float64 `json:"avg_q8"`
+	AvgQ9    float64 `json:"avg_q9"`
+}
+
+func (q *Queries) GetSurveySKMStats(ctx context.Context) (GetSurveySKMStatsRow, error) {
+	row := q.db.QueryRowContext(ctx, getSurveySKMStats)
+	var i GetSurveySKMStatsRow
+	err := row.Scan(
+		&i.Total,
+		&i.SkmScore,
+		&i.AvgQ1,
+		&i.AvgQ2,
+		&i.AvgQ3,
+		&i.AvgQ4,
+		&i.AvgQ5,
+		&i.AvgQ6,
+		&i.AvgQ7,
+		&i.AvgQ8,
+		&i.AvgQ9,
+	)
+	return i, err
+}
+
+const listSurveySKMPaginated = `-- name: ListSurveySKMPaginated :many
+SELECT id, age, gender, education, occupation, year, q1, q2, q3, q4, q5, q6, q7, q8, q9, feedback, created_at
+FROM renjana_survey_skm
+ORDER BY created_at DESC
+LIMIT ?1 OFFSET ?2
+`
+
+type ListSurveySKMPaginatedParams struct {
+	Limit  int64 `json:"limit"`
+	Offset int64 `json:"offset"`
+}
+
+func (q *Queries) ListSurveySKMPaginated(ctx context.Context, arg ListSurveySKMPaginatedParams) ([]RenjanaSurveySkm, error) {
+	rows, err := q.db.QueryContext(ctx, listSurveySKMPaginated, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []RenjanaSurveySkm
+	for rows.Next() {
+		var i RenjanaSurveySkm
 		if err := rows.Scan(
 			&i.ID,
-			&i.RespondentName,
-			&i.RespondentEmail,
-			&i.ServiceType,
-			&i.Rating,
+			&i.Age,
+			&i.Gender,
+			&i.Education,
+			&i.Occupation,
+			&i.Year,
+			&i.Q1,
+			&i.Q2,
+			&i.Q3,
+			&i.Q4,
+			&i.Q5,
+			&i.Q6,
+			&i.Q7,
+			&i.Q8,
+			&i.Q9,
 			&i.Feedback,
 			&i.CreatedAt,
 		); err != nil {
