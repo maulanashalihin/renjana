@@ -19,7 +19,7 @@ func setupOrganizationTestDB(t *testing.T) *queries.Querier {
 	t.Cleanup(func() { db.Close() })
 
 	_, err = db.Exec(`
-		CREATE TABLE renjana_organization (id INTEGER PRIMARY KEY CHECK (id = 1), vision TEXT, mission TEXT, history TEXT, structure TEXT, contact_email TEXT, contact_phone TEXT, address TEXT, social_instagram TEXT, social_tiktok TEXT, social_youtube TEXT, updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP);
+		CREATE TABLE renjana_organization (id INTEGER PRIMARY KEY CHECK (id = 1), vision TEXT, mission TEXT, history TEXT, structure TEXT, contact_email TEXT, contact_phone TEXT, address TEXT, social_instagram TEXT, social_tiktok TEXT, social_youtube TEXT, social_instagram_url TEXT, social_instagram_name TEXT, social_tiktok_url TEXT, social_tiktok_name TEXT, social_youtube_url TEXT, social_youtube_name TEXT, updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP);
 	`)
 	require.NoError(t, err)
 	return queries.NewQuerier(db)

@@ -12,7 +12,11 @@ import (
 
 const getOrganization = `-- name: GetOrganization :one
 SELECT id, vision, mission, history, structure, contact_email, contact_phone,
-       address, social_instagram, social_tiktok, social_youtube, updated_at
+       address, social_instagram, social_tiktok, social_youtube,
+       social_instagram_url, social_instagram_name,
+       social_tiktok_url, social_tiktok_name,
+       social_youtube_url, social_youtube_name,
+       updated_at
 FROM renjana_organization
 WHERE id = 1
 `
@@ -32,6 +36,12 @@ func (q *Queries) GetOrganization(ctx context.Context) (RenjanaOrganization, err
 		&i.SocialInstagram,
 		&i.SocialTiktok,
 		&i.SocialYoutube,
+		&i.SocialInstagramUrl,
+		&i.SocialInstagramName,
+		&i.SocialTiktokUrl,
+		&i.SocialTiktokName,
+		&i.SocialYoutubeUrl,
+		&i.SocialYoutubeName,
 		&i.UpdatedAt,
 	)
 	return i, err
@@ -39,8 +49,16 @@ func (q *Queries) GetOrganization(ctx context.Context) (RenjanaOrganization, err
 
 const upsertOrganization = `-- name: UpsertOrganization :execrows
 INSERT INTO renjana_organization (id, vision, mission, history, structure,
-    contact_email, contact_phone, address, social_instagram, social_tiktok, social_youtube, updated_at)
-VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+    contact_email, contact_phone, address, social_instagram, social_tiktok, social_youtube,
+    social_instagram_url, social_instagram_name,
+    social_tiktok_url, social_tiktok_name,
+    social_youtube_url, social_youtube_name,
+    updated_at)
+VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+    ?, ?,
+    ?, ?,
+    ?, ?,
+    CURRENT_TIMESTAMP)
 ON CONFLICT(id) DO UPDATE SET
     vision = excluded.vision,
     mission = excluded.mission,
@@ -52,20 +70,32 @@ ON CONFLICT(id) DO UPDATE SET
     social_instagram = excluded.social_instagram,
     social_tiktok = excluded.social_tiktok,
     social_youtube = excluded.social_youtube,
+    social_instagram_url = excluded.social_instagram_url,
+    social_instagram_name = excluded.social_instagram_name,
+    social_tiktok_url = excluded.social_tiktok_url,
+    social_tiktok_name = excluded.social_tiktok_name,
+    social_youtube_url = excluded.social_youtube_url,
+    social_youtube_name = excluded.social_youtube_name,
     updated_at = CURRENT_TIMESTAMP
 `
 
 type UpsertOrganizationParams struct {
-	Vision          sql.NullString `json:"vision"`
-	Mission         sql.NullString `json:"mission"`
-	History         sql.NullString `json:"history"`
-	Structure       sql.NullString `json:"structure"`
-	ContactEmail    sql.NullString `json:"contact_email"`
-	ContactPhone    sql.NullString `json:"contact_phone"`
-	Address         sql.NullString `json:"address"`
-	SocialInstagram sql.NullString `json:"social_instagram"`
-	SocialTiktok    sql.NullString `json:"social_tiktok"`
-	SocialYoutube   sql.NullString `json:"social_youtube"`
+	Vision              sql.NullString `json:"vision"`
+	Mission             sql.NullString `json:"mission"`
+	History             sql.NullString `json:"history"`
+	Structure           sql.NullString `json:"structure"`
+	ContactEmail        sql.NullString `json:"contact_email"`
+	ContactPhone        sql.NullString `json:"contact_phone"`
+	Address             sql.NullString `json:"address"`
+	SocialInstagram     sql.NullString `json:"social_instagram"`
+	SocialTiktok        sql.NullString `json:"social_tiktok"`
+	SocialYoutube       sql.NullString `json:"social_youtube"`
+	SocialInstagramUrl  sql.NullString `json:"social_instagram_url"`
+	SocialInstagramName sql.NullString `json:"social_instagram_name"`
+	SocialTiktokUrl     sql.NullString `json:"social_tiktok_url"`
+	SocialTiktokName    sql.NullString `json:"social_tiktok_name"`
+	SocialYoutubeUrl    sql.NullString `json:"social_youtube_url"`
+	SocialYoutubeName   sql.NullString `json:"social_youtube_name"`
 }
 
 func (q *Queries) UpsertOrganization(ctx context.Context, arg UpsertOrganizationParams) (int64, error) {
@@ -80,6 +110,12 @@ func (q *Queries) UpsertOrganization(ctx context.Context, arg UpsertOrganization
 		arg.SocialInstagram,
 		arg.SocialTiktok,
 		arg.SocialYoutube,
+		arg.SocialInstagramUrl,
+		arg.SocialInstagramName,
+		arg.SocialTiktokUrl,
+		arg.SocialTiktokName,
+		arg.SocialYoutubeUrl,
+		arg.SocialYoutubeName,
 	)
 	if err != nil {
 		return 0, err

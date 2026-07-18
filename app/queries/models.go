@@ -183,18 +183,24 @@ type RenjanaMedium struct {
 }
 
 type RenjanaOrganization struct {
-	ID              int64          `json:"id"`
-	Vision          sql.NullString `json:"vision"`
-	Mission         sql.NullString `json:"mission"`
-	History         sql.NullString `json:"history"`
-	Structure       sql.NullString `json:"structure"`
-	ContactEmail    sql.NullString `json:"contact_email"`
-	ContactPhone    sql.NullString `json:"contact_phone"`
-	Address         sql.NullString `json:"address"`
-	SocialInstagram sql.NullString `json:"social_instagram"`
-	SocialTiktok    sql.NullString `json:"social_tiktok"`
-	SocialYoutube   sql.NullString `json:"social_youtube"`
-	UpdatedAt       time.Time      `json:"updated_at"`
+	ID                  int64          `json:"id"`
+	Vision              sql.NullString `json:"vision"`
+	Mission             sql.NullString `json:"mission"`
+	History             sql.NullString `json:"history"`
+	Structure           sql.NullString `json:"structure"`
+	ContactEmail        sql.NullString `json:"contact_email"`
+	ContactPhone        sql.NullString `json:"contact_phone"`
+	Address             sql.NullString `json:"address"`
+	SocialInstagram     sql.NullString `json:"social_instagram"`
+	SocialTiktok        sql.NullString `json:"social_tiktok"`
+	SocialYoutube       sql.NullString `json:"social_youtube"`
+	SocialInstagramUrl  sql.NullString `json:"social_instagram_url"`
+	SocialInstagramName sql.NullString `json:"social_instagram_name"`
+	SocialTiktokUrl     sql.NullString `json:"social_tiktok_url"`
+	SocialTiktokName    sql.NullString `json:"social_tiktok_name"`
+	SocialYoutubeUrl    sql.NullString `json:"social_youtube_url"`
+	SocialYoutubeName   sql.NullString `json:"social_youtube_name"`
+	UpdatedAt           time.Time      `json:"updated_at"`
 }
 
 type RenjanaPartner struct {
