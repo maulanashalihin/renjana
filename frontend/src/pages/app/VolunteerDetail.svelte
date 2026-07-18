@@ -210,7 +210,8 @@
                                 </span>
                                 <a
                                     href="/edukasi/sertifikat/{cert.certificate_code}"
-                                    use:inertia
+                                    target="_blank"
+                                    rel="noopener noreferrer"
                                     class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-renjana-50 dark:bg-renjana-900/20 text-renjana-600 dark:text-renjana-400 text-xs font-semibold hover:bg-renjana-100 dark:hover:bg-renjana-900/40 transition"
                                 >
                                     Lihat
