@@ -114,13 +114,25 @@ func (s *Store) Get(c *fiber.Ctx) (*Session, error) {
 							ExpiresAt:     cached.ExpiresAt,
 						})
 					} else {
-						// Valid IP mismatch — possible session hijack, invalidate
-						slog.Warn("session fingerprint mismatch (cache) — invalidating",
+						// IP changed — log and silently update fingerprint
+						slog.Warn("session IP changed",
 							"session_id", cookieValue,
-							"expected_ip", cached.IP, "got_ip", ClientIP(c))
-						s.sessionCache.Invalidate(cookieValue)
-						s.deleteSession(context.Background(), cookieValue)
-						c.ClearCookie(s.sessionName)
+							"old_ip", cached.IP, "new_ip", ClientIP(c))
+						s.sessionCache.Set(cookieValue, cache.CachedSessionData{
+							UserID:        cached.UserID,
+							Name:          cached.Name,
+							Email:         cached.Email,
+							Avatar:        cached.Avatar,
+							EmailVerified: cached.EmailVerified,
+							Role:          cached.Role,
+							DistrictID:    cached.DistrictID,
+							VolunteerID:   cached.VolunteerID,
+							CSRFToken:     cached.CSRFToken,
+							CSRFExpiry:    cached.CSRFExpiry,
+							IP:            ClientIP(c),
+							UserAgent:     c.Get("User-Agent"),
+							ExpiresAt:     cached.ExpiresAt,
+						})
 					}
 				} else if isPageRequest(c) && cached.UserAgent != "" && cached.UserAgent != c.Get("User-Agent") {
 					// UA mismatch on page request — possible session hijack, invalidate
@@ -202,17 +214,15 @@ func (s *Store) Get(c *fiber.Ctx) (*Session, error) {
 							dbSession.Data = string(newJSON)
 							s.querier.UpdateSession(context.Background(), dbSession)
 						} else {
-							// Valid IP mismatch — invalidate session
-							slog.Warn("session fingerprint mismatch (db) — invalidating",
+							// IP changed — log and silently update fingerprint
+							slog.Warn("session IP changed",
 								"session_id", cookieValue,
-								"expected_ip", data.IP, "got_ip", ClientIP(c))
-							s.deleteSession(context.Background(), cookieValue)
-							if s.sessionCache != nil {
-								s.sessionCache.Invalidate(cookieValue)
-							}
-							c.ClearCookie(s.sessionName)
-							c.Locals("session", session)
-							return session, nil
+								"old_ip", data.IP, "new_ip", ClientIP(c))
+							data.IP = ClientIP(c)
+							data.UserAgent = c.Get("User-Agent")
+							newJSON, _ := json.Marshal(data)
+							dbSession.Data = string(newJSON)
+							s.querier.UpdateSession(context.Background(), dbSession)
 						}
 					} else if isPageRequest(c) && data.UserAgent != "" && data.UserAgent != c.Get("User-Agent") {
 						// UA mismatch on page request — possible session hijack, invalidate

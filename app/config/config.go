@@ -121,14 +121,13 @@ func parseAllowedOrigins() []string {
 }
 
 func getSessionTTL() time.Duration {
-	val := getEnv("SESSION_TTL", "24h")
+	val := getEnv("SESSION_TTL", "168h")
 	d, err := time.ParseDuration(val)
 	if err != nil {
 		return 24 * time.Hour
 	}
 	return d
 }
-
 
 // getArgon2Memory returns the argon2id memory cost (KiB) from env.
 // Default: 65536 (64MB). Min: 1024 (1MB). Max: 1048576 (1GB).
