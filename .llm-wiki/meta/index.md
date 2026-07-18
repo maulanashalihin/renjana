@@ -5,6 +5,7 @@
 ## Pages
 
 - [[concepts/agent-browser-testing]] — agent-browser-testing *(created: 2026-07-18)*
+- [[concepts/ai-do-only-requested]] — ai-do-only-requested *(created: 2026-07-18)*
 - [[concepts/dark-mode-mandatory]] — dark-mode-mandatory *(created: 2026-07-18)*
 - [[concepts/deployment]] — deployment *(created: 2026-07-18)*
 - [[concepts/design-standards]] — design-standards *(created: 2026-07-18)*
@@ -43,4 +44,4 @@
 - [[sources/obs-2026-07-18-user-id-added-to-renjana-volunteers-for-direct-cert-counting]] — "Observation: user_id added to renjana_volunteers for direct cert counting" *(created: 2026-07-18)*
 
 ---
-*Last updated: 2026-07-18T08:05:33.626Z* | *Total pages: 34*
+*Last updated: 2026-07-18T08:40:18.230Z* | *Total pages: 35*

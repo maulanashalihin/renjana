@@ -74,7 +74,7 @@ func (h *UserAdminHandler) Index(c *fiber.Ctx) error {
 		"users":          result,
 		"current_search": search,
 		"admin_count":    adminCount,
-		"all_roles":      []models.UserRole{models.RoleAdmin},
+		"all_roles":      models.AllRoles(),
 	})
 }
 
@@ -84,6 +84,8 @@ func (h *UserAdminHandler) Create(c *fiber.Ctx) error {
 }
 
 // Store — handle POST /admin/users.
+// If user already exists by email, promote to admin.
+// If not, create a new user.
 func (h *UserAdminHandler) Store(c *fiber.Ctx) error {
 	_, _, err := h.authUser(c)
 	if err != nil {
@@ -91,27 +93,60 @@ func (h *UserAdminHandler) Store(c *fiber.Ctx) error {
 	}
 
 	var input struct {
-		Name        string          `json:"name"`
-		Email       string          `json:"email"`
-		Password    string          `json:"password"`
-		Role        models.UserRole `json:"role"`
-		DistrictID  int64           `json:"district_id"`
-		VolunteerID int64           `json:"volunteer_id"`
+		Name     string          `json:"name"`
+		Email    string          `json:"email"`
+		Password string          `json:"password"`
+		Role     models.UserRole `json:"role"`
 	}
 	if err := c.BodyParser(&input); err != nil {
 		h.store.Flash(c, "error", "Invalid input")
 		return c.Redirect("/admin/users")
 	}
 
-	if input.Name == "" || input.Email == "" || input.Password == "" {
-		h.store.Flash(c, "error", "Name, email, and password are required")
-		return c.Redirect("/admin/users?action=create")
+	if input.Email == "" {
+		h.store.Flash(c, "error", "Email is required")
+		return c.Redirect("/admin/users")
 	}
 
-	_, err = h.userAdminSvc.CreateUser(c.Context(), input.Name, input.Email, input.Password, input.Role, input.DistrictID, input.VolunteerID)
+	// Check if user already exists
+	existingUser, lookupErr := h.querier.GetUserByEmail(c.Context(), input.Email)
+	if lookupErr == nil {
+		// User exists → promote to admin
+		if existingUser.Role == models.RoleAdmin {
+			h.store.Flash(c, "error", "User is already an admin")
+			return c.Redirect("/admin/users")
+		}
+		if !existingUser.IsActive {
+			h.store.Flash(c, "error", "Cannot promote inactive user")
+			return c.Redirect("/admin/users")
+		}
+		if err := h.userAdminSvc.UpdateUserRole(c.Context(), existingUser.ID, models.RoleAdmin, existingUser.DistrictID.Int64, existingUser.VolunteerID.Int64); err != nil {
+			h.store.Flash(c, "error", "Failed to promote: "+err.Error())
+			return c.Redirect("/admin/users")
+		}
+		h.store.Flash(c, "success", "User promoted to admin successfully")
+		return c.Redirect("/admin/users?success=promoted")
+	}
+
+	// User doesn't exist → create new with name from email
+	name := input.Name
+	if name == "" {
+		// Auto-generate name from email prefix
+		for i := 0; i < len(input.Email); i++ {
+			if input.Email[i] == '@' {
+				name = input.Email[:i]
+				break
+			}
+		}
+		if name == "" {
+			name = input.Email
+		}
+	}
+
+	_, err = h.userAdminSvc.CreateUser(c.Context(), name, input.Email, input.Password, models.RoleAdmin, 0, 0)
 	if err != nil {
 		h.store.Flash(c, "error", "Failed to create user: "+err.Error())
-		return c.Redirect("/admin/users?action=create")
+		return c.Redirect("/admin/users")
 	}
 
 	h.store.Flash(c, "success", "User created successfully")

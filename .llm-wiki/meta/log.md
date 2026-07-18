@@ -110,3 +110,6 @@
 ## [2026-07-18T08:05:33.614Z] ensure_page
 - page_type: "concept", title: "dark-mode-mandatory", path: "concepts/dark-mode-mandatory"
 
+## [2026-07-18T08:40:18.224Z] ensure_page
+- page_type: "concept", title: "ai-do-only-requested", path: "concepts/ai-do-only-requested"
+

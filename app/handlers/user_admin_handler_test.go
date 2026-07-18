@@ -80,7 +80,7 @@ func TestUserAdminHandlerStore(t *testing.T) {
 	user, err := q.GetUserByEmail(context.Background(), "newuser@test.com")
 	require.NoError(t, err)
 	assert.Equal(t, "New User", user.Name)
-	assert.Equal(t, models.RoleRelawan, user.Role)
+	assert.Equal(t, models.RoleAdmin, user.Role)
 }
 
 func TestUserAdminHandlerUpdateRole(t *testing.T) {

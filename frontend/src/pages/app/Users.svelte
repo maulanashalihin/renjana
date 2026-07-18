@@ -30,7 +30,6 @@
         users?: Pagination;
         current_search?: string;
         admin_count?: number;
-        all_roles?: string[];
     }
 
     let {
@@ -38,7 +37,6 @@
         users,
         current_search = "",
         admin_count = 0,
-        all_roles = ["admin"],
     }: Props = $props();
 
     const userItems = $derived(users?.data ?? []);
@@ -86,23 +84,29 @@
         createMode = false;
     }
 
+    function generatePassword(length = 16): string {
+        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        let pwd = "";
+        for (let i = 0; i < length; i++) {
+            pwd += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return pwd;
+    }
+
     function handleSubmit(e: Event) {
         e.preventDefault();
         const form = e.target as HTMLFormElement;
         const data = new FormData(form);
+        if (createMode) {
+            data.set("password", generatePassword());
+            data.set("role", "admin");
+        }
         const obj: Record<string, any> = {};
         data.forEach((v, k) => { obj[k] = v; });
-        if (createMode) {
-            router.post("/admin/users", obj, {
-                onSuccess: () => closeModal(),
-            });
-        } else if (editingUser) {
-            router.put(`/admin/users/${editingUser.id}/role`, obj, {
-                onSuccess: () => closeModal(),
-            });
-        }
+        router.post("/admin/users", obj, {
+            onSuccess: () => closeModal(),
+        });
     }
-
     function toggleActive(u: AppUser) {
         router.put(`/admin/users/${u.id}/toggle-active`, { active: u.is_active });
     }
@@ -209,38 +213,47 @@
     <!-- Edit modal -->
     {#if editingUser}
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-            <div class="bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <div class="bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl w-full max-w-md">
                 <div class="flex items-center justify-between p-6 border-b border-neutral-200 dark:border-neutral-800">
-                    <h2 class="text-xl font-bold text-neutral-900 dark:text-white">Edit User</h2>
+                    <h2 class="text-xl font-bold text-neutral-900 dark:text-white">Detail Admin</h2>
                     <button onclick={closeModal} class="text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300">
                         <X class="w-5 h-5" />
                     </button>
                 </div>
-                <form onsubmit={handleSubmit} class="p-6 space-y-4">
-                    <div class="text-sm text-neutral-600 dark:text-neutral-400">
-                        <p class="font-medium text-neutral-900 dark:text-white mb-1">{editingUser.name}</p>
-                        <p>{editingUser.email}</p>
+                <div class="p-6 space-y-4">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-renjana-400 to-renjana-600 text-white flex items-center justify-center text-lg font-bold flex-shrink-0">
+                            {editingUser.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                            <p class="text-lg font-bold text-neutral-900 dark:text-white">{editingUser.name}</p>
+                            <p class="text-sm text-neutral-500 dark:text-neutral-400">{editingUser.email}</p>
+                        </div>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Role</label>
-                        <select name="role" class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none">
-                            {#each all_roles as role}
-                                <option value={role} selected={editingUser.role === role}>{role}</option>
-                            {/each}
-                        </select>
+                    <div class="flex items-center gap-3">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold uppercase {roleBadgeColor(editingUser.role)}">
+                            {editingUser.role}
+                        </span>
+                        {#if editingUser.is_active}
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
+                                <UserCheck class="w-3 h-3" /> Aktif
+                            </span>
+                        {:else}
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
+                                <UserX class="w-3 h-3" /> Nonaktif
+                            </span>
+                        {/if}
                     </div>
-                    <div class="flex justify-end gap-2 pt-4 border-t border-neutral-200 dark:border-neutral-800">
-                        <button type="button" onclick={closeModal} class="px-4 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-sm font-medium hover:border-renjana-500 transition">Batal</button>
-                        <button type="submit" class="px-4 py-2 rounded-lg bg-renjana-500 hover:bg-renjana-600 text-white text-sm font-semibold transition">Simpan</button>
-                    </div>
-                </form>
+                </div>
                 {#if editingUser.id !== user?.id}
-                    <button onclick={() => toggleActive(editingUser!)} class="w-full px-4 py-2 rounded-lg border border-neutral-300 dark:border-neutral-700 text-sm font-medium hover:bg-neutral-100 dark:hover:bg-neutral-800 transition">
-                        {#if editingUser.is_active}Nonaktifkan{:else}Aktifkan{/if} User
-                    </button>
-                    <button onclick={() => handleDelete(editingUser!)} class="w-full px-4 py-2 rounded-lg bg-rose-50 dark:bg-rose-900/20 hover:bg-rose-100 text-rose-700 dark:text-rose-400 text-sm font-semibold transition">
-                        Hapus User Permanen
-                    </button>
+                    <div class="px-6 pb-6 space-y-2">
+                        <button onclick={() => toggleActive(editingUser!)} class="w-full px-4 py-2 rounded-lg border border-neutral-300 dark:border-neutral-700 text-sm font-medium hover:bg-neutral-100 dark:hover:bg-neutral-800 transition">
+                            {#if editingUser.is_active}Nonaktifkan{:else}Aktifkan{/if} User
+                        </button>
+                        <button onclick={() => handleDelete(editingUser!)} class="w-full px-4 py-2 rounded-lg bg-rose-50 dark:bg-rose-900/20 hover:bg-rose-100 text-rose-700 dark:text-rose-400 text-sm font-semibold transition">
+                            Hapus User Permanen
+                        </button>
+                    </div>
                 {/if}
             </div>
         </div>
@@ -249,37 +262,29 @@
     <!-- Create modal -->
     {#if createMode}
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-            <div class="bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <div class="bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl w-full max-w-md">
                 <div class="flex items-center justify-between p-6 border-b border-neutral-200 dark:border-neutral-800">
-                    <h2 class="text-xl font-bold text-neutral-900 dark:text-white">Tambah User Baru</h2>
+                    <h2 class="text-xl font-bold text-neutral-900 dark:text-white">Tambah Admin</h2>
                     <button onclick={closeModal} class="text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300">
                         <X class="w-5 h-5" />
                     </button>
                 </div>
                 <form onsubmit={handleSubmit} class="p-6 space-y-4">
+                    <p class="text-sm text-neutral-500 dark:text-neutral-400">
+                        Masukkan data admin. Kalau email sudah terdaftar, user akan dipromosikan jadi admin tanpa mengubah data yang sudah ada.
+                    </p>
                     <div>
-                        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Nama Lengkap *</label>
+                        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Nama Lengkap</label>
                         <input type="text" name="name" required class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Email *</label>
-                        <input type="email" name="email" required class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
+                        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Email</label>
+                        <input type="email" name="email" required placeholder="user@example.com" class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none placeholder-neutral-400 dark:placeholder-neutral-500" />
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Password *</label>
-                        <input type="password" name="password" required minlength="8" class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none" />
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Role</label>
-                        <select name="role" class="w-full px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 dark:text-white border border-neutral-200 dark:border-neutral-700 text-sm focus:border-renjana-500 outline-none">
-                            <option value="admin" selected>admin</option>
-                            <option value="koordinator">koordinator</option>
-                            <option value="relawan">relawan</option>
-                        </select>
-                    </div>
+                    <input type="hidden" name="role" value="admin" />
                     <div class="flex justify-end gap-2 pt-4 border-t border-neutral-200 dark:border-neutral-800">
                         <button type="button" onclick={closeModal} class="px-4 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-sm font-medium hover:border-renjana-500 transition">Batal</button>
-                        <button type="submit" class="px-4 py-2 rounded-lg bg-renjana-500 hover:bg-renjana-600 text-white text-sm font-semibold transition">Buat User</button>
+                        <button type="submit" class="px-4 py-2 rounded-lg bg-renjana-500 hover:bg-renjana-600 text-white text-sm font-semibold transition">Tambah Admin</button>
                     </div>
                 </form>
             </div>

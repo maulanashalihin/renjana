@@ -1,10 +1,16 @@
 {
   "version": "1.0",
-  "last_updated": "2026-07-18T08:05:33.626Z",
+  "last_updated": "2026-07-18T08:40:18.230Z",
   "pages": {
     "concepts/agent-browser-testing": {
       "type": "page",
       "title": "agent-browser-testing",
+      "created": "2026-07-18",
+      "updated": "2026-07-18"
+    },
+    "concepts/ai-do-only-requested": {
+      "type": "page",
+      "title": "ai-do-only-requested",
       "created": "2026-07-18",
       "updated": "2026-07-18"
     },

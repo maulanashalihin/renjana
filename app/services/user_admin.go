@@ -148,3 +148,19 @@ func (s *UserAdminService) GetUser(ctx context.Context, userID int64) (*models.U
 func (s *UserAdminService) CountByRole(ctx context.Context, role models.UserRole) (int64, error) {
 	return s.querier.CountUsersByRole(ctx, string(role))
 }
+
+// PromoteToAdmin looks up a user by email and promotes them to admin.
+// Returns an error if the user is not found or is already an admin.
+func (s *UserAdminService) PromoteToAdmin(ctx context.Context, email string) error {
+	user, err := s.querier.GetUserByEmail(ctx, email)
+	if err != nil {
+		return errors.New("user not found")
+	}
+	if user.Role == models.RoleAdmin {
+		return errors.New("user is already an admin")
+	}
+	if !user.IsActive {
+		return errors.New("user is not active")
+	}
+	return s.querier.UpdateUserRole(ctx, user.ID, models.RoleAdmin, user.DistrictID, user.VolunteerID)
+}
