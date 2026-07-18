@@ -299,6 +299,24 @@ func (h *ComplaintHandler) AddReply(c *fiber.Ctx) error {
 	return c.Redirect("/pengaduan/tiket/"+token, fiber.StatusSeeOther)
 }
 
+// CheckStatus — return ticket status as JSON (public).
+func (h *ComplaintHandler) CheckStatus(c *fiber.Ctx) error {
+	token := c.Params("token")
+	if token == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Token diperlukan"})
+	}
+
+	complaint, err := h.complaintSvc.GetByToken(c.Context(), token)
+	if err != nil || complaint == nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Pengaduan tidak ditemukan"})
+	}
+
+	return c.JSON(fiber.Map{
+		"token":  complaint.Token,
+		"status": complaint.Status,
+	})
+}
+
 // PublicResolve — user marks complaint as resolved via ticket.
 func (h *ComplaintHandler) PublicResolve(c *fiber.Ctx) error {
 	token := c.Params("token")

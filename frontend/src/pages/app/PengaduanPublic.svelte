@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { onMount } from "svelte";
     import { router } from "@inertiajs/svelte";
     import AppLayout from "../../components/AppLayout.svelte";
     import PageHeader from "../../lib/components/PageHeader.svelte";
@@ -48,21 +49,33 @@
             return [];
         }
     }
-    function migrateOldToken(): void {
-        const oldToken = localStorage.getItem("pengaduan_token");
-        if (oldToken) {
-            const existing = tickets.find(t => t.token === oldToken);
-            if (!existing) {
-                tickets = [{ token: oldToken, name: formName, category: "", status: "pending", date: "", message: "" }, ...tickets];
-                localStorage.setItem("pengaduan_tickets", JSON.stringify(tickets));
-            }
-            localStorage.removeItem("pengaduan_token");
-        }
-    }
     let tickets = $state<TicketItem[]>(loadTickets());
-    // Migrate old single token to new array format
-    $effect(() => {
-        migrateOldToken();
+
+    // Refresh status dari server untuk setiap tiket
+    async function refreshStatuses() {
+        const updated: TicketItem[] = [];
+        for (const t of tickets) {
+            try {
+                const res = await fetch(`/api/pengaduan/${t.token}/status`);
+                if (res.ok) {
+                    const data = await res.json();
+                    updated.push({ ...t, status: data.status });
+                } else {
+                    updated.push(t);
+                }
+            } catch {
+                updated.push(t);
+            }
+        }
+        tickets = updated;
+        localStorage.setItem("pengaduan_tickets", JSON.stringify(updated));
+    }
+
+    // Refresh on mount (halaman diload/refresh) — pake onMount biar sekali aja
+    onMount(() => {
+        if (tickets.length > 0) {
+            refreshStatuses();
+        }
     });
 
     // If token is in URL params (after submission), save it
@@ -81,6 +94,8 @@
             if (!existing) {
                 tickets = [newTicket, ...tickets];
                 localStorage.setItem("pengaduan_tickets", JSON.stringify(tickets));
+                // Refresh status after adding new ticket
+                refreshStatuses();
             }
         }
     });

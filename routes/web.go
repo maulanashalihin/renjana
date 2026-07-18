@@ -41,7 +41,7 @@ func SetupRoutes(app *fiber.App, h Handlers, store *session.Store, mailerService
 	app.Post("/api/errors", handlers.HandleClientError)
 
 	// Public API — no auth, no CSRF (before CSRF middleware)
-	setupPublicAPIRoutes(app, h.School, h.Partner)
+	setupPublicAPIRoutes(app, h.School, h.Partner, h.Complaint)
 
 	// Setup auth routes
 	setupAuthRoutes(app, h.Auth, h.PasswordReset, store, mailerService)
@@ -95,12 +95,15 @@ func setupStaticRoutes(app *fiber.App) {
 	})
 }
 
-func setupPublicAPIRoutes(app *fiber.App, schoolHandler *handlers.SchoolHandler, partnerHandler *handlers.PartnerHandler) {
+func setupPublicAPIRoutes(app *fiber.App, schoolHandler *handlers.SchoolHandler, partnerHandler *handlers.PartnerHandler, complaintHandler *handlers.ComplaintHandler) {
 	// School search API — used by SchoolAutocomplete component (public, no auth)
 	app.Get("/api/schools/search", schoolHandler.SearchSchoolsAPI)
 
 	// Partner list API — used by Profil page to show mitra logos (public, no auth)
 	app.Get("/api/partners", partnerHandler.List)
+
+	// Ticket status check — public (no auth), used by frontend to refresh ticket list
+	app.Get("/api/pengaduan/:token/status", complaintHandler.CheckStatus)
 }
 
 func setupPublicFormRoutes(app *fiber.App, complaintHandler *handlers.ComplaintHandler, surveyHandler *handlers.SurveyHandler) {
