@@ -128,24 +128,24 @@ func (h *VolunteerHandler) Edit(c *fiber.Ctx) error {
 	return c.Redirect(fmt.Sprintf("/relawan?action=edit&id=%d", id))
 }
 
-// Update — handle PUT /app/relawan/:id.
+// Update — handle PUT /app/relawan/:id (fetch JSON).
 func (h *VolunteerHandler) Update(c *fiber.Ctx) error {
 	_, _, err := h.authUser(c)
 	if err != nil {
-		return c.Redirect("/login")
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
 	}
 	id, _ := strconv.ParseInt(c.Params("id"), 10, 64)
 
 	var req services.UpdateVolunteerRequest
 	if err := c.BodyParser(&req); err != nil {
-		return c.Redirect(fmt.Sprintf("/relawan?action=edit&id=%d&error=invalid", id))
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Data tidak valid"})
 	}
 
 	if err := h.volunteerService.Update(c.Context(), id, req); err != nil {
-		return c.Redirect(fmt.Sprintf("/relawan?action=edit&id=%d&error=%s", id, err.Error()))
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	return c.Redirect("/relawan?success=updated")
+	return c.JSON(fiber.Map{"success": true, "message": "Volunteer berhasil diupdate"})
 }
 
 // Destroy — handle DELETE /app/relawan/:id.
