@@ -11,7 +11,6 @@ import (
 
 // CSRFConfig holds CSRF middleware configuration
 type CSRFConfig struct {
-	Secret      string        // Secret key for signing tokens
 	CookieName  string        // Name of the CSRF token cookie
 	HeaderName  string        // Name of the CSRF token header
 	TokenLength int           // Length of the random token
@@ -30,9 +29,8 @@ type CSRFMiddleware struct {
 }
 
 // DefaultCSRFConfig returns a default CSRF configuration
-func DefaultCSRFConfig(secret string) CSRFConfig {
+func DefaultCSRFConfig() CSRFConfig {
 	return CSRFConfig{
-		Secret:      secret,
 		CookieName:  "XSRF-TOKEN",
 		HeaderName:  "X-XSRF-TOKEN",
 		TokenLength: 32,

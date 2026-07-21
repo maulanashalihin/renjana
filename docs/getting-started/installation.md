@@ -124,17 +124,9 @@ Edit `.env` and set at least these variables:
 APP_ENV=development
 APP_PORT=8080
 
-# Session (generate a random 32+ character string)
-SESSION_SECRET=your-32-character-secret-key-change-in-production
-
 # Database
 DB_PATH=data/app.db
 ```
-
-> 💡 **Tip**: Use a password generator or run this command to create a secure secret:
-> ```bash
-> openssl rand -base64 32
-> ```
 
 ## Step 5: Initialize the Database
 

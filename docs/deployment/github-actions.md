@@ -111,10 +111,6 @@ APP_ENV=production
 APP_PORT=8080
 DB_PATH=/var/lib/laju/app.db
 
-# Generate secure session secret
-# Run: openssl rand -base64 32
-SESSION_SECRET=<your-32-char-secret>
-
 # Google OAuth
 GOOGLE_CLIENT_ID=<your-client-id>
 GOOGLE_CLIENT_SECRET=<your-client-secret>
@@ -388,19 +384,7 @@ In `authorized_keys` on VPS, add restrictions:
 command="/usr/bin/systemctl restart laju-go",no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty ssh-ed25519 AAAA... github-actions@laju-go
 ```
 
-### 3. Use Environment-Specific Secrets
-
-```bash
-# Production .env (on VPS only)
-SESSION_SECRET=<production-secret>
-
-# Development .env (local only)
-SESSION_SECRET=<dev-secret>
-
-# NEVER commit .env files!
-```
-
-### 4. Enable GitHub 2FA
+### 3. Enable GitHub 2FA
 
 Always enable Two-Factor Authentication for GitHub accounts with deployment access.
 

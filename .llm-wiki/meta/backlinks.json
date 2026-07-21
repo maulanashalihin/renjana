@@ -13,6 +13,7 @@
   "concepts/three-tier-rule": [
     "sources/invalid-html-button-inside-anchor"
   ],
+  "concepts/verify-before-act": [],
   "sources/deployment-read-all-before-action": [],
   "sources/first-principles-before-debugging": [],
   "sources/invalid-html-button-inside-anchor": [],
@@ -31,9 +32,11 @@
   "sources/obs-2026-07-17-google-avatar-format-detection-simplified": [],
   "sources/obs-2026-07-17-unhandled-error-review-csrf-save-logger-c-next-sess-destroy": [],
   "sources/obs-2026-07-18-fix-e-preventdefault-needed-on-buttons-inside-inertia-use-in": [],
+  "sources/obs-2026-07-18-fix-session-logout-ip-fingerprint-no-longer-destroys-session": [],
   "sources/obs-2026-07-18-pengaduan-ticket-redirect-auto-scroll-fix": [],
   "sources/obs-2026-07-18-relawan-card-restructured-buttons-moved-outside-a-tag": [],
   "sources/obs-2026-07-18-seed-data-migrations-cleaned-volunteers-contacts-kosong-orga": [],
   "sources/obs-2026-07-18-semua-add-column-migration-dihapus-dan-digabung-ke-create-ta": [],
-  "sources/obs-2026-07-18-user-id-added-to-renjana-volunteers-for-direct-cert-counting": []
+  "sources/obs-2026-07-18-user-id-added-to-renjana-volunteers-for-direct-cert-counting": [],
+  "sources/obs-2026-07-21-env-dibersihkan-hanya-menyisakan-vars-yang-terpakai": []
 }

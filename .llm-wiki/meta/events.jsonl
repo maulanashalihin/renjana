@@ -35,3 +35,6 @@
 {"timestamp":"2026-07-18T07:41:00.045Z","kind":"observe","slug":"obs-2026-07-18-semua-add-column-migration-dihapus-dan-digabung-ke-create-ta","title":"Semua ADD COLUMN migration dihapus dan digabung ke CREATE TABLE utama","relevance":"high"}
 {"timestamp":"2026-07-18T08:05:33.614Z","kind":"ensure_page","page_type":"concept","title":"dark-mode-mandatory","path":"concepts/dark-mode-mandatory"}
 {"timestamp":"2026-07-18T08:40:18.224Z","kind":"ensure_page","page_type":"concept","title":"ai-do-only-requested","path":"concepts/ai-do-only-requested"}
+{"timestamp":"2026-07-18T09:16:39.634Z","kind":"ensure_page","page_type":"concept","title":"verify-before-act","path":"concepts/verify-before-act"}
+{"timestamp":"2026-07-18T09:29:33.165Z","kind":"observe","slug":"obs-2026-07-18-fix-session-logout-ip-fingerprint-no-longer-destroys-session","title":"Fix session logout: IP fingerprint no longer destroys session","relevance":"high"}
+{"timestamp":"2026-07-21T04:01:52.811Z","kind":"observe","slug":"obs-2026-07-21-env-dibersihkan-hanya-menyisakan-vars-yang-terpakai","title":".env dibersihkan — hanya menyisakan vars yang terpakai","relevance":"medium"}

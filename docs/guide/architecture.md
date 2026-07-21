@@ -222,7 +222,6 @@ return h.inertiaService.Render(c, "app/Dashboard", fiber.Map{
 ```go
 type AuthService struct {
     querier       *queries.Querier
-    sessionSecret string
     oauthConfig   *oauth2.Config
 }
 
@@ -364,7 +363,6 @@ type Config struct {
     AppPort            string
     AppEnv             string
     DBPath             string
-    SessionSecret      string
     GoogleClientID     string
     GoogleClientSecret string
     // ... SMTP, CORS, Cache TTL
@@ -479,7 +477,7 @@ func main() {
         Upload: handlers.NewUploadHandler(sessionStore, userService),
     }
 
-    csrfMiddleware := routes.SetupCSRFMiddleware(sessionStore, cfg.SessionSecret)
+    csrfMiddleware := routes.SetupCSRFMiddleware(sessionStore)
     // ... mailer, password reset ...
 
     app := fiber.New()

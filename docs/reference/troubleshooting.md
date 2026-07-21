@@ -9,7 +9,6 @@ Common issues and solutions for Laju Go development and deployment.
 | Port already in use | `lsof -ti:8080 \| xargs kill -9` |
 | Database locked | Remove WAL files, restart |
 | Vite port detection fails | Delete `.vite-port`, restart |
-| Session not persisting | Check `SESSION_SECRET` |
 | OAuth redirect mismatch | Verify Google Cloud Console URIs |
 | Email not sending | Use Gmail App Password |
 | Migration failed | Run manually with goose |
@@ -251,31 +250,6 @@ npm install -D @types/node @types/express
 
 ## Authentication Issues
 
-### Session Not Persisting
-
-**Problem**: Users are logged out after server restart
-
-**Solutions**:
-
-1. **Check `SESSION_SECRET` is set**:
-   ```bash
-   grep SESSION_SECRET .env
-   ```
-
-2. **Verify session store is database-backed**:
-   ```go
-   // app/session/session.go
-   // Should save to database, not just cookies
-   ```
-
-3. **Check database has sessions table**:
-   ```bash
-   sqlite3 data/app.db ".tables"
-   # Should show: sessions  users  goose_db_version
-   ```
-
----
-
 ### OAuth State Mismatch
 
 **Error**: "Invalid state" on OAuth callback
@@ -293,13 +267,7 @@ npm install -D @types/node @types/express
    }
    ```
 
-2. **Check session secret is consistent**:
-   ```bash
-   # Should be same across restarts
-   grep SESSION_SECRET .env
-   ```
-
-3. **Verify cookies are being sent**:
+2. **Verify cookies are being sent**:
    - Check browser DevTools → Application → Cookies
    - Ensure `laju_session` cookie exists
 

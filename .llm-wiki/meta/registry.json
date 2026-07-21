@@ -1,78 +1,84 @@
 {
   "version": "1.0",
-  "last_updated": "2026-07-18T08:40:18.230Z",
+  "last_updated": "2026-07-21T04:01:52.812Z",
   "pages": {
     "concepts/agent-browser-testing": {
       "type": "page",
       "title": "agent-browser-testing",
-      "created": "2026-07-18",
-      "updated": "2026-07-18"
+      "created": "2026-07-21",
+      "updated": "2026-07-21"
     },
     "concepts/ai-do-only-requested": {
       "type": "page",
       "title": "ai-do-only-requested",
-      "created": "2026-07-18",
-      "updated": "2026-07-18"
+      "created": "2026-07-21",
+      "updated": "2026-07-21"
     },
     "concepts/dark-mode-mandatory": {
       "type": "page",
       "title": "dark-mode-mandatory",
-      "created": "2026-07-18",
-      "updated": "2026-07-18"
+      "created": "2026-07-21",
+      "updated": "2026-07-21"
     },
     "concepts/deployment": {
       "type": "page",
       "title": "deployment",
-      "created": "2026-07-18",
-      "updated": "2026-07-18"
+      "created": "2026-07-21",
+      "updated": "2026-07-21"
     },
     "concepts/design-standards": {
       "type": "page",
       "title": "design-standards",
-      "created": "2026-07-18",
-      "updated": "2026-07-18"
+      "created": "2026-07-21",
+      "updated": "2026-07-21"
     },
     "concepts/environment-config": {
       "type": "page",
       "title": "environment-config",
-      "created": "2026-07-18",
-      "updated": "2026-07-18"
+      "created": "2026-07-21",
+      "updated": "2026-07-21"
     },
     "concepts/handler-structure": {
       "type": "page",
       "title": "handler-structure",
-      "created": "2026-07-18",
-      "updated": "2026-07-18"
+      "created": "2026-07-21",
+      "updated": "2026-07-21"
     },
     "concepts/http-conventions": {
       "type": "page",
       "title": "http-conventions",
-      "created": "2026-07-18",
-      "updated": "2026-07-18"
+      "created": "2026-07-21",
+      "updated": "2026-07-21"
     },
     "concepts/migration-convention": {
       "type": "page",
       "title": "migration-convention",
-      "created": "2026-07-18",
-      "updated": "2026-07-18"
+      "created": "2026-07-21",
+      "updated": "2026-07-21"
     },
     "concepts/rbac-roles": {
       "type": "page",
       "title": "rbac-roles",
-      "created": "2026-07-18",
-      "updated": "2026-07-18"
+      "created": "2026-07-21",
+      "updated": "2026-07-21"
     },
     "concepts/svelte-conventions": {
       "type": "page",
       "title": "svelte-conventions",
-      "created": "2026-07-18",
-      "updated": "2026-07-18"
+      "created": "2026-07-21",
+      "updated": "2026-07-21"
     },
     "concepts/three-tier-rule": {
       "type": "page",
       "title": "three-tier-rule",
-      "created": "2026-07-18",
-      "updated": "2026-07-18"
+      "created": "2026-07-21",
+      "updated": "2026-07-21"
+    },
+    "concepts/verify-before-act": {
+      "type": "page",
+      "title": "verify-before-act",
+      "created": "2026-07-21",
+      "updated": "2026-07-21"
     },
     "sources/deployment-read-all-before-action": {
       "type": "source",
@@ -333,6 +339,23 @@
       ],
       "source_context": "\"Fixing Relawan.svelte edit modal not showing for Admin role\""
     },
+    "sources/obs-2026-07-18-fix-session-logout-ip-fingerprint-no-longer-destroys-session": {
+      "type": "source",
+      "title": "\"Observation: Fix session logout: IP fingerprint no longer destroys session\"",
+      "created": "2026-07-18",
+      "updated": "2026-07-18",
+      "slug": "obs-2026-07-18-fix-session-logout-ip-fingerprint-no-longer-destroys-session",
+      "status": "observation",
+      "relevance": "high",
+      "observed_at": "2026-07-18T09:29:33.164Z",
+      "tags": [
+        "session",
+        "auth",
+        "middleware",
+        "bugfix"
+      ],
+      "source_context": "\"Fixing frequent auto-logout complaints in auth middleware\""
+    },
     "sources/obs-2026-07-18-pengaduan-ticket-redirect-auto-scroll-fix": {
       "type": "source",
       "title": "\"Observation: Pengaduan ticket redirect + auto-scroll fix\"",
@@ -401,6 +424,22 @@
         "volunteer",
         "certificate"
       ]
+    },
+    "sources/obs-2026-07-21-env-dibersihkan-hanya-menyisakan-vars-yang-terpakai": {
+      "type": "source",
+      "title": "\"Observation: .env dibersihkan — hanya menyisakan vars yang terpakai\"",
+      "created": "2026-07-21",
+      "updated": "2026-07-21",
+      "slug": "obs-2026-07-21-env-dibersihkan-hanya-menyisakan-vars-yang-terpakai",
+      "status": "observation",
+      "relevance": "medium",
+      "observed_at": "2026-07-21T04:01:52.771Z",
+      "tags": [
+        "env",
+        "passwordless",
+        "cleanup"
+      ],
+      "source_context": "\"Cleaning up .env after passwordless migration\""
     }
   }
 }

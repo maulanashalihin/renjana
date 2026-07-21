@@ -77,7 +77,6 @@ type Config struct {
     AppEnv      string
     AppPort     string
     DBPath      string
-    SessionSecret string
 }
 
 func Load() *Config {
@@ -471,7 +470,6 @@ func main() {
 
     // Initialize services
     authService := services.NewAuthService(querier, services.AuthServiceConfig{
-        SessionSecret: cfg.SessionSecret,
         // ... OAuth config ...
     })
     userService := services.NewUserService(querier, userCache)

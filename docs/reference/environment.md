@@ -15,7 +15,6 @@ These variables must be set for the application to run:
 | `APP_ENV` | string | `development` | No | Environment mode (`development`, `production`, `test`) |
 | `APP_PORT` | int | `8080` | No | HTTP server port |
 | `DB_PATH` | string | `data/app.db` | No | Path to SQLite database file |
-| `SESSION_SECRET` | string | - | **Yes** | Secret key for session encryption (min 32 characters) |
 
 ### Example: Minimum Configuration
 
@@ -23,7 +22,6 @@ These variables must be set for the application to run:
 APP_ENV=development
 APP_PORT=8080
 DB_PATH=data/app.db
-SESSION_SECRET=your-32-character-secret-key
 ```
 
 ## Application Variables
@@ -101,45 +99,6 @@ DB_PATH=/var/lib/laju/app.db
 
 # Docker
 DB_PATH=/root/data/app.db
-```
-
-## Session Variables
-
-| Variable | Type | Default | Description |
-|----------|------|---------|-------------|
-| `SESSION_SECRET` | string | - | **Required** - Secret key for session encryption |
-
-### SESSION_SECRET
-
-**Critical for security** - Used to encrypt session cookies.
-
-**Requirements**:
-- Minimum 32 characters
-- Use cryptographically secure random generation
-- Different value for each environment
-- Rotate periodically
-
-**Generate Secure Secret**:
-
-```bash
-# Using openssl
-openssl rand -base64 32
-
-# Output example:
-# x7K9mP2vL5nQ8wR3tY6uI0oA4sD7fG1hJ9kM2xC5vB8n
-
-# Using Go
-go run -e 'package main; import ("crypto/rand"; "encoding/base64"; "fmt"); func main() { b := make([]byte, 32); rand.Read(b); fmt.Println(base64.StdEncoding.EncodeToString(b)) }'
-```
-
-**Usage**:
-
-```bash
-# ✅ Good: Strong random secret
-SESSION_SECRET=x7K9mP2vL5nQ8wR3tY6uI0oA4sD7fG1hJ9kM2xC5vB8n
-
-# ❌ Bad: Weak predictable secret
-SESSION_SECRET=secret123
 ```
 
 ## Google OAuth Variables
@@ -264,11 +223,6 @@ APP_URL=http://localhost:8080
 DB_PATH=data/app.db
 
 # ===========================================
-# Session Configuration
-# ===========================================
-SESSION_SECRET=dev-secret-key-not-for-production-use-only
-
-# ===========================================
 # Google OAuth Configuration (Optional)
 # ===========================================
 GOOGLE_CLIENT_ID=123456789-abc123def456.apps.googleusercontent.com
@@ -312,11 +266,6 @@ APP_URL=https://yourdomain.com
 # Database Configuration
 # ===========================================
 DB_PATH=/var/lib/laju/app.db
-
-# ===========================================
-# Session Configuration
-# ===========================================
-SESSION_SECRET=<run: openssl rand -base64 32>
 
 # ===========================================
 # Google OAuth Configuration
@@ -364,11 +313,6 @@ APP_URL=https://yourdomain.com
 DB_PATH=/root/data/app.db
 
 # ===========================================
-# Session Configuration
-# ===========================================
-SESSION_SECRET=${SESSION_SECRET}
-
-# ===========================================
 # Email/SMTP Configuration
 # ===========================================
 SMTP_HOST=${SMTP_HOST}
@@ -398,7 +342,6 @@ func init() {
 Environment variables can also be set directly:
 
 ```bash
-export SESSION_SECRET=your-secret-key
 export APP_PORT=8080
 ./laju-go
 ```
@@ -409,28 +352,10 @@ export APP_PORT=8080
 services:
   app:
     environment:
-      - SESSION_SECRET=${SESSION_SECRET}
       - APP_PORT=8080
       - DB_PATH=/root/data/app.db
     env_file:
       - .env
-```
-
-## Validation
-
-The application validates required variables at startup:
-
-```go
-func validateConfig() {
-    sessionSecret := os.Getenv("SESSION_SECRET")
-    if sessionSecret == "" {
-        log.Fatal("SESSION_SECRET is required")
-    }
-    
-    if len(sessionSecret) < 32 {
-        log.Fatal("SESSION_SECRET must be at least 32 characters")
-    }
-}
 ```
 
 ## Security Best Practices
@@ -455,58 +380,11 @@ Create a template file with placeholder values:
 APP_ENV=development
 APP_PORT=8080
 DB_PATH=data/app.db
-SESSION_SECRET=your-32-character-secret-key
 GOOGLE_CLIENT_ID=your-client-id
 GOOGLE_CLIENT_SECRET=your-client-secret
 ```
 
-### 3. Use Strong Secrets
-
-```bash
-# ✅ Good: Generate secure secret
-openssl rand -base64 32
-
-# ❌ Bad: Weak predictable secret
-SESSION_SECRET=password123
-```
-
-### 4. Rotate Secrets Regularly
-
-```bash
-# Generate new secret
-openssl rand -base64 32
-
-# Update .env
-nano .env
-
-# Restart application
-sudo systemctl restart laju-go
-```
-
-### 5. Use Different Secrets per Environment
-
-```bash
-# Development
-SESSION_SECRET=dev-secret-key
-
-# Production
-SESSION_SECRET=<different-secure-key>
-
-# Test
-SESSION_SECRET=test-secret-key
-```
-
 ## Troubleshooting
-
-### Session Not Persisting
-
-**Problem**: Users logged out after restart
-
-**Solution**: Check `SESSION_SECRET` is set and consistent
-
-```bash
-grep SESSION_SECRET .env
-```
 
 ### OAuth Not Working
 
@@ -541,9 +419,6 @@ APP_PORT=8081
 ## Quick Reference
 
 ```bash
-# Minimum required
-SESSION_SECRET=<32+ characters>
-
 # Common configuration
 APP_ENV=development
 APP_PORT=8080

@@ -4,6 +4,8 @@ Go Fiber + Svelte 5 + Inertia.js + SQLite (modernc) + templ.
 
 > 🔴 **JANGAN jalankan `npm run dev:all` atau dev server apapun.** User yang handle dev server secara manual.
 
+> 🔴 **VERIFIKASI SEBELUM ACTION.** Sebelum buat file baru: cek existing files + wiki + AGENTS.md. Jangan tebak.
+
 ## Architecture
 
 Single-entry Go app at `cmd/laju-go/main.go`.
@@ -85,6 +87,7 @@ Scope filtering via middleware `ScopeDistrict` (set `c.Locals("scope_district_id
 - Migrations run otomatis di startup via Goose.
 - 🔴 **Jangan edit migration yang sudah di-deploy.** Buat file migrasi baru.
 - 🔴 **Satu file migrasi = satu tabel** (lihat wiki: [Migration Convention](.llm-wiki/wiki/concepts/migration-convention.md)).
+- 🔴 **Cek dulu versi terakhir:** `ls migrations/ | sort | tail -1` — nomor baru = nomor itu + 1.
 - `sqlc.yaml` mengatur code generation dari `queries/*.sql`.
 
 ## Testing

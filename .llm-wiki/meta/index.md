@@ -4,18 +4,19 @@
 
 ## Pages
 
-- [[concepts/agent-browser-testing]] — agent-browser-testing *(created: 2026-07-18)*
-- [[concepts/ai-do-only-requested]] — ai-do-only-requested *(created: 2026-07-18)*
-- [[concepts/dark-mode-mandatory]] — dark-mode-mandatory *(created: 2026-07-18)*
-- [[concepts/deployment]] — deployment *(created: 2026-07-18)*
-- [[concepts/design-standards]] — design-standards *(created: 2026-07-18)*
-- [[concepts/environment-config]] — environment-config *(created: 2026-07-18)*
-- [[concepts/handler-structure]] — handler-structure *(created: 2026-07-18)*
-- [[concepts/http-conventions]] — http-conventions *(created: 2026-07-18)*
-- [[concepts/migration-convention]] — migration-convention *(created: 2026-07-18)*
-- [[concepts/rbac-roles]] — rbac-roles *(created: 2026-07-18)*
-- [[concepts/svelte-conventions]] — svelte-conventions *(created: 2026-07-18)*
-- [[concepts/three-tier-rule]] — three-tier-rule *(created: 2026-07-18)*
+- [[concepts/agent-browser-testing]] — agent-browser-testing *(created: 2026-07-21)*
+- [[concepts/ai-do-only-requested]] — ai-do-only-requested *(created: 2026-07-21)*
+- [[concepts/dark-mode-mandatory]] — dark-mode-mandatory *(created: 2026-07-21)*
+- [[concepts/deployment]] — deployment *(created: 2026-07-21)*
+- [[concepts/design-standards]] — design-standards *(created: 2026-07-21)*
+- [[concepts/environment-config]] — environment-config *(created: 2026-07-21)*
+- [[concepts/handler-structure]] — handler-structure *(created: 2026-07-21)*
+- [[concepts/http-conventions]] — http-conventions *(created: 2026-07-21)*
+- [[concepts/migration-convention]] — migration-convention *(created: 2026-07-21)*
+- [[concepts/rbac-roles]] — rbac-roles *(created: 2026-07-21)*
+- [[concepts/svelte-conventions]] — svelte-conventions *(created: 2026-07-21)*
+- [[concepts/three-tier-rule]] — three-tier-rule *(created: 2026-07-21)*
+- [[concepts/verify-before-act]] — verify-before-act *(created: 2026-07-21)*
 
 ## Sources
 
@@ -37,11 +38,13 @@
 - [[sources/obs-2026-07-17-google-avatar-format-detection-simplified]] — "Observation: Google avatar format detection simplified" *(created: 2026-07-17)*
 - [[sources/obs-2026-07-17-unhandled-error-review-csrf-save-logger-c-next-sess-destroy]] — "Observation: Unhandled error review: CSRF Save, Logger c.Next, sess.Destroy" *(created: 2026-07-17)*
 - [[sources/obs-2026-07-18-fix-e-preventdefault-needed-on-buttons-inside-inertia-use-in]] — "Observation: Fix: e.preventDefault() needed on buttons inside Inertia use:inertia links" *(created: 2026-07-18)*
+- [[sources/obs-2026-07-18-fix-session-logout-ip-fingerprint-no-longer-destroys-session]] — "Observation: Fix session logout: IP fingerprint no longer destroys session" *(created: 2026-07-18)*
 - [[sources/obs-2026-07-18-pengaduan-ticket-redirect-auto-scroll-fix]] — "Observation: Pengaduan ticket redirect + auto-scroll fix" *(created: 2026-07-18)*
 - [[sources/obs-2026-07-18-relawan-card-restructured-buttons-moved-outside-a-tag]] — "Observation: Relawan card restructured: buttons moved outside <a> tag" *(created: 2026-07-18)*
 - [[sources/obs-2026-07-18-seed-data-migrations-cleaned-volunteers-contacts-kosong-orga]] — "Observation: Seed data migrations cleaned: volunteers & contacts kosong, organization from app.db" *(created: 2026-07-18)*
 - [[sources/obs-2026-07-18-semua-add-column-migration-dihapus-dan-digabung-ke-create-ta]] — "Observation: Semua ADD COLUMN migration dihapus dan digabung ke CREATE TABLE utama" *(created: 2026-07-18)*
 - [[sources/obs-2026-07-18-user-id-added-to-renjana-volunteers-for-direct-cert-counting]] — "Observation: user_id added to renjana_volunteers for direct cert counting" *(created: 2026-07-18)*
+- [[sources/obs-2026-07-21-env-dibersihkan-hanya-menyisakan-vars-yang-terpakai]] — "Observation: .env dibersihkan — hanya menyisakan vars yang terpakai" *(created: 2026-07-21)*
 
 ---
-*Last updated: 2026-07-18T08:40:18.230Z* | *Total pages: 35*
+*Last updated: 2026-07-21T04:01:52.812Z* | *Total pages: 38*

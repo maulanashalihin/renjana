@@ -275,7 +275,7 @@ git clone https://github.com/maulanashalihin/renjana.git
 cd renjana
 
 cp .env.example .env
-# Edit .env — set SESSION_SECRET (min 32 karakter)
+# Edit .env — set Google OAuth credentials
 
 go mod download
 npm install

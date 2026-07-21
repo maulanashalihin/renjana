@@ -317,7 +317,6 @@ Use `.env` for development configuration:
 APP_ENV=development
 APP_PORT=8080
 DB_PATH=data/app.db
-SESSION_SECRET=dev-secret-key-not-for-production
 
 # Enable verbose logging (if implemented)
 # LOG_LEVEL=debug

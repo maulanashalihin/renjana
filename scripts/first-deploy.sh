@@ -33,9 +33,6 @@ APP_PORT=${APP_PORT_INPUT:-8080}
 echo -e "${YELLOW}Application URL (e.g., https://yourdomain.com):${NC}"
 read -r APP_URL
 
-# Auto-generate SESSION_SECRET
-SESSION_SECRET=$(openssl rand -hex 32)
-
 # Step 1: Create remote directories
 echo -e "${YELLOW}[1/4] Creating remote directories...${NC}"
 ssh "$SERVER_USER@$SERVER_HOST" "mkdir -p $SERVER_PATH/data $SERVER_PATH/storage $SERVER_PATH/backups"
@@ -53,7 +50,6 @@ ssh "$SERVER_USER@$SERVER_HOST" "
         sed -i 's/APP_PORT=8080/APP_PORT=$APP_PORT/g' $SERVER_PATH/.env
         sed -i \"s|APP_URL=http://localhost:8080|APP_URL=$APP_URL|g\" $SERVER_PATH/.env
         sed -i 's/APP_ENV=development/APP_ENV=production/g' $SERVER_PATH/.env
-        sed -i 's/SESSION_SECRET=your-secret-key-change-this-in-production/SESSION_SECRET=$SESSION_SECRET/g' $SERVER_PATH/.env
         sed -i \"s|DB_PATH=./data/app.db|DB_PATH=$SERVER_PATH/data/app.db|g\" $SERVER_PATH/.env
         echo '      Created .env from .env.example (production-ready)'
     else

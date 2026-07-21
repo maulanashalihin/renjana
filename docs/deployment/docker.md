@@ -139,7 +139,6 @@ services:
       - APP_ENV=production
       - APP_PORT=8080
       - DB_PATH=/root/data/app.db
-      - SESSION_SECRET=${SESSION_SECRET}
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
@@ -168,7 +167,6 @@ services:
       - APP_ENV=production
       - APP_PORT=8080
       - DB_PATH=/root/data/app.db
-      - SESSION_SECRET=${SESSION_SECRET}
     restart: unless-stopped
     networks:
       - laju-network
@@ -230,7 +228,6 @@ http {
 
 ```bash
 # .env
-SESSION_SECRET=your-32-character-secret-key
 GOOGLE_CLIENT_ID=your-client-id
 GOOGLE_CLIENT_SECRET=your-client-secret
 SMTP_HOST=smtp.gmail.com
@@ -245,7 +242,6 @@ SMTP_PASS=your-app-password
 services:
   app:
     environment:
-      - SESSION_SECRET=${SESSION_SECRET}
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
       - SMTP_HOST=${SMTP_HOST}
       - SMTP_PORT=${SMTP_PORT}
@@ -316,7 +312,6 @@ docker run -d \
   -p 8080:8080 \
   -v $(pwd)/data:/root/data \
   -v $(pwd)/storage:/root/storage \
-  -e SESSION_SECRET=your-secret-key \
   laju-go
 ```
 
@@ -432,8 +427,6 @@ services:
     volumes:
       - laju-data:/root/data
       - laju-storage:/root/storage
-    environment:
-      - SESSION_SECRET=${SESSION_SECRET}
     deploy:
       replicas: 3
       update_config:

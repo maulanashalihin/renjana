@@ -117,9 +117,6 @@ APP_URL=https://yourdomain.com
 # Database
 DB_PATH=/var/lib/laju/app.db
 
-# Session (generate secure random key)
-SESSION_SECRET=<run: openssl rand -base64 32>
-
 # Google OAuth (optional)
 GOOGLE_CLIENT_ID=your-client-id
 GOOGLE_CLIENT_SECRET=your-client-secret
@@ -522,7 +519,6 @@ sudo journalctl -u laju-go -n 50
 
 **Common issues**:
 - Missing `.env` file
-- Wrong `SESSION_SECRET`
 - Database path not writable
 - Port already in use
 

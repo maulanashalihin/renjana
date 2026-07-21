@@ -107,8 +107,9 @@ func TestVolunteerHandlerUpdate(t *testing.T) {
 	req.Header.Set("X-Inertia", "true")
 	resp, err := app.Test(req)
 	require.NoError(t, err)
-	assert.Equal(t, http.StatusFound, resp.StatusCode)
-	assert.Contains(t, resp.Header.Get("Location"), "success=updated")
+	// PUT via fetch() returns JSON per AGENTS.md convention (not redirect).
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.Contains(t, resp.Header.Get("Content-Type"), "application/json")
 }
 
 func TestVolunteerHandlerDelete(t *testing.T) {

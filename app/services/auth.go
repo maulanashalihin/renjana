@@ -25,14 +25,12 @@ var (
 )
 
 type AuthService struct {
-	querier       *queries.Querier
-	sessionSecret string
-	argon2Params  Argon2Params
-	oauthConfig   *oauth2.Config
+	querier      *queries.Querier
+	argon2Params Argon2Params
+	oauthConfig  *oauth2.Config
 }
 
 type AuthServiceConfig struct {
-	SessionSecret      string
 	GoogleClientID     string
 	GoogleClientSecret string
 	GoogleRedirectURL  string
@@ -57,9 +55,8 @@ func NewAuthService(querier *queries.Querier, cfg AuthServiceConfig) *AuthServic
 		argonParams.KeyLength = DefaultArgon2Params.KeyLength
 	}
 	return &AuthService{
-		querier:       querier,
-		sessionSecret: cfg.SessionSecret,
-		argon2Params:  argonParams,
+		querier:      querier,
+		argon2Params: argonParams,
 		oauthConfig: &oauth2.Config{
 			ClientID:     cfg.GoogleClientID,
 			ClientSecret: cfg.GoogleClientSecret,

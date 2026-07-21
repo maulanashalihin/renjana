@@ -113,3 +113,12 @@
 ## [2026-07-18T08:40:18.224Z] ensure_page
 - page_type: "concept", title: "ai-do-only-requested", path: "concepts/ai-do-only-requested"
 
+## [2026-07-18T09:16:39.634Z] ensure_page
+- page_type: "concept", title: "verify-before-act", path: "concepts/verify-before-act"
+
+## [2026-07-18T09:29:33.165Z] observe
+- slug: "obs-2026-07-18-fix-session-logout-ip-fingerprint-no-longer-destroys-session", title: "Fix session logout: IP fingerprint no longer destroys session", relevance: "high"
+
+## [2026-07-21T04:01:52.811Z] observe
+- slug: "obs-2026-07-21-env-dibersihkan-hanya-menyisakan-vars-yang-terpakai", title: ".env dibersihkan — hanya menyisakan vars yang terpakai", relevance: "medium"
+

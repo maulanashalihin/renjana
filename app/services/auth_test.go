@@ -41,7 +41,6 @@ func setupAuthTestDB(t *testing.T) *queries.Querier {
 func newAuthService(t *testing.T, q *queries.Querier) *AuthService {
 	t.Helper()
 	return NewAuthService(q, AuthServiceConfig{
-		SessionSecret:      "test-secret-32-chars-long-for-testing!!",
 		GoogleClientID:     "test-client-id",
 		GoogleClientSecret: "test-client-secret",
 		GoogleRedirectURL:  "http://localhost:8080/auth/google/callback",

@@ -15,7 +15,6 @@ type Config struct {
 	AppPort            string
 	AppEnv             string
 	DBPath             string
-	SessionSecret      string
 	GoogleClientID     string
 	GoogleClientSecret string
 	GoogleRedirectURL  string
@@ -50,7 +49,6 @@ func Load() *Config {
 		AppPort:            getEnv("APP_PORT", "8080"),
 		AppEnv:             getEnv("APP_ENV", "development"),
 		DBPath:             getEnv("DB_PATH", "./data/app.db"),
-		SessionSecret:      getEnv("SESSION_SECRET", "change-this-in-production"),
 		GoogleClientID:     getEnv("GOOGLE_CLIENT_ID", ""),
 		GoogleClientSecret: getEnv("GOOGLE_CLIENT_SECRET", ""),
 		GoogleRedirectURL:  getEnv("GOOGLE_REDIRECT_URL", ""),

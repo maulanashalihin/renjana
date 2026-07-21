@@ -94,7 +94,6 @@ func main() {
 
 	// Initialize services
 	authService := services.NewAuthService(querier, services.AuthServiceConfig{
-		SessionSecret:      cfg.SessionSecret,
 		GoogleClientID:     cfg.GoogleClientID,
 		GoogleClientSecret: cfg.GoogleClientSecret,
 		GoogleRedirectURL:  cfg.GoogleRedirectURL,
@@ -149,7 +148,7 @@ func main() {
 	}
 
 	// Setup CSRF middleware
-	csrfMiddleware := routes.SetupCSRFMiddleware(cfg.SessionSecret)
+	csrfMiddleware := routes.SetupCSRFMiddleware()
 
 	// Setup mailer service
 	mailerService := routes.SetupMailerService(

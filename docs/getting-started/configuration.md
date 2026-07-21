@@ -26,7 +26,6 @@ These variables must be set for the application to run:
 | `APP_ENV` | string | `development` | Environment mode (`development`, `production`, `test`) |
 | `APP_PORT` | int | `8080` | HTTP server port |
 | `DB_PATH` | string | `data/app.db` | Path to SQLite database file |
-| `SESSION_SECRET` | string | **required** | Secret key for session encryption (min 32 chars) |
 
 ### Example: Minimum Configuration
 
@@ -37,9 +36,6 @@ APP_PORT=8080
 
 # Database
 DB_PATH=data/app.db
-
-# Session (generate a secure random string)
-SESSION_SECRET=super-secret-key-at-least-32-characters-long
 ```
 
 ## Optional Variables
@@ -103,11 +99,6 @@ APP_URL=http://localhost:8080
 DB_PATH=data/app.db
 
 # ===========================================
-# Session Configuration
-# ===========================================
-SESSION_SECRET=your-32-character-secret-key-change-in-production
-
-# ===========================================
 # Google OAuth Configuration (Optional)
 # ===========================================
 GOOGLE_CLIENT_ID=123456789-abc123def456.apps.googleusercontent.com
@@ -145,7 +136,6 @@ RATE_LIMIT_PASSWORD_RESET=3
 APP_ENV=development
 APP_PORT=8080
 DB_PATH=data/app.db
-SESSION_SECRET=dev-secret-key-not-for-production-use
 
 # Enable verbose logging (if implemented)
 # LOG_LEVEL=debug
@@ -157,7 +147,6 @@ SESSION_SECRET=dev-secret-key-not-for-production-use
 APP_ENV=production
 APP_PORT=8080
 DB_PATH=/var/lib/laju/app.db
-SESSION_SECRET=<strong-random-secret-generated-by-openssl>
 
 # Production SMTP example (Gmail)
 SMTP_HOST=smtp.gmail.com
@@ -179,28 +168,6 @@ GOOGLE_REDIRECT_URL=https://yourdomain.com/auth/google/callback
 APP_ENV=test
 APP_PORT=3000
 DB_PATH=data/test.db
-SESSION_SECRET=test-secret-key
-```
-
-## Generating Secure Secrets
-
-### Session Secret
-
-```bash
-# Using openssl
-openssl rand -base64 32
-
-# Using Go
-go run -e 'package main; import ("crypto/rand"; "encoding/base64"; "fmt"); func main() { b := make([]byte, 32); rand.Read(b); fmt.Println(base64.StdEncoding.EncodeToString(b)) }'
-
-# Using Python
-python3 -c "import secrets; print(secrets.token_urlsafe(32))"
-```
-
-### Example Output
-
-```
-x7K9mP2vL5nQ8wR3tY6uI0oA4sD7fG1hJ9kM2xC5vB8n
 ```
 
 ## Google OAuth Setup
@@ -360,27 +327,9 @@ RATE_LIMIT_PASSWORD_RESET=3
 RATE_LIMIT_PASSWORD_RESET=2
 ```
 
-## Configuration Validation
-
-The application validates configuration at startup. If required variables are missing, you'll see an error like:
-
-```
-Error: SESSION_SECRET is required in production mode
-```
-
 ## Best Practices
 
-### 1. Use Strong Secrets
-
-```bash
-# ❌ Bad: Weak, predictable secret
-SESSION_SECRET=secret123
-
-# ✅ Good: Strong, random secret
-SESSION_SECRET=x7K9mP2vL5nQ8wR3tY6uI0oA4sD7fG1hJ9kM2xC5vB8n
-```
-
-### 2. Separate Environment Files
+### 1. Separate Environment Files
 
 Keep different `.env` files for different environments:
 
@@ -391,27 +340,17 @@ Keep different `.env` files for different environments:
 .env.test         # Testing (gitignored)
 ```
 
-### 3. Use Environment Variables in Production
+### 2. Use Environment Variables in Production
 
 For containerized deployments, inject variables via environment:
 
 ```bash
 # Docker Compose
 environment:
-  - SESSION_SECRET=${SESSION_SECRET}
   - DB_PATH=/var/lib/laju/app.db
 ```
 
-### 4. Rotate Secrets Regularly
-
-Change `SESSION_SECRET` periodically:
-
-1. Generate new secret
-2. Update `.env`
-3. Restart application
-4. All existing sessions will be invalidated (users must re-login)
-
-### 5. Secure Production Files
+### 3. Secure Production Files
 
 ```bash
 # Set restrictive permissions on .env
@@ -420,17 +359,6 @@ chown www-data:www-data .env
 ```
 
 ## Troubleshooting
-
-### Session Not Persisting
-
-**Problem**: Users are logged out immediately
-
-**Solution**: Check `SESSION_SECRET` is set and consistent
-
-```bash
-# Verify .env is loaded
-grep SESSION_SECRET .env
-```
 
 ### OAuth Not Working
 

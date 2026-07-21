@@ -149,7 +149,6 @@ Enter your production domain URL (e.g., `https://example.com`).
 
 The following are automatically configured:
 
-- ✅ `SESSION_SECRET` - Random 64-character hex string
 - ✅ `APP_ENV` - Set to `production`
 - ✅ `APP_PORT` - From your input
 - ✅ `APP_URL` - From your input
@@ -279,7 +278,6 @@ ssh root@your.server.com 'journalctl -u your-app -n 50'
 
 **Common issues:**
 - Missing `.env` file
-- Invalid `SESSION_SECRET`
 - Database path not writable
 - Port already in use
 
